@@ -32,7 +32,7 @@ namespace compute {
         KMeansModeBits m_KMeansMode;
 
 
-    }
+    };
 
 }
 

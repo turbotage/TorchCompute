@@ -85,5 +85,5 @@ torch::Tensor fit_predict(torch::Tensor X, std::optional<torch::Tensor> centroid
     auto device = X.device();
 
     
-
+    return torch::tensor({1});
 }
