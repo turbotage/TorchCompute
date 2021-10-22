@@ -10,9 +10,11 @@ cmake_minimum_required (VERSION 3.20)
 # Add source to this project's executable.
 add_executable (TorchCompute 
     "TorchCompute.cpp" 
+    "tests.cpp"
         
         "Compute/gradients.cpp"
         "Compute/kmeans.cpp"
+        "Compute/random.cpp"
 
         "Optim/lm.cpp" 
         "Optim/model.cpp"
