@@ -18,11 +18,12 @@ add_executable (TorchCompute
 
         "Optim/lm.cpp" 
         "Optim/model.cpp"
+        "Optim/solver.cpp"
 
         "Expression/expression.cpp" 
         "Expression/shunter.cpp" 
         "Expression/parsing.cpp"
-)
+    )
 
 
 if (MSVC)

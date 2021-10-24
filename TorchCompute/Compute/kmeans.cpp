@@ -46,8 +46,6 @@ std::tuple<torch::Tensor, torch::Tensor> compute::KMeans::maxSimilarity(torch::T
 		return sim.max(-1);
 	}
 
-	std::cout << "asizes:\n" << a.sizes() << std::endl;
-	std::cout << "bsizes:\n" << b.sizes() << std::endl;
 	// Cuda
 	uint64_t expected;
 	if (a.dtype() == torch::kDouble)
@@ -61,17 +59,17 @@ std::tuple<torch::Tensor, torch::Tensor> compute::KMeans::maxSimilarity(torch::T
 
 	size_t free, total;
 	cudaMemGetInfo(&free, &total);
-	int allocated = total - free;
+	uint64_t allocated = total - free;
 
-	auto ratio = (int)std::ceil((double)expected / (double)allocated);
-	auto subbatch_size = std::ceil(batch_size / ratio);
+	uint64_t ratio = (uint64_t)std::ceil((double)expected / (double)allocated);
+	uint64_t subbatch_size = std::ceil((double)batch_size / (double)ratio);
 	std::vector<torch::Tensor> msv, msi;
 	for (int i = 0; i < ratio; ++i) {
 		if (i * subbatch_size >= batch_size)
 			continue;
 
-		int it1 = i * subbatch_size;
-		int it2 = (i + 1) * subbatch_size;
+		uint64_t it1 = i * subbatch_size;
+		uint64_t it2 = (i + 1) * subbatch_size;
 		auto sub_x = a.index({ Slice(it1, it2) });
 		auto sub_sim = sim_func(sub_x, b);
 		torch::Tensor sub_max_sim_v, sub_max_sim_i;
@@ -95,8 +93,8 @@ std::tuple<torch::Tensor, torch::Tensor> compute::KMeans::maxSimilarity(torch::T
 torch::Tensor compute::KMeans::fit_predict(torch::Tensor X, std::optional<torch::Tensor> centroids) {
 	using namespace torch::indexing;
 	
-	int batch_size = X.size(0);
-	int emb_dim = X.size(1);
+	uint64_t batch_size = X.size(0);
+	uint64_t emb_dim = X.size(1);
 
 	auto device = X.device();
 	auto ops = X.options();
@@ -119,7 +117,7 @@ torch::Tensor compute::KMeans::fit_predict(torch::Tensor X, std::optional<torch:
 		c_grad.index({ c_grad != c_grad }) = 0;
 
 		auto error = (c_grad - centroids.value()).pow(2).sum();
-		auto lr = 1;
+		double lr = 1.0;
 		num_points_in_clusters.index({ matched_clusters }) += counts;
 		centroids = c_grad * lr;
 		if ( error.item<double>() <= m_Tol )

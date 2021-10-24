@@ -113,7 +113,7 @@ void test::test_lmp() {
 	parameters["@X1"] = 1;
 
 	std::unordered_map<std::string, int> staticvars;
-	staticvars["@TR"] = 0.500;
+	staticvars["@TR"] = -0.500;
 	std::vector<torch::Tensor> vars;
 	vars.push_back(torch::tensor(-0.01, dops));
 
@@ -174,19 +174,13 @@ void test::test_kmeans() {
 	torch::TensorOptions switch_dops =
 		torch::TensorOptions().device(cpu_device).dtype(torch::ScalarType::Float);
 
-
-	torch::Tensor points = torch::rand({ 100000, 10 }, dops);
+	torch::Tensor points = torch::rand({ 100000, 10 }, switch_dops);
 
 	auto start = std::chrono::system_clock::now();
-	compute::KMeans kmeans(1024, 100, 0.0001, compute::eKMeansMode::EUCLIDEAN);
+	compute::KMeans kmeans(1024, 100, 0.001, compute::eKMeansMode::EUCLIDEAN);
 	torch::Tensor out = kmeans.fit_predict(points, std::nullopt);
 	auto end = std::chrono::system_clock::now();
 
 
-	//std::cout << "points:\n" << points << std::endl;
-	//std::cout << "classes:\n" << out << std::endl;
-
 	std::cout << "elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-
-
 }
