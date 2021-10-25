@@ -3,10 +3,11 @@
 
 #include "tests.hpp"
 
-
+/*
 int main()
 {
 	test::test_lmp();
 	
 	return 0;
 }
+*/

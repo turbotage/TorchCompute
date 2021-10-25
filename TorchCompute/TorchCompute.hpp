@@ -1,8 +1,18 @@
-﻿// ComputeCMake.h : Include file for standard system include files,
-// or project specific include files.
+﻿#pragma once
 
-#pragma once
 
-#include <iostream>
+// Compute
+#include "Compute/gradients.hpp"
+#include "Compute/kmeans.hpp"
+#include "Compute/random.hpp"
 
-// TODO: Reference additional headers your program requires here.
+// Expression
+#include "Expression/expression.hpp"
+#include "Expression/expression_nodes.hpp"
+#include "Expression/parsing.hpp"
+#include "Expression/shunter.hpp"
+
+// Optim
+#include "Optim/lm.hpp"
+#include "Optim/model.hpp"
+#include "Optim/solver.hpp"

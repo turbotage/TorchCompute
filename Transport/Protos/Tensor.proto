@@ -1,0 +1,13 @@
+
+service TensorSender {
+	// Sends a Tensor
+	rpc SendTensor(TensorRequest) return (TensorReply) {}
+}
+
+message TensorRequest {
+	string tensor_name = 1;
+}
+
+message TensorReply {
+	string tensor_str = 1;
+}
