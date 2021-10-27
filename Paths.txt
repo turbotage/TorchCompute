@@ -1,0 +1,2 @@
+"value": "/home/turbotage/Documents/Repos/vcpkg/scripts/buildsystems/vcpkg.cmake"
+"value": "C:\\Users\\vikto\\source\\repos\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake"

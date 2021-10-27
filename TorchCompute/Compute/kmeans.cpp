@@ -1,9 +1,7 @@
 #include "kmeans.hpp"
 #include "random.hpp"
 
-
-#include "cuda.h"
-#include "cuda_runtime_api.h"
+#include <c10/cuda/CUDACachingAllocator.h>
 
 compute::KMeans::KMeans(int nclusters, int maxiter=50, float tol=0.001, KMeansModeBits mode=eKMeansMode::EUCLIDEAN) {
 	m_nClusters = nclusters;
@@ -57,9 +55,16 @@ std::tuple<torch::Tensor, torch::Tensor> compute::KMeans::maxSimilarity(torch::T
 	else
 		throw new std::runtime_error("Unsupported type for cuda device in KMeans routine");
 
+	// Some bug here
+	int id;
+	cudaGetDevice(&id);
 	size_t free, total;
 	cudaMemGetInfo(&free, &total);
+	std::cout << "GPU: " << id << "  free: " << free << "  total:  " << total;
+
 	uint64_t allocated = total - free;
+
+
 
 	uint64_t ratio = (uint64_t)std::ceil((double)expected / (double)allocated);
 	uint64_t subbatch_size = std::ceil((double)batch_size / (double)ratio);

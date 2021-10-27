@@ -1,7 +1,9 @@
+syntax = "proto3";
+
 
 service TensorSender {
 	// Sends a Tensor
-	rpc SendTensor(TensorRequest) return (TensorReply) {}
+	rpc SendTensor(TensorRequest) returns (TensorReply) {}
 }
 
 message TensorRequest {
