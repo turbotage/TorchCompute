@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "pch.hpp"
 
 // Compute
 #include "Compute/gradients.hpp"
@@ -16,3 +17,4 @@
 #include "Optim/lm.hpp"
 #include "Optim/model.hpp"
 #include "Optim/solver.hpp"
+

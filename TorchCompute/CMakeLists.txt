@@ -41,7 +41,7 @@ endif(MSVC)
 find_package(Torch REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
-target_link_libraries(TorchCompute "${TORCH_LIBRARIES}")
+target_link_libraries(TorchCompute PUBLIC "${TORCH_LIBRARIES}")
 set_property(TARGET TorchCompute PROPERTY CXX_STANDARD 17)
 
 # The following code block is suggested to be used on Windows.
