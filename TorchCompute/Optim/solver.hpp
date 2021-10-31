@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../pch.hpp"
+#include "model.hpp"
 
 namespace optim {
 
@@ -8,7 +9,7 @@ namespace optim {
 	public:
 
 		BatchedKMeansThenLMP(
-			std::string expression,
+			std::unique_ptr<model::Model> pModel,
 			torch::Tensor dependents,
 			torch::Tensor data,
 			uint64_t batch_size = 100000);
@@ -23,6 +24,8 @@ namespace optim {
 		torch::Tensor m_Dependents;
 		torch::Tensor m_Parameters;
 		torch::Tensor m_Data;
+
+		std::unique_ptr<model::Model> m_pModel;
 
 	};
 
