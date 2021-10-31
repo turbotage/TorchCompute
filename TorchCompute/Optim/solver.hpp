@@ -5,18 +5,22 @@
 
 namespace optim {
 
+	using GuessFetchFunc = std::function<torch::Tensor(torch::Tensor, torch::Tensor)>;
+	
+
 	class BatchedKMeansThenLMP {
 	public:
 
 		BatchedKMeansThenLMP(
 			std::unique_ptr<model::Model> pModel,
+			GuessFetchFunc guessFetcher,
 			torch::Tensor dependents,
 			torch::Tensor data,
 			uint64_t batch_size = 100000);
-	
-		void makeUniformGuess(std::vector<float> parameters);
 
 		void solve();
+
+		torch::Tensor getParameters();
 
 	private:
 		uint64_t m_Batchsize;
@@ -26,6 +30,7 @@ namespace optim {
 		torch::Tensor m_Data;
 
 		std::unique_ptr<model::Model> m_pModel;
+		GuessFetchFunc m_GuessFetchFunc;
 
 	};
 

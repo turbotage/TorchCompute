@@ -10,5 +10,7 @@ namespace test {
 
 	void test_kmeans();
 
+	void test_solver1();
+
 }
 

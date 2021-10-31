@@ -70,7 +70,6 @@ void test::test_model() {
 }
 
 
-
 void test::test_lmp() {
 	using namespace torch::indexing;
 
@@ -183,4 +182,19 @@ void test::test_kmeans() {
 
 
 	std::cout << "elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+}
+
+
+void test::test_solver1() {
+	torch::Device cuda_device("cuda:0");
+	torch::Device cpu_device("cpu");
+
+	torch::TensorOptions dops =
+		torch::TensorOptions().device(cuda_device).dtype(torch::ScalarType::Float);
+	torch::TensorOptions switch_dops =
+		torch::TensorOptions().device(cpu_device).dtype(torch::ScalarType::Float);
+
+	torch::DeviceGuard guard(dops.device_opt().value());
+
+
 }

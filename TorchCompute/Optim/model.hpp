@@ -69,6 +69,17 @@ namespace model {
 		/// <param name="parameters"></param>
 		void setParameters(torch::Tensor parameters);
 
+		/// <summary>
+		/// Get number of parameters in the model
+		/// </summary>
+		/// <returns></returns>
+		uint32_t getNParameters();
+
+		/// <summary>
+		/// Get number of dependents in the model
+		/// </summary>
+		/// <returns></returns>
+		uint32_t getNDeps();
 
 		/// <summary>
 		/// Evaluates the model at last set static variables, dependents and static vars

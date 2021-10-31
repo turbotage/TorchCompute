@@ -3,7 +3,9 @@ from torch import nn
 from torch.optim import optimizer
 from torch.functional import F
 
-nProblems = 10
+from fast_pytorch_kmeans import KMeans
+
+nProblems = 40
 nParams = 2
 nData = 5
 device_str = 'cpu'
@@ -42,11 +44,35 @@ def closure():
 	loss.backward()
 	return loss
 
-for iter in range(10):
-	optimizer = torch.optim.LBFGS([guess], max_iter=1000, lr=10)
-	optimizer.step(closure)
+
+def GD(params, data, deps, model):
+	params = params.requires_grad_(True)
+	for i in range(50):
+		output = model(deps, params)
+		loss = F.mse_loss(output, data)
+		loss.backward()
+		
+		params -= loss.grad
+
+		loss.grad.zero_()
+
+	return params
 
 
-#print(diff)
+kmeans = KMeans(n_clusters=10, mode='euclidean')
+labels = kmeans.fit_predict(data)
+print(labels)
+
+for label_iter in range(10):
+	idx = labels == label_iter
+	label_params = guess[idx]
+	label_deps = deps[idx]
+	label_data = data[idx]                            
+	
+	label_params = GD(label_params, label_data, label_deps, model)
+
+	guess[idx] = label_params
+
+
 print(params)
 print(guess)

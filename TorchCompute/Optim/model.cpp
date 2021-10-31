@@ -127,6 +127,16 @@ void model::Model::setParameters(torch::Tensor parameters)
 	m_Parameters = parameters;
 }
 
+uint32_t model::Model::getNParameters()
+{
+	return m_ParameterMap.size();
+}
+
+uint32_t model::Model::getNDeps()
+{
+	return m_DependentMap.size();
+}
+
 
 torch::Tensor model::Model::operator()()
 {
