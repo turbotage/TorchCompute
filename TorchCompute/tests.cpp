@@ -89,12 +89,12 @@ void test::test_lmp() {
 	int nData = 5;
 
 	torch::Tensor params = torch::rand({ nProblems, nParams }, dops);
-	params.index_put_({ Slice(), 0 }, torch::rand({ nProblems }));
-	params.index_put_({ Slice(), 1 }, 0.01 * torch::rand({ nProblems }));
+	params.index_put_({ Slice(), 0 }, torch::rand({ nProblems }, dops));
+	params.index_put_({ Slice(), 1 }, 0.01 * torch::rand({ nProblems }, dops));
 
 	torch::Tensor guess = torch::rand({ nProblems, nParams }, dops);
-	guess.index_put_({ Slice(), 0 }, torch::rand({ nProblems }));
-	guess.index_put_({ Slice(), 1 }, 0.01 * torch::rand({ nProblems }));
+	guess.index_put_({ Slice(), 0 }, torch::rand({ nProblems }, dops));
+	guess.index_put_({ Slice(), 1 }, 0.01 * torch::rand({ nProblems }, dops));
 
 	torch::Tensor deps = torch::rand({ nProblems, nData, 1 }, dops);
 	deps.index_put_({ Slice(), 0, 0 }, 10.0 * 3.1415 / 180.0);
@@ -135,6 +135,8 @@ void test::test_lmp() {
 	lmp.setSwitching(99, cpu_device);
 	lmp.setCopyConvergingEveryN(2);
 
+
+	/*
 	int it = 0;
 	std::function<void()> iterationCallback = [&it]() {
 		std::cout << it << std::endl;
@@ -142,12 +144,13 @@ void test::test_lmp() {
 	};
 
 	lmp.setOnIterationCallback(iterationCallback);
-
+	
 	std::function<void()> switchCallback = []() {
 		std::cout << "Switched to cpu";
 	};
-
+	
 	lmp.setOnSwitchCallback(switchCallback);
+	*/
 
 	auto start = std::chrono::system_clock::now();
 
@@ -204,12 +207,12 @@ void test::test_solver1() {
 	int nData = 5;
 
 	torch::Tensor params = torch::rand({ nProblems, nParams }, dops);
-	params.index_put_({ Slice(), 0 }, torch::rand({ nProblems }));
-	params.index_put_({ Slice(), 1 }, 0.01 * torch::rand({ nProblems }));
+	params.index_put_({ Slice(), 0 }, torch::rand({ nProblems }, dops));
+	params.index_put_({ Slice(), 1 }, 0.01 * torch::rand({ nProblems }, dops));
 
 	torch::Tensor guess = torch::rand({ nProblems, nParams }, dops);
-	guess.index_put_({ Slice(), 0 }, torch::rand({ nProblems }));
-	guess.index_put_({ Slice(), 1 }, 0.01 * torch::rand({ nProblems }));
+	guess.index_put_({ Slice(), 0 }, torch::rand({ nProblems }, dops));
+	guess.index_put_({ Slice(), 1 }, 0.01 * torch::rand({ nProblems }, dops));
 
 	torch::Tensor deps = torch::rand({ nProblems, nData, 1 }, dops);
 	deps.index_put_({ Slice(), 0, 0 }, 10.0 * 3.1415 / 180.0);
@@ -228,7 +231,7 @@ void test::test_solver1() {
 	parameters["@X1"] = 1;
 
 	std::unordered_map<std::string, int> staticvars;
-	staticvars["@TR"] = -0.500;
+	staticvars["@TR"] = -1.0;
 	std::vector<torch::Tensor> vars;
 	vars.push_back(torch::tensor(-0.01, dops));
 
@@ -242,15 +245,16 @@ void test::test_solver1() {
 	data += 0.01 * data * (1 - torch::rand({ nProblems, nData }, dops));
 	
 
-	optim::GuessFetchFunc fetchFunc = [nParams, dops](torch::Tensor deps, torch::Tensor data) {
+	optim::GuessFetchFunc fetchFunc = [nParams](torch::Tensor deps, torch::Tensor data) {
 		int64_t nProbs = deps.size(0);
-		torch::Tensor p = torch::rand({ nProbs, nParams }, dops);
-		p.index_put_({ Slice(), 0 }, torch::rand({ nProbs }));
-		p.index_put_({ Slice(), 1 }, 0.01 * torch::rand({ nProbs }));
+		torch::TensorOptions d_ops = deps.options();
+		torch::Tensor p = torch::rand({ nProbs, nParams }, d_ops);
+		p.index_put_({ Slice(), 0 }, torch::rand({ nProbs }, d_ops));
+		p.index_put_({ Slice(), 1 }, 0.01 * torch::rand({ nProbs }, d_ops));
 		return p;
 	};
 
-	optim::BatchedKMeansThenLMP bklmp(mod, fetchFunc, deps, data, 10000);
+	optim::BatchedKMeansThenLMP bklmp(mod, fetchFunc, deps, data, 2000000);
 
 	auto start = std::chrono::system_clock::now();
 	bklmp.solve();

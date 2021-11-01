@@ -30,6 +30,9 @@ void optim::BatchedKMeansThenLMP::solve()
 	using namespace torch::indexing;
 
 	uint64_t nProblems = m_Dependents.size(0);
+	if (m_Batchsize > nProblems)
+		m_Batchsize = nProblems;
+
 	uint16_t nDataPoints = m_Dependents.size(1);
 	uint16_t nDeps = m_Dependents.size(2);
 	uint16_t nParams = m_Model.getNParameters();
@@ -40,7 +43,7 @@ void optim::BatchedKMeansThenLMP::solve()
 	m_Parameters = torch::empty({ (int64_t)nProblems, nParams}, tops);
 	
 	
-	uint32_t nBatches = std::ceil(nProblems / m_Batchsize);
+	uint32_t nBatches = std::ceil((double)nProblems / (double)m_Batchsize);
 	
 	uint16_t nClusters = (uint16_t)m_Batchsize * 0.05;
 	if (m_Batchsize > 5000) {
@@ -53,29 +56,53 @@ void optim::BatchedKMeansThenLMP::solve()
 	torch::Tensor batchDeps;
 	torch::Tensor batchParams = torch::empty({(int64_t)m_Batchsize, nParams}, tops);
 	for (int i = 0; i < nBatches; ++i) {
-		batchData = m_Data.index({ Slice(i * m_Batchsize, (i + 1) * m_Batchsize) }).view({ (int64_t)m_Batchsize, nDataPoints });
-		batchDeps = m_Dependents.index({ Slice(i * m_Batchsize, (i + 1) * m_Batchsize) }).view({ (int64_t)m_Batchsize, nDataPoints, nDeps });
+		int64_t startIndex = i*m_Batchsize;
+		int64_t endIndex;
+		int64_t batchCount;
+		if ((i+1)*m_Batchsize < nProblems) {
+			endIndex = (i+1)*m_Batchsize;
+			batchCount = m_Batchsize;
+		} else {
+			endIndex = nProblems; 
+			batchCount = nProblems - startIndex;
+			batchParams = torch::empty({batchCount, nParams}, tops);
+		}
 
-		torch::Tensor labels = kmeans.fit_predict(m_Data, std::nullopt);
-		
+		//std::cout << m_Data.index({ Slice(startIndex, endIndex), Slice() }).sizes() << std::endl;
+		//std::cout << m_Data.index({ Slice(startIndex, endIndex), Slice() }).view({ batchCount, nDataPoints }).sizes();
+
+		batchData = m_Data.index({ Slice(startIndex, endIndex), Slice() }).view({ batchCount, nDataPoints });
+		batchDeps = m_Dependents.index({ Slice(startIndex, endIndex), Slice(), Slice() }).view({ batchCount, nDataPoints, nDeps });
+	
+		std::cout << "Batch: " << i << std::endl;
+
+		auto start = std::chrono::system_clock::now();
+		torch::Tensor labels = kmeans.fit_predict(batchData, std::nullopt);
+		auto end = std::chrono::system_clock::now();
+		std::cout << "KMeans took: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+
 		torch::Tensor kmeansData = torch::empty({ nClusters, nDataPoints }, tops.dtype());
-		torch::Tensor kmeansDeps = torch::empty({ nClusters, nDataPoints }, tops.dtype());
+		torch::Tensor kmeansDeps = torch::empty({ nClusters, nDataPoints, nDeps }, tops.dtype());
 		torch::Tensor kmeansParm = torch::empty({ nClusters, nDataPoints }, tops.dtype());
 
 		std::vector<torch::Tensor> idx;
 
 		for (int j = 0; j < nClusters; ++j) {
 			idx.push_back(labels == j);
-			kmeansData[j] = batchData.index({idx[j]}).mean(
-				{0}).view({1, nDataPoints}).to(cpudev);
-			kmeansDeps[j] = batchDeps.index({idx[j]}).mean(
-				{0}).view({1, nDataPoints, nDeps}).to(cpudev);
+
+			kmeansData.index_put_({j, Slice()} ,batchData.index({idx[j], Slice()}).mean(
+				{0}, true).to(cpudev));
+
+			kmeansDeps.index_put_({j, Slice(), Slice()}, batchDeps.index({idx[j], Slice(), Slice()}).mean(
+				{0}, true).to(cpudev));
+
 		}
 
 		kmeansParm = m_GuessFetchFunc(kmeansDeps, kmeansData);
 
 		m_Model.setDependents(kmeansDeps);
 		m_Model.setParameters(kmeansParm);
+		m_Model.to(cpudev);
 
 		// Solve on kmeans data
 		{
@@ -83,16 +110,26 @@ void optim::BatchedKMeansThenLMP::solve()
 			lmp.setParameterGuess(kmeansParm);
 			lmp.setDependents(kmeansDeps);
 			lmp.setData(kmeansData);
+			lmp.setDefaultTensorOptions(kmeansParm.options());
 			lmp.setCopyConvergingEveryN(2);
+			start = std::chrono::system_clock::now();
 			lmp.run();
+			end = std::chrono::system_clock::now();
+			std::cout << "KMeans solve took: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+
 
 			kmeansParm = lmp.getParameters();
 		}
 
 		// Set the kmeans solutions to the parameters
 		for (int j = 0; j < nClusters; ++j) {
-			batchParams.index_put_({ idx[j] }, kmeansParm[j].to(tops));
+			batchParams.index_put_({ idx[j], Slice() }, kmeansParm.index({j, Slice()}).to(tops));
 		}
+
+		m_Model.setDependents(batchDeps);
+		m_Model.setParameters(batchParams);
+		m_Model.to(tops.device());
+
 
 		// Solve on all parameters
 		{
@@ -100,10 +137,17 @@ void optim::BatchedKMeansThenLMP::solve()
 			lmp.setParameterGuess(batchParams);
 			lmp.setDependents(batchDeps);
 			lmp.setData(batchData);
+			lmp.setDefaultTensorOptions(batchParams.options());
 			lmp.setCopyConvergingEveryN(2);
-			lmp.run();
+			lmp.setSwitching(100-100*(10000.0/(double)batchCount), cpudev);
 
-			m_Parameters.index_put_({ Slice(i * m_Batchsize, (i + 1) * m_Batchsize) },
+			start = std::chrono::system_clock::now();
+			lmp.run();
+			end = std::chrono::system_clock::now();
+			std::cout << "Batch solve took: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+
+
+			m_Parameters.index_put_({ Slice(startIndex, endIndex) },
 				lmp.getParameters());
 		}
 

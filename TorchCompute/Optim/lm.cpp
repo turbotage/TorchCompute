@@ -192,10 +192,8 @@ void optim::LMP::print_devices()
 	std::cout << stream.str();
 }
 
-void optim::LMP::switch_dops()
+void optim::LMP::switch_device(torch::Device dev)
 {
-	auto dev = switchDevice.value();
-
 	dops = dops.device(dev);
 
 	params = params.to(dev);
@@ -240,7 +238,8 @@ void optim::LMP::switch_dops()
 
 	model.to(dev);
 
-	onSwitchCallback();
+	if(onSwitchCallback)
+		onSwitchCallback();
 }
 
 
@@ -376,7 +375,7 @@ int optim::LMP::handle_convergence()
 	params_slice = params.index({ nci, Slice() });
 	data_slice = data.index({ nci, Slice() });
 
-	std::cout << "Number of solving problems: " << params_slice.size(0) << std::endl;
+	//std::cout << "Number of solving problems: " << params_slice.size(0) << std::endl;
 
 	delta = delta.index({ not_converges });
 	step = step.index({ not_converges });
@@ -463,8 +462,8 @@ void optim::LMP::setup_solve()
 	params_slice = params.index({ nci, Slice() });
 	data_slice = data.index({ nci, Slice() });
 
-
 	model.setDependents(deps_slice);
+
 }
 
 void optim::LMP::solve()
@@ -472,9 +471,8 @@ void optim::LMP::solve()
 
 	int iteration = 0;
 	do {
-		if (onIterationCallback) {
+		if (onIterationCallback)
 			onIterationCallback();
-		}
 
 		// Copy converging pixels every n iterations
 		if ((iteration % copyConvergingEveryN == 0) && iteration > 0 ) {
@@ -484,7 +482,7 @@ void optim::LMP::solve()
 		// Check if we should swith to the final compute device
 		if ((((float)nProblems - (float)nc_sum) / (float)nProblems) > (onSwitchPercentage*0.01)) {
 			if (!hasSwitched) {
-				switch_dops();
+				switch_device(switchDevice.value());
 				hasSwitched = true;
 			}
 		}

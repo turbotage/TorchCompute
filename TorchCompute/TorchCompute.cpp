@@ -8,7 +8,12 @@ int main()
 {
 	try {
 		try {
+
+			std::cout << "BKLMP" << std::endl;
 			test::test_solver1();
+
+			std::cout << "LMP" << std::endl;
+			test::test_lmp();
 		}
 		catch (c10::Error e1) {
 			std::cout << e1.what() << std::endl;

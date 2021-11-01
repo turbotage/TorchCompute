@@ -46,7 +46,7 @@ namespace optim {
 
 		void print_all();
 		void print_devices();
-		void switch_dops();
+		void switch_device(torch::Device device);
 
 		torch::Tensor plane_convergence();
 

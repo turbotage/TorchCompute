@@ -60,7 +60,7 @@ std::tuple<torch::Tensor, torch::Tensor> compute::KMeans::maxSimilarity(torch::T
 	cudaGetDevice(&id);
 	size_t free, total;
 	cudaMemGetInfo(&free, &total);
-	std::cout << "GPU: " << id << "  free: " << free << "  total:  " << total;
+	//std::cout << "GPU: " << id << "  free: " << free << "  total:  " << total;
 
 	uint64_t allocated = total - free;
 
