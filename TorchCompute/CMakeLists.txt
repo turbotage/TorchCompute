@@ -8,7 +8,9 @@ cmake_minimum_required (VERSION 3.20)
 #set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add source to this project's executable.
-add_library (TorchCompute 
+#add_executable
+#add_library
+add_executable(TorchCompute 
     "TorchCompute.cpp" 
     "tests.cpp"
         

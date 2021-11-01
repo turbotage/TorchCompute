@@ -5,16 +5,16 @@
 
 
 optim::BatchedKMeansThenLMP::BatchedKMeansThenLMP(
-	std::unique_ptr<model::Model> pModel,
+	model::Model& model,
 	GuessFetchFunc guessFetcher,
 	torch::Tensor dependents, torch::Tensor data, 
-	uint64_t batch_size) 
+	uint64_t batch_size)
+	: m_Model(model)
 {
 	m_Batchsize = batch_size;
 	m_Dependents = dependents;
 	m_Data = data;
 	
-	m_pModel = std::move(pModel);
 	m_GuessFetchFunc = guessFetcher;
 
 	if (m_Dependents.size(0) != m_Data.size(0))
@@ -24,6 +24,7 @@ optim::BatchedKMeansThenLMP::BatchedKMeansThenLMP(
 
 }
 
+// BUG HERE
 void optim::BatchedKMeansThenLMP::solve()
 {
 	using namespace torch::indexing;
@@ -31,7 +32,7 @@ void optim::BatchedKMeansThenLMP::solve()
 	uint64_t nProblems = m_Dependents.size(0);
 	uint16_t nDataPoints = m_Dependents.size(1);
 	uint16_t nDeps = m_Dependents.size(2);
-	uint16_t nParams = m_pModel->getNParameters();
+	uint16_t nParams = m_Model.getNParameters();
 
 	torch::TensorOptions tops = m_Dependents.options();
 	torch::Device cpudev("cpu");
@@ -64,7 +65,7 @@ void optim::BatchedKMeansThenLMP::solve()
 		std::vector<torch::Tensor> idx;
 
 		for (int j = 0; j < nClusters; ++j) {
-			idx[j] = labels == j;
+			idx.push_back(labels == j);
 			kmeansData[j] = batchData.index({idx[j]}).mean(
 				{0}).view({1, nDataPoints}).to(cpudev);
 			kmeansDeps[j] = batchDeps.index({idx[j]}).mean(
@@ -73,12 +74,12 @@ void optim::BatchedKMeansThenLMP::solve()
 
 		kmeansParm = m_GuessFetchFunc(kmeansDeps, kmeansData);
 
-		m_pModel->setDependents(kmeansDeps);
-		m_pModel->setParameters(kmeansParm);
+		m_Model.setDependents(kmeansDeps);
+		m_Model.setParameters(kmeansParm);
 
 		// Solve on kmeans data
 		{
-			LMP lmp(*m_pModel);
+			LMP lmp(m_Model);
 			lmp.setParameterGuess(kmeansParm);
 			lmp.setDependents(kmeansDeps);
 			lmp.setData(kmeansData);
@@ -95,7 +96,7 @@ void optim::BatchedKMeansThenLMP::solve()
 
 		// Solve on all parameters
 		{
-			LMP lmp(*m_pModel);
+			LMP lmp(m_Model);
 			lmp.setParameterGuess(batchParams);
 			lmp.setDependents(batchDeps);
 			lmp.setData(batchData);

@@ -5,6 +5,7 @@
 
 namespace optim {
 
+	// -------------------------------------PARAM(DEPS,DATA)------------------
 	using GuessFetchFunc = std::function<torch::Tensor(torch::Tensor, torch::Tensor)>;
 	
 
@@ -12,7 +13,7 @@ namespace optim {
 	public:
 
 		BatchedKMeansThenLMP(
-			std::unique_ptr<model::Model> pModel,
+			model::Model& model,
 			GuessFetchFunc guessFetcher,
 			torch::Tensor dependents,
 			torch::Tensor data,
@@ -28,8 +29,8 @@ namespace optim {
 		torch::Tensor m_Dependents;
 		torch::Tensor m_Parameters;
 		torch::Tensor m_Data;
-
-		std::unique_ptr<model::Model> m_pModel;
+		
+		model::Model& m_Model;
 		GuessFetchFunc m_GuessFetchFunc;
 
 	};

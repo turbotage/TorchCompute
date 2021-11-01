@@ -1,14 +1,14 @@
 import torch
 
-nProblems = 10000
-nDims = 2
+#nProblems = 100000
+nDims = 3
 
 def model(deps, params):
 	n_probs = params.size(0)
-	return params[:,0].view(n_probs, 1) * torch.exp(-deps[:,:,0] * params[:,1].view(n_probs, 1))
+	return torch.sin(params[:,0]).view(n_probs,1)*(1-2*torch.exp(-deps[:,:,0] * params[:,1].view(n_probs, 1)))*torch.exp(-deps[:,:,1] * params[:,2].view(n_probs, 1))
 
 products = []
-prod = torch.arange(-10,10)
+prod = torch.arange(-3,3)
 for i in range(nDims):
 	products.append(prod)
 
@@ -19,10 +19,11 @@ prod = 0
 print(permuts.numel())
 print(permuts.shape)
 
-deps = torch.rand(1,5,1)
-params = torch.ones(1,2)
-params[0,0] = 8000
-params[0,1] = 100
+deps = 100*torch.rand(1,5,2)
+params = torch.ones(1,4)
+params[0,0] = 1.2
+params[0,1] = 0.01
+params[0,2] = 0.1
 
 data = model(deps, params)
 
@@ -33,7 +34,7 @@ min_diff = float("inf")
 min_params = torch.tensor([0,0])
 
 for i in range(1000):
-	test_params = (-torch.rand(400,1)+0.5)*perms
+	test_params = (-torch.rand(perms.size(0),nDims)+0.5)*perms
 
 	test_data = model(deps,test_params)
 	test_data[test_data.isnan()] = float("inf")
@@ -44,7 +45,9 @@ for i in range(1000):
 	if min < min_diff:
 		min_diff = min
 		min_params = test_params[min_id,:]
-		print(min_params)
+		print("min_params: ", min_params)
+		print("min_diff: ", min_diff)
+
 
 # This works meh
 

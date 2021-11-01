@@ -45,20 +45,6 @@ def closure():
 	return loss
 
 
-def GD(params, data, deps, model):
-	params = params.requires_grad_(True)
-	for i in range(50):
-		output = model(deps, params)
-		loss = F.mse_loss(output, data)
-		loss.backward()
-		
-		params -= loss.grad
-
-		loss.grad.zero_()
-
-	return params
-
-
 kmeans = KMeans(n_clusters=10, mode='euclidean')
 labels = kmeans.fit_predict(data)
 print(labels)

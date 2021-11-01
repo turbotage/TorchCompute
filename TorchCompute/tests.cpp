@@ -4,6 +4,7 @@
 
 #include "Optim/model.hpp"
 #include "Optim/lm.hpp"
+#include "Optim/solver.hpp"
 
 #include "Compute/kmeans.hpp"
 
@@ -112,7 +113,7 @@ void test::test_lmp() {
 	parameters["@X1"] = 1;
 
 	std::unordered_map<std::string, int> staticvars;
-	staticvars["@TR"] = -0.500;
+	staticvars["@TR"] = -1.0;
 	std::vector<torch::Tensor> vars;
 	vars.push_back(torch::tensor(-0.01, dops));
 
@@ -186,6 +187,8 @@ void test::test_kmeans() {
 
 
 void test::test_solver1() {
+	using namespace torch::indexing;
+
 	torch::Device cuda_device("cuda:0");
 	torch::Device cpu_device("cpu");
 
@@ -195,6 +198,67 @@ void test::test_solver1() {
 		torch::TensorOptions().device(cpu_device).dtype(torch::ScalarType::Float);
 
 	torch::DeviceGuard guard(dops.device_opt().value());
+
+	int nProblems = 1048576;
+	int nParams = 2;
+	int nData = 5;
+
+	torch::Tensor params = torch::rand({ nProblems, nParams }, dops);
+	params.index_put_({ Slice(), 0 }, torch::rand({ nProblems }));
+	params.index_put_({ Slice(), 1 }, 0.01 * torch::rand({ nProblems }));
+
+	torch::Tensor guess = torch::rand({ nProblems, nParams }, dops);
+	guess.index_put_({ Slice(), 0 }, torch::rand({ nProblems }));
+	guess.index_put_({ Slice(), 1 }, 0.01 * torch::rand({ nProblems }));
+
+	torch::Tensor deps = torch::rand({ nProblems, nData, 1 }, dops);
+	deps.index_put_({ Slice(), 0, 0 }, 10.0 * 3.1415 / 180.0);
+	deps.index_put_({ Slice(), 1, 0 }, 30.0 * 3.1415 / 180.0);
+	deps.index_put_({ Slice(), 2, 0 }, 50.0 * 3.1415 / 180.0);
+	deps.index_put_({ Slice(), 3, 0 }, 70.0 * 3.1415 / 180.0);
+	deps.index_put_({ Slice(), 3, 0 }, 90.0 * 3.1415 / 180.0);
+
+	std::string expr = "@X0*sin(@D0)*(1-exp(@TR/@X1))/(1-exp(@TR/@X1)*cos(@D0))";
+
+	std::unordered_map<std::string, int> dependents;
+	dependents["@D0"] = 0;
+
+	std::unordered_map<std::string, int> parameters;
+	parameters["@X0"] = 0;
+	parameters["@X1"] = 1;
+
+	std::unordered_map<std::string, int> staticvars;
+	staticvars["@TR"] = -0.500;
+	std::vector<torch::Tensor> vars;
+	vars.push_back(torch::tensor(-0.01, dops));
+
+	model::Model mod(expr, dops, dependents, parameters, staticvars);
+
+	torch::Tensor data;
+	mod.setDependents(deps);
+	mod.setParameters(params);
+	mod.setStaticVariables(vars);
+	data = mod();
+	data += 0.01 * data * (1 - torch::rand({ nProblems, nData }, dops));
+	
+
+	optim::GuessFetchFunc fetchFunc = [nParams, dops](torch::Tensor deps, torch::Tensor data) {
+		int64_t nProbs = deps.size(0);
+		torch::Tensor p = torch::rand({ nProbs, nParams }, dops);
+		p.index_put_({ Slice(), 0 }, torch::rand({ nProbs }));
+		p.index_put_({ Slice(), 1 }, 0.01 * torch::rand({ nProbs }));
+		return p;
+	};
+
+	optim::BatchedKMeansThenLMP bklmp(mod, fetchFunc, deps, data, 10000);
+
+	auto start = std::chrono::system_clock::now();
+	bklmp.solve();
+	auto end = std::chrono::system_clock::now();
+
+	torch::Tensor newParams = bklmp.getParameters();
+
+	std::cout << "elapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
 
 
 }
