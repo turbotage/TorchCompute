@@ -98,13 +98,13 @@ std::function<torch::Tensor()> expression::defaultNumberResolver(std::string str
 			switch (ops.dtype_opt().value().toScalarType())
 			{
 			case (torch::kHalf):
-				nops.dtype(torch::kComplexHalf);
+				nops = nops.dtype(torch::kComplexHalf);
 				break;
 			case (torch::kFloat):
-				nops.dtype(torch::kComplexFloat);
+				nops = nops.dtype(torch::kComplexFloat);
 				break;
 			case (torch::kDouble):
-				nops.dtype(torch::kComplexDouble);
+				nops = nops.dtype(torch::kComplexDouble);
 				break;
 			default:
 				throw std::runtime_error("The given dtype is not available");
