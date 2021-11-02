@@ -3,7 +3,7 @@ syntax = "proto3";
 
 service TensorSender {
 	// Sends a Tensor
-	rpc SendTensor(TensorRequest) returns (TensorReply) {}
+	rpc SendTensor(TensorRequest) returns (stream TensorReply) {}
 }
 
 message TensorRequest {

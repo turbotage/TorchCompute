@@ -45,10 +45,7 @@ void optim::BatchedKMeansThenLMP::solve()
 	
 	uint32_t nBatches = std::ceil((double)nProblems / (double)m_Batchsize);
 	
-	uint16_t nClusters = (uint16_t)m_Batchsize * 0.05;
-	if (m_Batchsize > 5000) {
-		nClusters = 256;
-	}
+	uint16_t nClusters = m_Batchsize > 20000 ? 2000 : (uint16_t)m_Batchsize * 0.1;
 	
 	compute::KMeans kmeans(nClusters, 100, 0.01, compute::eKMeansMode::EUCLIDEAN);
 

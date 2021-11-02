@@ -6,23 +6,21 @@
 
 namespace transport {
 
-    namespace grpc {
 
+    class TensorSenderImpl final : public TensorSender::Service {
+    public:
 
-        class TensorSenderImpl final : public TensorSender::Service {
-        public:
+        TensorSenderImpl(std::function<std::string(std::string)> tensorStringFetcher);
 
-            TensorSenderImpl(std::function<std::string(std::string)> tensorStringFetcher);
+        ::grpc::Status SendTensor(::grpc::ServerContext* context, 
+            const TensorRequest* request, ::grpc::ServerWriter<TensorReply>* writer) override;
 
-            ::grpc::Status SendTensor(::grpc::ServerContext* context, const ::TensorRequest* request, ::TensorReply* response) override;
+    private:
 
-        private:
+        std::function<std::string(std::string)> m_TensorStringFetcher;
 
-            std::function<std::string(std::string)> m_TensorStringFetcher;
+    };
 
-        };
-
-    }
 
 }
 

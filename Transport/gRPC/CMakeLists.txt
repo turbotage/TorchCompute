@@ -3,9 +3,16 @@
 #
 cmake_minimum_required (VERSION 3.20)
 
+
+set (CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+
 find_package(Protobuf REQUIRED)
-#include_directories("${Protobuf_INCLUDE_DIRS}")
-#include_directories("${CMAKE_CURRENT_BINARY_DIR}")
+find_package(gRPC CONFIG REQUIRED)
+
+include_directories("${Protobuf_INCLUDE_DIRS}")
 
 file(GLOB PROTO_DEF "${CMAKE_CURRENT_SOURCE_DIR}/Protos/*.proto")
 message(${PROTO_DEF})
@@ -76,12 +83,14 @@ grpc_generate_cpp(GRPC_SRCS GRPC_HDRS ${PROTO_DEF})
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-add_library(TransportGRPC SHARED "${PROTO_SRCS}" "${PROTO_HDRS}" "${GRPC_SRCS}" "${GRPC_HDRS}"
+add_library(TransportGRPC SHARED 
+  "${PROTO_SRCS}" "${PROTO_HDRS}" "${GRPC_SRCS}" "${GRPC_HDRS}"
   "TensorSender.cpp"
 )
+
 target_include_directories(TransportGRPC PUBLIC "${CMAKE_CURRENT_BINARY_DIR}")
 
-find_package(gRPC CONFIG REQUIRED)
+
 target_link_libraries(TransportGRPC PUBLIC ${Protobuf_LIBRARIES})
 target_link_libraries(TransportGRPC PUBLIC gRPC::gpr gRPC::upb gRPC::grpc gRPC::grpc++)
 

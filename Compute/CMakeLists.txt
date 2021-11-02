@@ -3,15 +3,22 @@
 #
 cmake_minimum_required (VERSION 3.20)
 
+project(Compute)
 
+set (CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+
+set(BUILD_SHARED_LIBS ON)
 #set(CMAKE_CXX_STANDARD 17)
 #set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add source to this project's executable.
 #add_executable
 #add_library
-add_executable(TorchCompute 
-    "TorchCompute.cpp" 
+add_library(Compute SHARED
+    "compute.hpp"
     "tests.cpp"
         
         "Compute/gradients.cpp"
@@ -27,6 +34,7 @@ add_executable(TorchCompute
         "Expression/parsing.cpp"
     )
 
+#set_property(TARGET Compute PROPERTY CXX_STANDARD_REQUIRED 17)
 
 if (MSVC)
     if (CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -43,19 +51,20 @@ endif(MSVC)
 find_package(Torch REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
-target_link_libraries(TorchCompute PUBLIC "${TORCH_LIBRARIES}")
-set_property(TARGET TorchCompute PROPERTY CXX_STANDARD 17)
+target_link_libraries(Compute PRIVATE "${TORCH_LIBRARIES}")
+target_include_directories(Compute PUBLIC "${TORCH_INCLUDE_DIRS}")
+
 
 # The following code block is suggested to be used on Windows.
 # According to https://github.com/pytorch/pytorch/issues/25457,
 # the DLLs need to be copied to avoid memory errors.
 if (MSVC)
   file(GLOB TORCH_DLLS "${TORCH_INSTALL_PREFIX}/lib/*.dll")
-  add_custom_command(TARGET TorchCompute
+  add_custom_command(TARGET Compute
                      POST_BUILD
                      COMMAND ${CMAKE_COMMAND} -E copy_if_different
                      ${TORCH_DLLS}
-                     $<TARGET_FILE_DIR:TorchCompute>)
+                     $<TARGET_FILE_DIR:Compute>)
 endif (MSVC)
 
 
@@ -81,4 +90,24 @@ endif (MSVC)
 #    COMMENT "    [1718_34_ATK] copy dlls realsense2 and opencv_world")
 
 
-target_precompile_headers(TorchCompute PUBLIC "pch.hpp")
+target_precompile_headers(Compute PUBLIC "pch.hpp")
+
+#set_target_properties(TorchCompute PROPERTIES PUBLIC_HEADER TorchCompute.hpp)
+
+#include(GNUInstallDirs)
+#install(
+#    TARGETS Compute
+#    EXPORT Compute-export
+#)
+#
+#install(
+#    EXPORT Compute-export
+#    FILE Compute.cmake
+#    NAMESPACE Compute::
+#    DESTINATION lib/cmake/Compute
+#)
+#
+#install(FILES
+#    ${CMAKE_CURRENT_SOURCE_DIR}/compute.hpp
+#    DESTINATION "in"
+#)

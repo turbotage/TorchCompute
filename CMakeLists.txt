@@ -12,8 +12,11 @@ cmake_minimum_required (VERSION 3.20)
 #    message("Other")
 #endif()
 
-project ("TorchCompute")
+project("TransportCompute")
+
+
+include_directories("Compute")
 
 # Include sub-projects.
-#add_subdirectory ("Transport")
-add_subdirectory ("TorchCompute")
+add_subdirectory ("Compute")
+add_subdirectory ("Transport")

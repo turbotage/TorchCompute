@@ -3,12 +3,31 @@
 #
 cmake_minimum_required (VERSION 3.20)
 
+project(Transport)
+
+set (CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+
 add_subdirectory("gRPC/")
 
 
+
+if (MSVC)
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(CMAKE_PREFIX_PATH "C:/Lib/libtorch/libtorch_debug/share/cmake/Torch")
+    else()
+        set(CMAKE_PREFIX_PATH "C:/Lib/libtorch/libtorch_release/share/cmake/Torch")
+    endif()
+else()
+    set(CMAKE_PREFIX_PATH "/home/turbotage/Lib/libtorch/share/cmake/Torch")
+endif(MSVC)
 
 add_executable(Transport
 	"Transport.cpp"
 )
 
-#add_custom_target(ProtoPy "${PROTO_PY}")
+
+target_link_libraries(Transport PRIVATE Compute)
+target_link_libraries(Transport PRIVATE TransportGRPC)

@@ -84,7 +84,7 @@ void test::test_lmp() {
 
 	torch::DeviceGuard guard(dops.device_opt().value());
 
-	int nProblems = 1048576;
+	int nProblems = 2*1048576;
 	int nParams = 2;
 	int nData = 5;
 
@@ -113,7 +113,7 @@ void test::test_lmp() {
 	parameters["@X1"] = 1;
 
 	std::unordered_map<std::string, int> staticvars;
-	staticvars["@TR"] = -1.0;
+	staticvars["@TR"] = 0;
 	std::vector<torch::Tensor> vars;
 	vars.push_back(torch::tensor(-0.01, dops));
 
@@ -190,6 +190,7 @@ void test::test_kmeans() {
 
 
 void test::test_solver1() {
+
 	using namespace torch::indexing;
 
 	torch::Device cuda_device("cuda:0");
@@ -202,7 +203,7 @@ void test::test_solver1() {
 
 	torch::DeviceGuard guard(dops.device_opt().value());
 
-	int nProblems = 1048576;
+	int nProblems = 2*1048576;
 	int nParams = 2;
 	int nData = 5;
 
@@ -219,7 +220,7 @@ void test::test_solver1() {
 	deps.index_put_({ Slice(), 1, 0 }, 30.0 * 3.1415 / 180.0);
 	deps.index_put_({ Slice(), 2, 0 }, 50.0 * 3.1415 / 180.0);
 	deps.index_put_({ Slice(), 3, 0 }, 70.0 * 3.1415 / 180.0);
-	deps.index_put_({ Slice(), 3, 0 }, 90.0 * 3.1415 / 180.0);
+	deps.index_put_({ Slice(), 3, 0 }, 80.0 * 3.1415 / 180.0);
 
 	std::string expr = "@X0*sin(@D0)*(1-exp(@TR/@X1))/(1-exp(@TR/@X1)*cos(@D0))";
 
@@ -231,8 +232,9 @@ void test::test_solver1() {
 	parameters["@X1"] = 1;
 
 	std::unordered_map<std::string, int> staticvars;
-	staticvars["@TR"] = -1.0;
+	staticvars["@TR"] = 0;
 	std::vector<torch::Tensor> vars;
+
 	vars.push_back(torch::tensor(-0.01, dops));
 
 	model::Model mod(expr, dops, dependents, parameters, staticvars);
@@ -244,7 +246,7 @@ void test::test_solver1() {
 	data = mod();
 	data += 0.01 * data * (1 - torch::rand({ nProblems, nData }, dops));
 	
-
+	
 	optim::GuessFetchFunc fetchFunc = [nParams](torch::Tensor deps, torch::Tensor data) {
 		int64_t nProbs = deps.size(0);
 		torch::TensorOptions d_ops = deps.options();
@@ -254,7 +256,7 @@ void test::test_solver1() {
 		return p;
 	};
 
-	optim::BatchedKMeansThenLMP bklmp(mod, fetchFunc, deps, data, 2000000);
+	optim::BatchedKMeansThenLMP bklmp(mod, fetchFunc, deps, data, 500000);
 
 	auto start = std::chrono::system_clock::now();
 	bklmp.solve();
@@ -266,3 +268,31 @@ void test::test_solver1() {
 
 
 }
+
+
+/*
+int main()
+{
+	try {
+		try {
+			std::cout << "BKLMP" << std::endl;
+			test::test_solver1();
+
+			std::cout << "LMP" << std::endl;
+			test::test_lmp();
+
+		}
+		catch (c10::Error e1) {
+			std::cout << e1.what() << std::endl;
+		}
+	}
+	catch (std::runtime_error e2) {
+		std::cout << e2.what() << std::endl;
+	}
+
+	//std::cout << "LMP" << std::endl;
+	
+	return 0;
+}
+*/
+
