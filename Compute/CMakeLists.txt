@@ -52,7 +52,7 @@ find_package(Torch REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
 target_link_libraries(Compute PRIVATE "${TORCH_LIBRARIES}")
-target_include_directories(Compute PUBLIC "${TORCH_INCLUDE_DIRS}")
+target_include_directories(Compute PRIVATE "${TORCH_INCLUDE_DIRS}")
 
 
 # The following code block is suggested to be used on Windows.

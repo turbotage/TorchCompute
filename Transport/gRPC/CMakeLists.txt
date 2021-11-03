@@ -85,8 +85,9 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_library(TransportGRPC SHARED 
   "${PROTO_SRCS}" "${PROTO_HDRS}" "${GRPC_SRCS}" "${GRPC_HDRS}"
-  "TensorSender.cpp"
+  "TransportService.cpp"
 )
+
 
 target_include_directories(TransportGRPC PUBLIC "${CMAKE_CURRENT_BINARY_DIR}")
 

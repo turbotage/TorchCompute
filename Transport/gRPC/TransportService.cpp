@@ -1,11 +1,16 @@
-#include "TensorSender.hpp"
+#include "TransportService.hpp"
 
-transport::TensorSenderImpl::TensorSenderImpl(std::function<std::string(std::string)> tensorStringFetcher) 
-    : m_TensorStringFetcher(tensorStringFetcher)
+transport::TransportServiceImpl::TransportServiceImpl(
+    std::function<transport::Ack(transport::Req)> dataRequestSignaler,
+    std::function<transport::PageRep(transport::PageReq)> pageFetcher) 
+    : m_DataRequestSignaler(dataRequestSignaler), m_PageFetcher(pageFetcher)
 {
+
 }
 
-::grpc::Status transport::TensorSenderImpl::SendTensor(::grpc::ServerContext* context, 
+
+/*
+::grpc::Status transport::TensorSenderImpl::DataRequest(::grpc::ServerContext* context, 
     const ::TensorRequest* request, ::grpc::ServerWriter<::TensorReply>* writer)
 {
     std::string tensor_name = request->tensor_name();
@@ -21,6 +26,7 @@ transport::TensorSenderImpl::TensorSenderImpl(std::function<std::string(std::str
     uint64_t packetSize = 10; // 10 kChar
     uint64_t nPackets = std::ceil((double)tensor.length() / (double)packetSize);
 
+    std::cout << "\ntensor_str:\n";
     for (int i = 0; i < nPackets; ++i) {
         uint64_t startIdx = i*packetSize;
         uint64_t endIdx = (i+1)*packetSize;
@@ -28,10 +34,14 @@ transport::TensorSenderImpl::TensorSenderImpl(std::function<std::string(std::str
             endIdx = tensor.length();
 
         TensorReply reply;
-        reply.set_tensor_str(tensor.substr(startIdx,endIdx));
+        std::string substr = tensor.substr(startIdx,endIdx);
+        std::cout << substr;
+        reply.set_tensor_str(substr);
 
         writer->Write(reply);
     }
+    std::cout << std::endl;
 
     return ::grpc::Status::OK;
 }
+*/

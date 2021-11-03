@@ -28,6 +28,9 @@ add_executable(Transport
 	"Transport.cpp"
 )
 
+find_package(Torch REQUIRED)
+target_link_libraries(Transport PRIVATE "${TORCH_LIBRARIES}")
+target_include_directories(Transport PRIVATE "${TORCH_INCLUDE_DIRS}")
 
 target_link_libraries(Transport PRIVATE Compute)
 target_link_libraries(Transport PRIVATE TransportGRPC)
