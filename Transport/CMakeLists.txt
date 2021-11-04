@@ -26,6 +26,10 @@ endif(MSVC)
 
 add_executable(Transport
 	"Transport.cpp"
+    "DataManager.cpp"
+    "Server.cpp"
+
+    "Threading/ThreadPool.cpp"
 )
 
 find_package(Torch REQUIRED)
@@ -34,3 +38,5 @@ target_include_directories(Transport PRIVATE "${TORCH_INCLUDE_DIRS}")
 
 target_link_libraries(Transport PRIVATE Compute)
 target_link_libraries(Transport PRIVATE TransportGRPC)
+
+target_precompile_headers(Transport PUBLIC "pch.hpp")

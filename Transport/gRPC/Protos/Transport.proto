@@ -3,24 +3,14 @@ syntax = "proto3";
 
 service TransportService {
 	// Sends a Tensor
-	rpc DataRequest(Req) returns (Ack) {}
 
-	rpc PageRequest(PageReq) returns (PageRep) {}
+	rpc TransportRPC(Data) returns (Data) {}
+
 }
 
-message Req {
-	string path = 1;
-}
-
-message Ack {
-	string request_id = 1;
-}
-
-message PageReq {
-	string request_id = 1;
-	int32 page_num = 2;
-}
-
-message PageRep {
-	bytes page_bytes = 1;
+message Data {
+	string id = 1;
+	string data_path = 2;
+	int32 data_type = 3;
+	bytes data = 4;
 }
