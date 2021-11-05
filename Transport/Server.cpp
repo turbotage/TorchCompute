@@ -12,10 +12,6 @@ transport::Server::Server()
 {
 
 
-    m_DataHandler = [](const ::Data* request, ::Data* response) {
-        
-    };
-
 }
 
 

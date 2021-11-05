@@ -9,8 +9,8 @@ transport::TransportServiceImpl::TransportServiceImpl(DataHandler dataHandler)
 }
 
 ::grpc::Status transport::TransportServiceImpl::TransportRPC(
-    ::grpc::ServerContext* context, const ::Data* request, ::Data* response)
+    ::grpc::ServerContext* context, const ::Data* fromClient, ::Data* toClient)
 {
-    m_DataHandler(request, response);
+    m_DataHandler(fromClient, toClient);
     return ::grpc::Status::OK;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Threading/ThreadPool.hpp"
+#include "gRPC/TransportService.hpp"
 
 namespace transport {
 
@@ -14,7 +15,7 @@ namespace transport {
     private:
         std::unique_ptr<ThreadPool> m_pThreadPool;
 
-        DataHandler m_DataHandler;
+        std::function<void(const ::Data*, ::Data*)> m_DataHandler;
 
         std::unique_ptr<::grpc::Server> m_pServer;
 

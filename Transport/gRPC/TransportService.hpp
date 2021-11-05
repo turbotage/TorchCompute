@@ -14,7 +14,7 @@ namespace transport {
 
         TransportServiceImpl(DataHandler dataHandler);
 
-        ::grpc::Status TransportRPC(::grpc::ServerContext* context, const ::Data* request, ::Data* response);
+        ::grpc::Status TransportRPC(::grpc::ServerContext* context, const ::Data* fromClient, ::Data* toClient) override;
 
     private:
 
