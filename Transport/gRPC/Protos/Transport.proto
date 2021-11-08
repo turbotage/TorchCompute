@@ -13,4 +13,5 @@ message Data {
 	string data_path = 2;
 	int32 data_type = 3;
 	bytes data = 4;
+	string meta = 5;
 }

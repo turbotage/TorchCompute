@@ -20,6 +20,6 @@ namespace transport {
         std::unique_ptr<::grpc::Server> m_pServer;
 
 
-    }
+    };
 
 }
