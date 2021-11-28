@@ -5,7 +5,7 @@
 
 
 optim::BatchedKMeansThenLMP::BatchedKMeansThenLMP(
-	model::Model& model,
+	optim::Model& model,
 	GuessFetchFunc guessFetcher,
 	torch::Tensor dependents, torch::Tensor data, 
 	uint64_t batch_size)

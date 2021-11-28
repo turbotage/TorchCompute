@@ -7,7 +7,7 @@
 #include "../Expression/expression.hpp"
 
 
-namespace model {
+namespace optim {
 
 	namespace {
 		using ExpGraphPtr = std::unique_ptr<expression::ExpressionGraph<torch::Tensor>>;
@@ -80,6 +80,18 @@ namespace model {
 		/// </summary>
 		/// <returns></returns>
 		uint32_t getNDeps();
+
+		/// <summary>
+		/// Gets the current dependents of the model
+		/// </summary>
+		/// <return></returns>
+		torch::Tensor getDependents();
+
+		/// <summary>
+		/// Gets the current parameters of the model
+		/// </summary>
+		/// <return></returns>
+		torch::Tensor getParameters();
 
 		/// <summary>
 		/// Evaluates the model at last set static variables, dependents and static vars

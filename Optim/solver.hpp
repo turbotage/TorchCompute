@@ -13,7 +13,7 @@ namespace optim {
 	public:
 
 		BatchedKMeansThenLMP(
-			model::Model& model,
+			optim::Model& model,
 			GuessFetchFunc guessFetcher,
 			torch::Tensor dependents,
 			torch::Tensor data,
@@ -30,7 +30,7 @@ namespace optim {
 		torch::Tensor m_Parameters;
 		torch::Tensor m_Data;
 		
-		model::Model& m_Model;
+		optim::Model& m_Model;
 		GuessFetchFunc m_GuessFetchFunc;
 
 	};

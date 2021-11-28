@@ -9,7 +9,8 @@
 #include "Compute/kmeans.hpp"
 
 
-void test::test_model() {
+void test::test_model() 
+{
 
 	torch::Device cuda_device(torch::kCUDA);
 	torch::Device cpu_device("cpu");
@@ -29,7 +30,7 @@ void test::test_model() {
 	parameters["@X0"] = 0;
 	parameters["@X1"] = 1;
 
-	model::Model mod(expr, dops, dependents, parameters, std::nullopt);
+	optim::Model mod(expr, dops, dependents, parameters, std::nullopt);
 
 	auto dep = torch::rand({ 3000000,5,1 }, dops) * 2;
 	auto inp = torch::rand({ 3000000,2 }, dops) * 3.141592;
@@ -71,7 +72,8 @@ void test::test_model() {
 }
 
 
-void test::test_lmp() {
+void test::test_lmp() 
+{
 	using namespace torch::indexing;
 
 	torch::Device cuda_device("cuda:0");
@@ -117,7 +119,7 @@ void test::test_lmp() {
 	std::vector<torch::Tensor> vars;
 	vars.push_back(torch::tensor(-0.01, dops));
 
-	model::Model mod(expr, dops, dependents, parameters, staticvars);
+	optim::Model mod(expr, dops, dependents, parameters, staticvars);
 
 	torch::Tensor data;
 	mod.setDependents(deps);
@@ -167,7 +169,8 @@ void test::test_lmp() {
 }
 
 
-void test::test_kmeans() {
+void test::test_kmeans() 
+{
 
 	torch::Device cuda_device(torch::kCUDA);
 	torch::Device cpu_device("cpu");
@@ -189,7 +192,8 @@ void test::test_kmeans() {
 }
 
 
-void test::test_solver1() {
+void test::test_solver1() 
+{
 
 	using namespace torch::indexing;
 
@@ -237,7 +241,7 @@ void test::test_solver1() {
 
 	vars.push_back(torch::tensor(-0.01, dops));
 
-	model::Model mod(expr, dops, dependents, parameters, staticvars);
+	optim::Model mod(expr, dops, dependents, parameters, staticvars);
 
 	torch::Tensor data;
 	mod.setDependents(deps);
@@ -268,6 +272,7 @@ void test::test_solver1() {
 
 
 }
+
 
 
 /*

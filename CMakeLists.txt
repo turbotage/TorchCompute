@@ -24,6 +24,7 @@ add_executable(Compute
         "Compute/gradients.cpp"
         "Compute/kmeans.cpp"
         "Compute/random.cpp"
+        "Compute/lstq.cpp"
 
         "Optim/lm.cpp" 
         "Optim/model.cpp"
@@ -32,6 +33,8 @@ add_executable(Compute
         "Expression/expression.cpp" 
         "Expression/shunter.cpp" 
         "Expression/parsing.cpp"
+
+        "Models/simple_diffusion.cpp"
     )
 
 #set_property(TARGET Compute PROPERTY CXX_STANDARD_REQUIRED 17)

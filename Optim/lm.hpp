@@ -10,7 +10,7 @@ namespace optim {
 	class LMP {
 	public:
 
-		LMP(model::Model& model);
+		LMP(optim::Model& model);
 
 		// Requirest set functions
 
@@ -25,7 +25,7 @@ namespace optim {
 
 		// Non required set functions
 
-		void setSwitching(int switchPercentage, torch::Device& device);
+		void setSwitching(int64_t switchNumber, torch::Device& device);
 
 		void setCopyConvergingEveryN(int n);
 
@@ -70,7 +70,7 @@ namespace optim {
 		int64_t nDependents; // = nData
 		int64_t nProblems;
 
-		model::Model& model;
+		optim::Model& model;
 
 		torch::Tensor params; // (nProblems,nParams,1)
 		torch::Tensor params_slice;
@@ -87,7 +87,7 @@ namespace optim {
 		int max_iter = 100;
 
 		int copyConvergingEveryN = 6;
-		int onSwitchPercentage = 200; // We don't switch on default
+		int64_t onSwitchNumber = -1; // We don't switch on default
 		std::optional<torch::Device> switchDevice;
 		bool hasSwitched = false;
 

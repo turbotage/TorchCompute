@@ -7,7 +7,7 @@ using namespace torch::indexing;
 
 
 
-optim::LMP::LMP(model::Model& model)
+optim::LMP::LMP(optim::Model& model)
 	: model(model)
 {
 }
@@ -43,9 +43,9 @@ void optim::LMP::setOnSwitchCallback(std::function<void()> switchCallback)
 	onSwitchCallback = switchCallback;
 }
 
-void optim::LMP::setSwitching(int switchPercentage, torch::Device& device)
+void optim::LMP::setSwitching(int64_t switchNumber, torch::Device& device)
 {
-	onSwitchPercentage = switchPercentage;
+	onSwitchNumber = switchNumber;
 	switchDevice = device;
 }
 
@@ -480,7 +480,7 @@ void optim::LMP::solve()
 		}
 
 		// Check if we should swith to the final compute device
-		if ((((float)nProblems - (float)nc_sum) / (float)nProblems) > (onSwitchPercentage*0.01)) {
+		if (nc_sum < onSwitchNumber) {
 			if (!hasSwitched) {
 				switch_device(switchDevice.value());
 				hasSwitched = true;

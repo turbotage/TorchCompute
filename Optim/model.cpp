@@ -3,7 +3,7 @@
 #include "../Expression/shunter.hpp"
 #include "../Expression/parsing.hpp"
 
-model::Model::Model(std::string expression, torch::TensorOptions opts,
+optim::Model::Model(std::string expression, torch::TensorOptions opts,
 	std::optional<std::unordered_map<std::string, int>> dependent_map,
 	std::optional<std::unordered_map<std::string, int>> parameter_map,
 	std::optional<std::unordered_map<std::string, int>> staticvar_map)
@@ -27,7 +27,6 @@ model::Model::Model(std::string expression, torch::TensorOptions opts,
 		return expression::defaultNumberResolver(str, m_TensorOptions);
 	};
 	
-
 	m_pSyntaxTree = std::make_unique<expression::ExpressionGraph<torch::Tensor>>(token_stack, numberResolver);
 
 	// Static Var fetchers
@@ -72,7 +71,7 @@ model::Model::Model(std::string expression, torch::TensorOptions opts,
 	m_Runner = m_pSyntaxTree.value()->getFunc();
 }
 
-model::Model::Model(ModelFunc func)
+optim::Model::Model(ModelFunc func)
 {
 	m_Runner = [this, func]() {
 		return func(this->m_StaticVars, this->m_Dependents, this->m_Parameters);
@@ -81,7 +80,7 @@ model::Model::Model(ModelFunc func)
 
 
 
-void model::Model::to(torch::Device device)
+void optim::Model::to(torch::Device device)
 {
 	// Static Vars
 	for (int i = 0; i < m_StaticVars.size(); ++i) {
@@ -103,7 +102,7 @@ void model::Model::to(torch::Device device)
 	m_TensorOptions = m_TensorOptions.device(device);
 }
 
-void model::Model::setStaticVariables(std::vector<torch::Tensor>& staticvars)
+void optim::Model::setStaticVariables(std::vector<torch::Tensor>& staticvars)
 {
 	if (staticvars.size() != m_StaticVarMap.size())
 		throw std::runtime_error("Tried to set more Static Variables than were available in Static Variables Map");
@@ -111,7 +110,7 @@ void model::Model::setStaticVariables(std::vector<torch::Tensor>& staticvars)
 	m_StaticVars = staticvars;
 }
 
-void model::Model::setDependents(torch::Tensor dependents)
+void optim::Model::setDependents(torch::Tensor dependents)
 {
 	if (dependents.size(2) != m_DependentMap.size())
 		throw std::runtime_error("Tried to set more Dependents than were available in Dependents Map");
@@ -119,7 +118,7 @@ void model::Model::setDependents(torch::Tensor dependents)
 	m_Dependents = dependents;
 }
 
-void model::Model::setParameters(torch::Tensor parameters)
+void optim::Model::setParameters(torch::Tensor parameters)
 {
 	if (parameters.size(1) != m_ParameterMap.size())
 		throw std::runtime_error("Tried to set more Parameters than were available in Parameters Map");
@@ -127,18 +126,27 @@ void model::Model::setParameters(torch::Tensor parameters)
 	m_Parameters = parameters;
 }
 
-uint32_t model::Model::getNParameters()
+uint32_t optim::Model::getNParameters()
 {
 	return m_ParameterMap.size();
 }
 
-uint32_t model::Model::getNDeps()
+uint32_t optim::Model::getNDeps()
 {
 	return m_DependentMap.size();
 }
 
+torch::Tensor optim::Model::getDependents()
+{
+	return m_Dependents;
+}
 
-torch::Tensor model::Model::operator()()
+torch::Tensor optim::Model::getParameters()
+{
+	return m_Parameters;
+}
+
+torch::Tensor optim::Model::operator()()
 {
 	return m_Runner();
 }

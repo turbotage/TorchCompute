@@ -14,42 +14,51 @@ y = (2*torch.rand(nProbs,1,1)-1)*torch.rand(nProbs, nPoints, 1) + torch.rand(nPr
 
 A = torch.cat((torch.ones(nProbs,nPoints,1),x),dim=2)
 
-Q,R = torch.qr(A)
+Q,R = torch.linalg.qr(A)
+U, S, VT = torch.linalg.svd(A, full_matrices=False)
 
+
+# QR linres
 ATy = torch.bmm(A.transpose(1,2), y)
 
-z,_ = torch.triangular_solve(ATy, R.transpose(1,2), False) # Rb
+bq,_ = torch.triangular_solve(ATy, R.transpose(1,2), False) # Rb
 
-b,_ = torch.triangular_solve(z, R)
+bq,_ = torch.triangular_solve(bq, R)
 
-b1 = b[0]
+# SVD linres
 
-x0 = x[0]
-y0 = y[0]
+bs = torch.bmm(VT.transpose(1,2), torch.diag_embed(1 / S))
+bs = torch.bmm(bs, U.transpose(1,2))
+bs = torch.bmm(bs, y)
+
+
 
 xs = np.linspace(0,1,100)
 
-print(b1[1])
-print(b1[0])
-print(y0)
-print(x0)
-
-
-
 for i in range(0,20):
-    bi = b[i]
-
     xi = x[i]
     yi = y[i]
     
-    regs = lambda x: bi[1].item()*x + bi[0].item()
+    # QR
+    biq = bq[i]
+    
+    regsq = lambda x: biq[1].item()*x + biq[0].item()
 
-    plt.figure()
+
+    # SVD
+    bis = bs[i]
+
+    regss = lambda x: bis[1].item()*x + bis[0].item()
+
+
+
+    plt.figure(1)
     plt.plot(xi,yi, "x")
-    plt.plot(xs, regs(xs), "-")
-
+    plt.plot(xs, regsq(xs), "-b")
+    plt.plot(xs, regss(xs), "-r")
     plt.show()
 
-print('Hello')
+
+
 
 
