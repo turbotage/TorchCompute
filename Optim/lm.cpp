@@ -394,7 +394,7 @@ void optim::LMP::next_step_iter()
 	ep = 0.5 * torch::bmm(res.transpose(1, 2), res);
 
 	// Set dogleg search directioen and Gauss-Newton step, step types
-
+	
 	dogleg();
 
 	Jp = torch::bmm(J, p);

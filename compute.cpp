@@ -6,7 +6,5 @@
 
 int main() {
 
-    test::test_solver1();
-    
-
+    test::test_simple_adc();
 }

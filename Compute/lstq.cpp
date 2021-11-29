@@ -13,7 +13,7 @@ torch::Tensor compute::lstq_qr(torch::Tensor x, torch::Tensor y) {
 
     std::tie(Q,R) = torch::linalg::qr(A);
 
-    torch::Tensor ATy = torch::bmm(A.transpose(1,2), y);
+    torch::Tensor ATy = torch::bmm(A.transpose(1,2), y.view({y.size(0), y.size(1), 1}));
 
     torch::Tensor b;
 

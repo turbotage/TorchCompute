@@ -26,15 +26,16 @@ add_executable(Compute
         "Compute/random.cpp"
         "Compute/lstq.cpp"
 
-        "Optim/lm.cpp" 
+        "Optim/lm.cpp"
         "Optim/model.cpp"
         "Optim/solver.cpp"
 
-        "Expression/expression.cpp" 
+        "Expression/expression.cpp"
         "Expression/shunter.cpp" 
         "Expression/parsing.cpp"
 
-        "Models/simple_diffusion.cpp"
+        "Models/adc.cpp"
+        "Models/vfa.cpp"
     )
 
 #set_property(TARGET Compute PROPERTY CXX_STANDARD_REQUIRED 17)

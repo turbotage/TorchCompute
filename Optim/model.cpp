@@ -104,24 +104,30 @@ void optim::Model::to(torch::Device device)
 
 void optim::Model::setStaticVariables(std::vector<torch::Tensor>& staticvars)
 {
-	if (staticvars.size() != m_StaticVarMap.size())
-		throw std::runtime_error("Tried to set more Static Variables than were available in Static Variables Map");
+	if (m_pSyntaxTree.has_value()) {
+		if (staticvars.size() != m_StaticVarMap.size())
+			throw std::runtime_error("Tried to set more Static Variables than were available in Static Variables Map");
+	}
 
 	m_StaticVars = staticvars;
 }
 
 void optim::Model::setDependents(torch::Tensor dependents)
 {
-	if (dependents.size(2) != m_DependentMap.size())
-		throw std::runtime_error("Tried to set more Dependents than were available in Dependents Map");
+	if (m_pSyntaxTree.has_value()) {
+		if (dependents.size(2) != m_DependentMap.size())
+			throw std::runtime_error("Tried to set more Dependents than were available in Dependents Map");
+	}
 
 	m_Dependents = dependents;
 }
 
 void optim::Model::setParameters(torch::Tensor parameters)
 {
-	if (parameters.size(1) != m_ParameterMap.size())
-		throw std::runtime_error("Tried to set more Parameters than were available in Parameters Map");
+	if (m_pSyntaxTree.has_value()) {
+		if (parameters.size(1) != m_ParameterMap.size())
+			throw std::runtime_error("Tried to set more Parameters than were available in Parameters Map");
+	}
 
 	m_Parameters = parameters;
 }

@@ -12,5 +12,7 @@ namespace test {
 
 	void test_solver1();
 
+	void test_simple_adc();
+
 }
 

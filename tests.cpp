@@ -8,6 +8,8 @@
 
 #include "Compute/kmeans.hpp"
 
+#include "Models/models.hpp"
+
 
 void test::test_model() 
 {
@@ -273,7 +275,30 @@ void test::test_solver1()
 
 }
 
+void test::test_simple_adc() {
 
+	int nProbs = 1;
+	int nData = 3;
+
+	torch::Tensor params = torch::rand({nProbs, 2});
+
+	torch::Tensor bvals = torch::rand({nProbs, nData, 1});
+
+	torch::Tensor data = models::adc_func(std::vector<torch::Tensor>(), bvals, params);
+
+	torch::Tensor syndata = data + 0.0 * data * (2*torch::rand({nProbs,nData}) - 1); // Up to 5% error
+
+	torch::Tensor linparams = models::simple_adc_model_linear(bvals, syndata);
+
+	std::cout << "params: " << params << std::endl;
+
+	std::cout << "linparams: " << linparams << std::endl;
+	
+	torch::Tensor nonlinearpar = models::simple_adc_model_nonlinear(bvals, syndata, linparams);
+
+	std::cout << "nonlinparams: " << nonlinearpar << std::endl;
+
+}
 
 /*
 int main()

@@ -6,54 +6,20 @@
 namespace models {
 
     // S = S_0*exp(-b*ADC), varying b values
-    class ADCModel {
-    public:
 
-        ADCModel();
+    torch::Tensor adc_func(std::vector<torch::Tensor> staticvars, torch::Tensor dependents, torch::Tensor parameters);
 
-        // bvalues
-        void setDependents(torch::Tensor bvals);
+    torch::Tensor simple_adc_model_linear(torch::Tensor bvals, torch::Tensor data);
 
-        void setData(torch::Tensor data);
+    torch::Tensor simple_adc_model_nonlinear(torch::Tensor bvals, torch::Tensor data, torch::Tensor parameter_guess);
 
-        torch::Tensor solve();
-
-    private:
-
-        static torch::Tensor adc_func(std::vector<torch::Tensor> staticvars, torch::Tensor dependents, torch::Tensor parameters);
-
-    private:
-
-        std::unique_ptr<optim::Model> m_pModel;
-
-        torch::Tensor m_Data;
-
-    };
     
 
     // S = S_0 * sin(FA) * (1 - exp(-TR/T1))/ (1 - exp(-TR/T1)cos(FA)), varying flip angles (FA)
-    class VFAModel_1 {
-    public:
+    torch::Tensor vfa_func(std::vector<torch::Tensor> staticvars, torch::Tensor dependents, torch::Tensor parameters);
 
-        VFAModel_1();
+    torch::Tensor simple_vfa_model_linear(torch::Tensor flip_angles, torch::Tensor data, torch::Tensor TR);
 
-        // flip values
-        void setDependents(torch::Tensor flip_angles);
-
-        void setData(torch::Tensor data);
-
-        torch::Tensor solve();
-
-    private:
-
-        static torch::Tensor vfa_func(std::vector<torch::Tensor> staticvars, torch::Tensor dependents, torch::Tensor parameters);
-
-    private:
-
-        std::unique_ptr<optim::Model> m_pModel;
-
-        torch::Tensor m_Data;
-
-    };
+    torch::Tensor simple_vfa_model_nonlinear(torch::Tensor flip_angles, torch::Tensor data, torch::Tensor TR, torch::Tensor parameter_guess);
 
 }
