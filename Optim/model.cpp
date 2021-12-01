@@ -4,54 +4,47 @@
 #include "../Expression/parsing.hpp"
 
 optim::Model::Model(std::string expression, torch::TensorOptions opts,
-	std::optional<std::unordered_map<std::string, int>> dependent_map,
+	std::optional<std::unordered_map<std::string, int>> per_problem_input_map,
 	std::optional<std::unordered_map<std::string, int>> parameter_map,
-	std::optional<std::unordered_map<std::string, int>> staticvar_map)
+	std::optional<std::unordered_map<std::string, int>> constant_map)
 {
 	using namespace torch::indexing;
 
 	m_TensorOptions = opts;
 
-	if (dependent_map.has_value())
-		m_DependentMap = dependent_map.value();
+	if (per_problem_input_map.has_value())
+		m_PerProblemInputMap = per_problem_input_map.value();
 	if (parameter_map.has_value())
 		m_ParameterMap = parameter_map.value();
-	if (staticvar_map.has_value())
-		m_StaticVarMap = staticvar_map.value();
+	if (constant_map.has_value())
+		m_ConstantMap = constant_map.value();
 
-	expression::Shunter shunter(expression);
-	std::stack<expression::Token> token_stack(shunter());
-
-	expression::NumberResolver numberResolver = [this](const std::string& str)
-	{
-		return expression::defaultNumberResolver(str, m_TensorOptions);
-	};
 	
-	m_pSyntaxTree = std::make_unique<expression::ExpressionGraph<torch::Tensor>>(token_stack, numberResolver);
+	m_pSyntaxTree = std::make_unique<expression::ExpressionGraph>(expression);
 
-	// Static Var fetchers
-	if (staticvar_map.has_value()) {
-		for (auto& v : m_StaticVarMap) {
+	// Constants
+	if (constant_map.has_value()) {
+		for (auto& c : m_ConstantMap) {
 			int stv_index = v.second;
 
-			std::function<torch::Tensor()> statvar_fetcher = [this, stv_index]() {
-				return m_StaticVars[stv_index];
+			std::function<torch::Tensor()> constant_fetcher = [this, stv_index]() {
+				return m_Constants[stv_index];
 			};
 
-			m_pSyntaxTree.value()->setVariableFetcher(v.first, statvar_fetcher);
+			m_pSyntaxTree.value()->setVariableFetcher(v.first, constant_fetcher);
 		}
 	}
 
-	// Dependent fetchers
-	if (dependent_map.has_value()) {
-		for (auto& d : m_DependentMap) {
-			int dep_index = d.second;
+	// Per Problem Input Fetchers
+	if (per_problem_input_map.has_value()) {
+		for (auto& ppi : m_PerProblemInputMap) {
+			int dep_index = ppi.second;
 
-			std::function<torch::Tensor()> dep_fetcher = [this, dep_index]() {
-				return m_Dependents.index({ Slice(), Slice(), dep_index }).view({ m_Dependents.size(0), m_Dependents.size(1) });
+			std::function<torch::Tensor()> ppi_fetcher = [this, dep_index]() {
+				return m_PerProblemInputs.index({ Slice(), Slice(), dep_index }).view({ m_PerProblemInputs.size(0), m_PerProblemInputs.size(1) });
 			};
 
-			m_pSyntaxTree.value()->setVariableFetcher(d.first, dep_fetcher);
+			m_pSyntaxTree.value()->setVariableFetcher(ppi.first, ppi_fetcher);
 		}
 	}
 
@@ -74,7 +67,7 @@ optim::Model::Model(std::string expression, torch::TensorOptions opts,
 optim::Model::Model(ModelFunc func)
 {
 	m_Runner = [this, func]() {
-		return func(this->m_StaticVars, this->m_Dependents, this->m_Parameters);
+		return func(this->m_Constants, this->m_PerProblemInputs, this->m_Parameters);
 	};
 }
 

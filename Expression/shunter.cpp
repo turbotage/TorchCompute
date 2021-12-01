@@ -11,28 +11,11 @@ expression::Shunter::Shunter(std::string& expression)
 {
 	m_Operators = DEFAULT_OPERATORS;
 
-	// Number Tokenizer
-	// Only handles integers, should be updated to be able to handle complex numbers and scientific notation
-	m_NumberTokenizer = [](const std::string& str) {
-		std::string remains;
-		std::string number;
-		NumberTypeBits type;
-
-		std::tie(remains, number, type) = extractNumberString(str);
-
-		if (type == eNumberType::NO_NUMBER) {
-			return std::make_tuple(str, Token());
-		}
-		else {
-			return std::make_tuple(remains, Token(number, eTokenType::NUMBER));
-		}
-	};
-
 	// Variable Tokenizer
 	m_VariableTokenizer = [](const std::string& str) {
 		std::string token;
 		token += str[0];
-		int i = 1;
+		ui32 i = 1;
 		if (str[0] == VARIABLE_START_CHARACTER) {
 			if (str.size() > 1) {
 				if (std::isalpha(str[1])) {
@@ -50,7 +33,7 @@ expression::Shunter::Shunter(std::string& expression)
 	m_FunctionTokenizer = [](const std::string& str) {
 		std::string token;
 		token += str[0];
-		int i = 1;
+		ui32 i = 1;
 		if (std::isalpha(str[0])) {
 			for (; i < str.size() && (std::isdigit(str[i]) || std::isalpha(str[i])); ++i)
 				token += str[i];
@@ -63,10 +46,20 @@ expression::Shunter::Shunter(std::string& expression)
 	// Operator Tokenizer
 	m_OperatorTokenizer = [this](const std::string& str) {
 		std::string token;
-		token += str[0];
+
+		ui32 longestOpString = 0;
 		for (auto& op : m_Operators) {
-			if (str[0] == std::get<0>(op)) {
-				return std::make_tuple(str.substr(1), Token(token, eTokenType::OPERATOR));
+			ui32 opLength = std::get<0>(op).length();
+			if (opLength > longestOpString)
+				longestOpString = opLength;
+		}
+
+		for (ui32 i = 0; i < longestOpString; ++i) {
+			token += str[0];
+			for (auto& op : m_Operators) {
+				if (token == std::get<0>(op)) {
+					return std::make_tuple(str.substr(1), Token(token, eTokenType::OPERATOR));
+				}
 			}
 		}
 
@@ -78,11 +71,6 @@ expression::Shunter::Shunter(std::string& expression)
 void expression::Shunter::setOperators(std::vector<OperatorTuple> operators)
 {
 	m_Operators = operators;
-}
-
-void expression::Shunter::setNumberTokenizer(Tokenizer numberTokenizer)
-{
-	m_NumberTokenizer = numberTokenizer;
 }
 
 void expression::Shunter::setVariableTokenizer(Tokenizer variableTokenizer)
@@ -108,7 +96,7 @@ std::deque<expression::Token> expression::Shunter::operator()()
 int expression::Shunter::getOpPrecedence(Token t)
 {
 	for (auto& op : m_Operators) {
-		if (std::get<0>(op) == t.token_str[0]) {
+		if (std::get<0>(op) == t.token_str) {
 			return std::get<1>(op);
 		}
 	}
@@ -118,7 +106,7 @@ int expression::Shunter::getOpPrecedence(Token t)
 int expression::Shunter::getOpAssociativity(Token t)
 {
 	for (auto& op : m_Operators) {
-		if (std::get<0>(op) == t.token_str[0]) {
+		if (std::get<0>(op) == t.token_str) {
 			return std::get<2>(op);
 		}
 	}
@@ -140,10 +128,6 @@ std::tuple<std::string, expression::Token> expression::Shunter::getNextToken(con
 		}
 	}
 
-
-	std::tie(restr, retok) = m_NumberTokenizer(restr);
-	if (retok.token_type != eTokenType::INVALID)
-		return std::make_tuple(restr, retok);
 
 	std::tie(restr, retok) = m_VariableTokenizer(restr);
 	if (retok.token_type != eTokenType::INVALID)
@@ -178,11 +162,6 @@ std::deque <expression::Token> expression::Shunter::shunt()
 		if (token.token_str == "")
 			break;
 
-		// Push numbers onto output
-		if (token.token_type == eTokenType::NUMBER) {
-			output.push_back(token);
-			continue;
-		}
 		// Push variables onto output
 		if (token.token_type == eTokenType::VARIABLE) {
 			output.push_back(token);

@@ -9,10 +9,6 @@
 
 namespace optim {
 
-	namespace {
-		using ExpGraphPtr = std::unique_ptr<expression::ExpressionGraph<torch::Tensor>>;
-	}
-
 	using ModelFunc = std::function<torch::Tensor(std::vector<torch::Tensor>, torch::Tensor, torch::Tensor)>;
 
 	class Model {
@@ -101,15 +97,16 @@ namespace optim {
 
 	private:
 
+		using ExpGraphPtr = std::unique_ptr<expression::ExpressionGraph>;
 		std::optional<ExpGraphPtr> m_pSyntaxTree;
 		 
 		std::function<torch::Tensor()> m_Runner;
 
-		std::unordered_map<std::string, int> m_StaticVarMap;
-		std::vector<torch::Tensor> m_StaticVars;
+		std::unordered_map<std::string, int> m_ConstantMap;
+		std::vector<torch::Tensor> m_Constants;
 
-		std::unordered_map<std::string, int> m_DependentMap;
-		torch::Tensor m_Dependents;
+		std::unordered_map<std::string, int> m_PerProblemInputMap;
+		torch::Tensor m_PerProblemInputs;
 
 		std::unordered_map<std::string, int> m_ParameterMap;
 		torch::Tensor m_Parameters;

@@ -124,8 +124,6 @@ std::function<torch::Tensor()> expression::defaultNumberResolver(std::string str
 	}
 }
 
-
-
 /*
 
 void expression::special_print(std::string str) {

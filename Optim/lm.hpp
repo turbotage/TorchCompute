@@ -11,7 +11,7 @@ namespace optim {
 	public:
 
 		LMP(optim::Model& model);
-
+		
 		// Requirest set functions
 
 		void setParameterGuess(torch::Tensor& parameters);

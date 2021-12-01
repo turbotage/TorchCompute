@@ -25,6 +25,7 @@ add_executable(Compute
         "Compute/kmeans.cpp"
         "Compute/random.cpp"
         "Compute/lstq.cpp"
+        "Compute/linalg_utils.cpp"
 
         "Optim/lm.cpp"
         "Optim/model.cpp"
@@ -33,6 +34,7 @@ add_executable(Compute
         "Expression/expression.cpp"
         "Expression/shunter.cpp" 
         "Expression/parsing.cpp"
+        "Expression/lexer.cpp"
 
         "Models/adc.cpp"
         "Models/vfa.cpp"

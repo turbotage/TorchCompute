@@ -7,7 +7,6 @@ namespace expression {
 	// Used to convert expression to RPT or postfix
 	enum eTokenType {
 		INVALID,
-		NUMBER,
 		VARIABLE,
 		FUNCTION,
 		OPERATOR
@@ -29,16 +28,16 @@ namespace expression {
 	typedef std::uint8_t OperatorPrecedenceFlags;
 
 
-	constexpr char VARIABLE_START_CHARACTER = '@';
+	constexpr char VARIABLE_START_CHARACTER = '$';
 
-	using OperatorTuple = std::tuple<char, OperatorPrecedenceFlags, OperatorAssociativityFlags>;
+	using OperatorTuple = std::tuple<std::string, OperatorPrecedenceFlags, OperatorAssociativityFlags>;
 	const std::vector<OperatorTuple> DEFAULT_OPERATORS =
 	{
-		{'+', eOperatorPrecedence::ADDITION,		eOperatorAssociativity::LEFT},
-		{'-', eOperatorPrecedence::ADDITION,		eOperatorAssociativity::LEFT},
-		{'*', eOperatorPrecedence::MULTIPLICATION,	eOperatorAssociativity::LEFT},
-		{'/', eOperatorPrecedence::MULTIPLICATION,	eOperatorAssociativity::LEFT},
-		{'^', eOperatorPrecedence::EXPONENTIATION,	eOperatorAssociativity::RIGHT},
+		{"+", eOperatorPrecedence::ADDITION,		eOperatorAssociativity::LEFT},
+		{"-", eOperatorPrecedence::ADDITION,		eOperatorAssociativity::LEFT},
+		{"*", eOperatorPrecedence::MULTIPLICATION,	eOperatorAssociativity::LEFT},
+		{"/", eOperatorPrecedence::MULTIPLICATION,	eOperatorAssociativity::LEFT},
+		{"^", eOperatorPrecedence::EXPONENTIATION,	eOperatorAssociativity::RIGHT},
 	};
 
 	struct Token {
@@ -64,8 +63,6 @@ namespace expression {
 
 		// Optional
 		void setOperators(std::vector<OperatorTuple> operators);
-		// Optional, the current default number tokenizer only handles integers
-		void setNumberTokenizer(Tokenizer numberTokenizer);
 		// Optional
 		void setVariableTokenizer(Tokenizer variableTokenizer);
 		// Optional
@@ -90,7 +87,6 @@ namespace expression {
 
 		std::vector<OperatorTuple> m_Operators;
 
-		Tokenizer m_NumberTokenizer;
 		Tokenizer m_VariableTokenizer;
 		Tokenizer m_FunctionTokenizer;
 		Tokenizer m_OperatorTokenizer;
