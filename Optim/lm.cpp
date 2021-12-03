@@ -381,7 +381,7 @@ int optim::LMP::handle_convergence()
 	step = step.index({ not_converges });
 
 	//Set new deps_slice as model dependents
-	model.setDependents(deps_slice);
+	model.setPerProblemInputs(deps_slice);
 
 	return 0;
 }

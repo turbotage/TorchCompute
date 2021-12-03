@@ -9,7 +9,8 @@
 
 namespace optim {
 
-	using ModelFunc = std::function<torch::Tensor(std::vector<torch::Tensor>, torch::Tensor, torch::Tensor)>;
+	using ModelFunc = std::function<torch::Tensor(
+		std::vector<torch::Tensor>, torch::Tensor, torch::Tensor)>;
 
 	class Model {
 	public:
@@ -50,14 +51,14 @@ namespace optim {
 		/// done, since no new tensor needs to be created.
 		/// </summary>
 		/// <param name="staticvars"></param>
-		void setStaticVariables(std::vector<torch::Tensor>& staticvars);
+		void setConstants(std::vector<torch::Tensor> constants);
 
 		/// <summary>
-		/// The known dependents of the model, the x
+		/// The known per problem inputs of the model, the x
 		/// values in y = f(x,p)
 		/// </summary>
 		/// <param name="dependents"></param>
-		void setDependents(torch::Tensor dependents);
+		void setPerProblemInputs(torch::Tensor per_problem_inputs);
 		
 		/// <summary>
 		/// The parameters
@@ -66,28 +67,43 @@ namespace optim {
 		void setParameters(torch::Tensor parameters);
 
 		/// <summary>
+		/// Get number of problems in the model
+		/// </summary>
+		/// <returns></returns>
+		ui32 getNumProblems();
+
+		/// <summary>
+		/// Get number of constants in the model
+		/// </summary>
+		/// <returns></returns>
+		ui32 getNumConstants();
+
+		/// <summary>
 		/// Get number of parameters in the model
 		/// </summary>
 		/// <returns></returns>
-		uint32_t getNParameters();
+		ui32 getNumParametersPerProblem();
 
 		/// <summary>
-		/// Get number of dependents in the model
+		/// Get number inputs per problem in the model
 		/// </summary>
 		/// <returns></returns>
-		uint32_t getNDeps();
+		ui32 getNumInputsPerProblem();
+
+
+		std::vector<torch::Tensor>& getConstants();
 
 		/// <summary>
-		/// Gets the current dependents of the model
+		/// Gets the current per problem inputs of the model
 		/// </summary>
 		/// <return></returns>
-		torch::Tensor getDependents();
+		torch::Tensor& getPerProblemInputs();
 
 		/// <summary>
 		/// Gets the current parameters of the model
 		/// </summary>
 		/// <return></returns>
-		torch::Tensor getParameters();
+		torch::Tensor& getParameters();
 
 		/// <summary>
 		/// Evaluates the model at last set static variables, dependents and static vars

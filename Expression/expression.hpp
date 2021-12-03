@@ -14,6 +14,8 @@ namespace expression {
 
 		void setVariableFetcher(std::string var_name, const std::function<torch::Tensor()>& var_fetcher);
 
+		void to(torch::Device device);
+
 	private:
 
 		static std::function<torch::Tensor()> fetch_and_negate(

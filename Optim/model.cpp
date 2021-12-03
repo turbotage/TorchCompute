@@ -18,20 +18,20 @@ optim::Model::Model(std::string expression, torch::TensorOptions opts,
 		m_ParameterMap = parameter_map.value();
 	if (constant_map.has_value())
 		m_ConstantMap = constant_map.value();
-
+	
 	
 	m_pSyntaxTree = std::make_unique<expression::ExpressionGraph>(expression);
 
 	// Constants
 	if (constant_map.has_value()) {
 		for (auto& c : m_ConstantMap) {
-			int stv_index = v.second;
+			int stv_index = c.second;
 
 			std::function<torch::Tensor()> constant_fetcher = [this, stv_index]() {
 				return m_Constants[stv_index];
 			};
 
-			m_pSyntaxTree.value()->setVariableFetcher(v.first, constant_fetcher);
+			m_pSyntaxTree.value()->setVariableFetcher(c.first, constant_fetcher);
 		}
 	}
 
@@ -76,15 +76,15 @@ optim::Model::Model(ModelFunc func)
 void optim::Model::to(torch::Device device)
 {
 	// Static Vars
-	for (int i = 0; i < m_StaticVars.size(); ++i) {
-		if (m_StaticVars[i].device() != device) {
-			m_StaticVars[i] = m_StaticVars[i].to(device);
+	for (int i = 0; i < m_Constants.size(); ++i) {
+		if (m_Constants[i].device() != device) {
+			m_Constants[i] = m_Constants[i].to(device);
 		}
 	}
 
 	// Dependents
-	if (m_Dependents.device() != device) {
-		m_Dependents = m_Dependents.to(device);
+	if (m_PerProblemInputs.device() != device) {
+		m_PerProblemInputs = m_PerProblemInputs.to(device);
 	}
 
 	// Parameters
@@ -92,27 +92,32 @@ void optim::Model::to(torch::Device device)
 		m_Parameters = m_Parameters.to(device);
 	}
 
+	// We must move the numbers and constants in the expression to the correct device
+	if (m_pSyntaxTree.has_value()) {
+		m_pSyntaxTree.value()->to(device);
+	}
+
 	m_TensorOptions = m_TensorOptions.device(device);
 }
 
-void optim::Model::setStaticVariables(std::vector<torch::Tensor>& staticvars)
+void optim::Model::setConstants(std::vector<torch::Tensor> constants)
 {
 	if (m_pSyntaxTree.has_value()) {
-		if (staticvars.size() != m_StaticVarMap.size())
+		if (constants.size() != m_ConstantMap.size())
 			throw std::runtime_error("Tried to set more Static Variables than were available in Static Variables Map");
 	}
 
-	m_StaticVars = staticvars;
+	m_Constants = std::move(constants);
 }
 
-void optim::Model::setDependents(torch::Tensor dependents)
+void optim::Model::setPerProblemInputs(torch::Tensor per_problem_inputs)
 {
 	if (m_pSyntaxTree.has_value()) {
-		if (dependents.size(2) != m_DependentMap.size())
+		if (per_problem_inputs.size(2) != m_PerProblemInputMap.size())
 			throw std::runtime_error("Tried to set more Dependents than were available in Dependents Map");
 	}
 
-	m_Dependents = dependents;
+	m_PerProblemInputs = std::move(per_problem_inputs);
 }
 
 void optim::Model::setParameters(torch::Tensor parameters)
@@ -122,25 +127,40 @@ void optim::Model::setParameters(torch::Tensor parameters)
 			throw std::runtime_error("Tried to set more Parameters than were available in Parameters Map");
 	}
 
-	m_Parameters = parameters;
+	m_Parameters = std::move(parameters);
 }
 
-uint32_t optim::Model::getNParameters()
+ui32 optim::Model::getNumProblems()
+{
+	return m_Parameters.size(0);
+}
+
+ui32 optim::Model::getNumConstants()
+{
+	return m_ConstantMap.size();
+}
+
+ui32 optim::Model::getNumParametersPerProblem()
 {
 	return m_ParameterMap.size();
 }
 
-uint32_t optim::Model::getNDeps()
+ui32 optim::Model::getNumInputsPerProblem()
 {
-	return m_DependentMap.size();
+	return m_PerProblemInputs.size(0);
 }
 
-torch::Tensor optim::Model::getDependents()
+std::vector<torch::Tensor>& optim::Model::getConstants()
 {
-	return m_Dependents;
+	return m_Constants;
 }
 
-torch::Tensor optim::Model::getParameters()
+torch::Tensor& optim::Model::getPerProblemInputs()
+{
+	return m_PerProblemInputs;
+}
+
+torch::Tensor& optim::Model::getParameters()
 {
 	return m_Parameters;
 }

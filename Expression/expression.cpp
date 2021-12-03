@@ -81,6 +81,13 @@ void expression::ExpressionGraph::setVariableFetcher(std::string var_name, const
     m_VariableFetchers[var_name] = var_fetcher;
 }
 
+void expression::ExpressionGraph::to(torch::Device device)
+{
+    for (auto& t : m_Numbers) {
+        t.second.to(device);
+    }
+}
+
 void expression::ExpressionGraph::handle_number(std::string numid, torch::Tensor& var, std::stack<std::unique_ptr<Node>>& node_stack) {
     std::unique_ptr<Node> ptr = std::make_unique<NumberNode>(numid, var);
     node_stack.push(std::move(ptr));
