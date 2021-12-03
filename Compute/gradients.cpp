@@ -11,7 +11,7 @@ torch::Tensor compute::jacobian(torch::Tensor y, torch::Tensor x)
 	int output_dim = y.size(1);
 	int input_dim = x.size(1);
 
-	auto dops = x.options();
+	auto dops = x.options().requires_grad(false); // maybe remove requires grad
 
 	auto J = torch::empty({batch_size, output_dim, input_dim}, dops);
 
