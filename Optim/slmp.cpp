@@ -1,13 +1,22 @@
-#include "lmp.hpp"
+#include "slmp.hpp"
 
 
-optim::LMP::LMP(LMPSettings settings)
-	: m_Mu(settings.mu), m_Eta(settings.eta), Optimizer(std::move(settings))
+optim::SLMP::SLMP(SLMPSettings settings)
+	: m_Mu(settings.mu), m_Eta(settings.eta), Optimizer(std::move(settings)), m_CurrentDevice(settings.startDevice)
 {
-
 }
 
-void optim::LMP::dogleg()
+optim::OptimResult optim::SLMP::operator()()
+{
+	Optimizer::operator()();
+
+	solve();
+
+	return std::make_tuple(m_Parameters, std::move(m_pModel), nci);
+}
+
+
+void optim::SLMP::dogleg()
 {
 	using namespace torch::indexing;
 
@@ -114,14 +123,14 @@ void optim::LMP::dogleg()
 
 }
 
-void optim::LMP::step()
+void optim::SLMP::step()
 {
 	torch::InferenceMode im_guard;
 
 	// Compute J
 	m_JacobianSetter(m_pModel, J);
 	// Compute res
-	res = ((*m_pModel)() - m_DataSlice).view({numProbs, numInputs, 1});
+	res = ((*m_pModel)() - data_slice).view({numProbs, numInputs, 1});
 
 	// Perform the dogleg calculations
 	dogleg();
@@ -141,7 +150,7 @@ void optim::LMP::step()
 
 	// Objective function value at proposed new poin
 	torch::Tensor& et = pr_2;
-	et = 0.5 * torch::square(((*m_pModel)() - m_DataSlice).view({numProbs, numInputs, 1})).sum(1).view({numProbs}); 
+	et = 0.5 * torch::square(((*m_pModel)() - data_slice).view({numProbs, numInputs, 1})).sum(1).view({numProbs}); 
 	
 	// actual decrease
 	torch::Tensor& actual = pr_1;
@@ -181,8 +190,10 @@ void optim::LMP::step()
 
 }
 
-void optim::LMP::handle_convergence()
+bool optim::SLMP::handle_convergence()
 {
+	using namespace torch::indexing;
+
 	c10::InferenceMode im_guard;
 
 	// Catch Jp set in pr_in_1_1 by step
@@ -192,22 +203,77 @@ void optim::LMP::handle_convergence()
 	converges = torch::sqrt(torch::square(Jp * Jp).sum(1)) <=
 		m_Tolerance * (1 + torch::sqrt(torch::square(res).sum(1).view({numProbs})));
 
+	// Copy the converging problems back to the final parameter tensor
+	m_Parameters.index_put_({ nci.index({converges}), Slice() },
+		m_pModel->getParameters().index({ converges, Slice() }));
 
+	// Recreate the index list for the pixels that don't converge
+	nci = nci.index({ converges });
+	numProbs = nci.size(0); // The new number of problems
 
+	// Extract parameters and inputs to be those problems which havn't converged
+	m_pModel->setPerProblemInputs(m_pModel->getPerProblemInputs().index({ nci, Slice() }));
+	m_pModel->setParameters(m_pModel->getParameters().index({ nci, Slice() }));
+
+	// Extract data which corresponds to non-converging problems
+	data_slice = data_slice.index({ nci, Slice() });
+
+	// Extract deltas corresponding to non-converging problems
+	delta = delta.index({ nci });
+
+	if (numProbs == 0) // if no non-converging pixels are left we can return
+		return true;
+	return false;
 }
 
+void optim::SLMP::setup_solve() {
+	
+	m_pModel->to(m_StartDevice);
+	m_Data.to(m_StartDevice);
 
-void optim::LMP::solve()
+	m_Parameters = m_pModel->getParameters();
+	m_PerProblemInputs = m_pModel->getPerProblemInputs();
+
+	data_slice = m_Data;
+
+	numProbs = m_pModel->getNumProblems();
+	numParams = m_pModel->getNumParametersPerProblem();
+	numInputs = m_pModel->getNumInputsPerProblem();
+
+	torch::TensorOptions nci_ops =
+		torch::TensorOptions().dtype(c10::ScalarType::Long).device(m_StartDevice);
+
+	nci = torch::arange(0, numProbs, nci_ops);
+
+	delta = torch::sqrt(torch::square(m_Parameters).sum(1)).view({ numProbs });
+	
+	// fp options
+	auto fp_ops = m_Parameters.options();
+
+	// pD needs to be created before we run dogleg
+	pD = torch::empty({ numProbs, numParams, 1 }, fp_ops);
+}
+
+void optim::SLMP::solve()
 {
-
-
+	setup_solve();
 
 	for (ui32 iter = 0; iter < m_MaxIter; ++iter) {
 
 		step();
 
-		handle_convergence();
+		if (handle_convergence())
+			return;
+
 
 	}
 
+	finalize_solve();
+}
+
+void optim::SLMP::finalize_solve() 
+{
+	using namespace torch::indexing;
+	// Copy the non-converging problems back to the final parameter tensor
+	m_Parameters.index_put_({ nci, Slice() }, m_pModel->getParameters());
 }

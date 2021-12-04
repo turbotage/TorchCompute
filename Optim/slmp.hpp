@@ -7,34 +7,45 @@
 
 namespace optim {
 
-	struct LMPSettings : public OptimizerSettings {
+	struct SLMPSettings : public OptimizerSettings {
 		float mu;
 		float eta;
 
 	};
 
-	class LMP : public Optimizer {
+	// Scaled Levenberg-Marquardt with Powel Dogleg (trust region LM)
+	class SLMP : public Optimizer {
 	public:
 
-		LMP(LMPSettings settings);
+		OptimResult operator()() override;
+
+	private:
+		
+		SLMP(SLMPSettings settings);
 
 	private:
 
-		// sets J and res
-		void jacobian();
 		// sets pD and step_mask
 		void dogleg();
 
 		// performs a step (stores JpD in pr_in_1_1)
 		void step();
 
-		void handle_convergence();
+		// removes converging pixels from the solver process 
+		// (resizes model->params, model->inputs, data_slice and delta
+		bool handle_convergence();
+
+		bool switch_device();
+		
+		void setup_solve();
 
 		void solve();
 
+		void finalize_solve();
+
 	private:
 
-		torch::TensorOptions m_CurrentTensorOptions;
+		torch::Device m_CurrentDevice;
 		float m_Mu;
 		float m_Eta;
 
@@ -42,7 +53,6 @@ namespace optim {
 
 		torch::Tensor m_Parameters;
 		torch::Tensor m_PerProblemInputs;
-		torch::Tensor m_Data;
 
 		torch::Tensor data_slice;
 

@@ -31,7 +31,7 @@ add_executable(Compute
         "Optim/model.cpp"
         "Optim/solver.cpp"
         "Optim/optim.cpp"
-        "Optim/lmp.cpp"
+        "Optim/slmp.cpp"
 
         "Expression/expression.cpp"
         "Expression/shunter.cpp" 

@@ -15,9 +15,15 @@ void optim::default_jacobian_setter(std::unique_ptr<optim::Model>& pModel, torch
 
 
 optim::Optimizer::Optimizer(OptimizerSettings settings)
-	:   m_pModel(std::move(settings.pModel)), m_JacobianSetter(settings.jacobianSetter), 
-		m_StartTensorOptions(settings.startTensorOptions), m_StopTensorOptions(settings.stopTensorOptions),
+	:   m_pModel(std::move(settings.pModel)), m_Data(settings.data), m_JacobianSetter(settings.jacobianSetter),
+		m_StartDevice(settings.startDevice), m_StopDevice(settings.stopDevice),
 		m_Tolerance(settings.tolerance), m_MaxIter(settings.maxIter)
 {
 
+}
+
+optim::OptimResult optim::Optimizer::operator()() {
+	if (m_HasRun)
+		throw std::runtime_error("Tried to run optimizer twice!");
+	m_HasRun = true;
 }
