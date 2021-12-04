@@ -185,7 +185,14 @@ void optim::LMP::handle_convergence()
 {
 	c10::InferenceMode im_guard;
 
-	
+	// Catch Jp set in pr_in_1_1 by step
+	torch::Tensor& Jp = pr_in_1_1;
+
+	torch::Tensor& converges = pr_0; // plane convergence
+	converges = torch::sqrt(torch::square(Jp * Jp).sum(1)) <=
+		m_Tolerance * (1 + torch::sqrt(torch::square(res).sum(1).view({numProbs})));
+
+
 
 }
 
