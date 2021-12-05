@@ -5,22 +5,17 @@
 
 
 optim::BatchedKMeansThenLMP::BatchedKMeansThenLMP(
-	optim::Model& model,
+	std::unique_ptr<optim::Model> pModel,
 	GuessFetchFunc guessFetcher,
-	torch::Tensor dependents, torch::Tensor data, 
+	torch::Tensor data, 
 	uint64_t batch_size)
-	: m_Model(model)
+	: m_pModel(std::move(pModel))
 {
 	m_Batchsize = batch_size;
-	m_Dependents = dependents;
+
 	m_Data = data;
 	
 	m_GuessFetchFunc = guessFetcher;
-
-	if (m_Dependents.size(0) != m_Data.size(0))
-		throw std::runtime_error("Not equal amounts of problems in dependents and data");
-	else if (m_Dependents.size(1) != m_Data.size(1))
-		throw std::runtime_error("Not equal amounts of data points as dependents");
 
 }
 
@@ -29,15 +24,15 @@ void optim::BatchedKMeansThenLMP::solve()
 {
 	using namespace torch::indexing;
 
-	uint64_t nProblems = m_Dependents.size(0);
+	uint64_t nProblems = m_PerProblemInputs.size(0);
 	if (m_Batchsize > nProblems)
 		m_Batchsize = nProblems;
 
-	uint16_t nDataPoints = m_Dependents.size(1);
-	uint16_t nDeps = m_Dependents.size(2);
-	uint16_t nParams = m_Model.getNParameters();
+	uint16_t nDataPoints = m_Parameters.size(1);
+	uint16_t nDeps = m_PerProblemInputs.size(2);
+	uint16_t nParams = m_pModel->getNumParametersPerProblem();
 
-	torch::TensorOptions tops = m_Dependents.options();
+	torch::TensorOptions tops = m_PerProblemInputs.options();
 	torch::Device cpudev("cpu");
 
 	m_Parameters = torch::empty({ (int64_t)nProblems, nParams}, tops);
@@ -69,8 +64,7 @@ void optim::BatchedKMeansThenLMP::solve()
 		//std::cout << m_Data.index({ Slice(startIndex, endIndex), Slice() }).view({ batchCount, nDataPoints }).sizes();
 
 		batchData = m_Data.index({ Slice(startIndex, endIndex), Slice() }).view({ batchCount, nDataPoints });
-		batchDeps = m_Dependents.index({ Slice(startIndex, endIndex), Slice(), Slice() }).view({ batchCount, nDataPoints, nDeps });
-	
+
 		std::cout << "Batch: " << i << std::endl;
 
 		auto start = std::chrono::system_clock::now();
@@ -87,7 +81,7 @@ void optim::BatchedKMeansThenLMP::solve()
 		for (int j = 0; j < nClusters; ++j) {
 			idx.push_back(labels == j);
 
-			kmeansData.index_put_({j, Slice()} ,batchData.index({idx[j], Slice()}).mean(
+			kmeansData.index_put_({j, Slice()}, batchData.index({idx[j], Slice()}).mean(
 				{0}, true).to(cpudev));
 
 			kmeansDeps.index_put_({j, Slice(), Slice()}, batchDeps.index({idx[j], Slice(), Slice()}).mean(
@@ -97,9 +91,9 @@ void optim::BatchedKMeansThenLMP::solve()
 
 		kmeansParm = m_GuessFetchFunc(kmeansDeps, kmeansData);
 
-		m_Model.setDependents(kmeansDeps);
-		m_Model.setParameters(kmeansParm);
-		m_Model.to(cpudev);
+		m_pModel->setPerProblemInputs(kmeansDeps);
+		m_pModel->setParameters(kmeansParm);
+		m_pModel->to(cpudev);
 
 		// Solve on kmeans data
 		{

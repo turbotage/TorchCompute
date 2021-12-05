@@ -27,9 +27,7 @@ add_executable(Compute
         "Compute/lstq.cpp"
         "Compute/linalg_utils.cpp"
 
-        "Optim/lm.cpp"
         "Optim/model.cpp"
-        "Optim/solver.cpp"
         "Optim/optim.cpp"
         "Optim/slmp.cpp"
 

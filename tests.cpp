@@ -5,6 +5,7 @@
 #include "Optim/model.hpp"
 #include "Optim/lm.hpp"
 #include "Optim/solver.hpp"
+#include "Optim/slmp.hpp"
 
 #include "Compute/kmeans.hpp"
 
@@ -275,6 +276,7 @@ void test::test_solver1()
 
 }
 
+
 void test::test_simple_adc() {
 
 	int nProbs = 1;
@@ -300,29 +302,10 @@ void test::test_simple_adc() {
 
 }
 
-/*
-int main()
-{
-	try {
-		try {
-			std::cout << "BKLMP" << std::endl;
-			test::test_solver1();
 
-			std::cout << "LMP" << std::endl;
-			test::test_lmp();
+void test::test_slmp() {
 
-		}
-		catch (c10::Error e1) {
-			std::cout << e1.what() << std::endl;
-		}
-	}
-	catch (std::runtime_error e2) {
-		std::cout << e2.what() << std::endl;
-	}
+	optim::SLMPSettings settings;
 
-	//std::cout << "LMP" << std::endl;
-	
-	return 0;
 }
-*/
 

@@ -14,5 +14,6 @@ namespace test {
 
 	void test_simple_adc();
 
+	void test_slmp();
 }
 

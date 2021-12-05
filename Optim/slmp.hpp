@@ -8,10 +8,20 @@
 namespace optim {
 
 	struct SLMPSettings : public OptimizerSettings {
-		float mu;
-		float eta;
 
+		SLMPSettings();
+
+		float mu = 0.25;
+		float eta = 0.75;
+		std::optional<torch::Device> switchDevice;
+		ui32 switchAtN = 5000;
 	};
+
+	struct SLMPResult : public OptimResult {
+		torch::Tensor finalDeltas;
+	};
+
+
 
 	// Scaled Levenberg-Marquardt with Powel Dogleg (trust region LM)
 	class SLMP : public Optimizer {
@@ -35,7 +45,7 @@ namespace optim {
 		// (resizes model->params, model->inputs, data_slice and delta
 		bool handle_convergence();
 
-		bool switch_device();
+		void switch_device();
 		
 		void setup_solve();
 
@@ -44,15 +54,20 @@ namespace optim {
 		void finalize_solve();
 
 	private:
-
-		torch::Device m_CurrentDevice;
 		float m_Mu;
 		float m_Eta;
+		
+		torch::Device m_CurrentDevice;
 
-	private:
+		std::optional<torch::Device> m_SwitchDevice;
+		ui32 m_SwitchNumber;
+		bool m_HasSwitched = false;
 
 		torch::Tensor m_Parameters;
 		torch::Tensor m_PerProblemInputs;
+
+
+	private:
 
 		torch::Tensor data_slice;
 
@@ -61,8 +76,6 @@ namespace optim {
 		i32 numProbs;
 		i32 numInputs;
 		i32 numParams;
-
-
 
 		enum MaskTypes {
 			SUCCESSFUL_CHOLESKY = 0,

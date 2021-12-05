@@ -1,6 +1,13 @@
 #include "slmp.hpp"
 
 
+optim::SLMPSettings::SLMPSettings() 
+{
+
+}
+
+
+
 optim::SLMP::SLMP(SLMPSettings settings)
 	: m_Mu(settings.mu), m_Eta(settings.eta), Optimizer(std::move(settings)), m_CurrentDevice(settings.startDevice)
 {
@@ -12,7 +19,13 @@ optim::OptimResult optim::SLMP::operator()()
 
 	solve();
 
-	return std::make_tuple(m_Parameters, std::move(m_pModel), nci);
+	SLMPResult res;
+	res.finalParameters = m_Parameters;
+	res.pFinalModel = std::move(m_pModel);
+	res.nonConvergingIndices = nci;
+	res.finalDeltas = delta;
+	
+	return res;
 }
 
 
@@ -212,8 +225,17 @@ bool optim::SLMP::handle_convergence()
 	numProbs = nci.size(0); // The new number of problems
 
 	// Extract parameters and inputs to be those problems which havn't converged
-	m_pModel->setPerProblemInputs(m_pModel->getPerProblemInputs().index({ nci, Slice() }));
-	m_pModel->setParameters(m_pModel->getParameters().index({ nci, Slice() }));
+	{
+		torch::Tensor& params_slice = m_pModel->getPerProblemInputs();
+		m_pModel->setPerProblemInputs(params_slice.index({ nci, Slice() }));
+		
+		torch::Tensor& deps_slice = m_pModel->getParameters();
+		if (deps_slice.defined()) {
+			if (deps_slice.numel() != 0)
+				m_pModel->setParameters(deps_slice.index({ nci, Slice() }));
+		}
+	}
+
 
 	// Extract data which corresponds to non-converging problems
 	data_slice = data_slice.index({ nci, Slice() });
@@ -224,6 +246,44 @@ bool optim::SLMP::handle_convergence()
 	if (numProbs == 0) // if no non-converging pixels are left we can return
 		return true;
 	return false;
+}
+
+void optim::SLMP::switch_device() {
+	if (!m_SwitchDevice.has_value())
+		return;
+
+	torch::Device& dev = m_SwitchDevice.value();
+
+	m_Parameters =			m_Parameters.to(dev);
+	m_PerProblemInputs =	m_PerProblemInputs.to(dev);
+
+	data_slice =			data_slice.to(dev);
+
+	nci =					nci.to(dev);
+	
+	res =					res.to(dev);
+	pr_in_1_1 =				pr_in_1_1.to(dev);
+
+	pD =					pD.to(dev);
+	pr_pa_1_1 =				pr_pa_1_1.to(dev);
+
+	pr_pa_1 =				pr_pa_1.to(dev);
+
+	J =						J.to(dev);
+	pr_in_pa_1 =			pr_in_pa_1.to(dev);
+
+	pr_pa_pa_1 =			pr_pa_pa_1.to(dev);
+	pr_pa_pa_2 =			pr_pa_pa_2.to(dev);
+
+	delta =					delta.to(dev);
+	step_mask =				step_mask.to(dev);
+
+	pr_0 =					pr_0.to(dev);
+
+	pr_1 =					pr_1.to(dev);
+	pr_2 =					pr_2.to(dev);
+
+	m_CurrentDevice = dev;
 }
 
 void optim::SLMP::setup_solve() {
@@ -263,8 +323,10 @@ void optim::SLMP::solve()
 		step();
 
 		if (handle_convergence())
-			return;
+			break;
 
+		if (numProbs < m_SwitchNumber && !m_HasSwitched)
+			switch_device();
 
 	}
 
@@ -276,4 +338,10 @@ void optim::SLMP::finalize_solve()
 	using namespace torch::indexing;
 	// Copy the non-converging problems back to the final parameter tensor
 	m_Parameters.index_put_({ nci, Slice() }, m_pModel->getParameters());
+
+	// Move OptimResult outputs to the specified final device
+	m_Parameters.to(m_StopDevice);
+	m_pModel->to(m_StopDevice);
+	delta = delta.to(m_StopDevice);
+
 }

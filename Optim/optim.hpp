@@ -13,16 +13,23 @@ namespace optim {
 
 
 	struct OptimizerSettings {
+
+		OptimizerSettings();
+
 		std::unique_ptr<optim::Model>			pModel;
 		torch::Tensor							data;
 		JacobianSetter							jacobianSetter = default_jacobian_setter;
-		torch::Device							startDevice;
-		torch::Device							stopDevice;
+		torch::Device							startDevice; // Set to CPU by default constructor
+		torch::Device							stopDevice;  // Set to CPU by default constructor
 		float									tolerance = 1e-4;
 		ui32									maxIter = 50;
 	};
-								  // Parameters			// Model			// Non converging index list
-	using OptimResult = std::tuple<torch::Tensor, std::unique_ptr<optim::Model>, torch::Tensor>;
+			
+	struct OptimResult {
+		torch::Tensor finalParameters;
+		std::unique_ptr<optim::Model> pFinalModel;
+		torch::Tensor nonConvergingIndices;
+	};
 
 	class Optimizer {
 	public:

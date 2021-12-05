@@ -13,9 +13,8 @@ namespace optim {
 	public:
 
 		BatchedKMeansThenLMP(
-			optim::Model& model,
+			std::unique_ptr<optim::Model> pModel,
 			GuessFetchFunc guessFetcher,
-			torch::Tensor dependents,
 			torch::Tensor data,
 			uint64_t batch_size = 100000);
 
@@ -26,11 +25,11 @@ namespace optim {
 	private:
 		uint64_t m_Batchsize;
 		std::string m_Expression;
-		torch::Tensor m_Dependents;
+		torch::Tensor m_PerProblemInputs;
 		torch::Tensor m_Parameters;
 		torch::Tensor m_Data;
 		
-		optim::Model& m_Model;
+		std::unique_ptr<optim::Model> m_pModel;
 		GuessFetchFunc m_GuessFetchFunc;
 
 	};
