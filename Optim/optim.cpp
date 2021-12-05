@@ -12,7 +12,6 @@ void optim::default_jacobian_setter(std::unique_ptr<optim::Model>& pModel, torch
 	pModel->getParameters().requires_grad_(false);
 }
 
-
 optim::OptimizerSettings::OptimizerSettings()
 	: startDevice(torch::Device("cpu")), stopDevice(torch::Device("cpu"))
 {

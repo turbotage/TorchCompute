@@ -61,10 +61,12 @@ optim::Model::Model(std::string expression, torch::TensorOptions opts,
 		}
 	}
 
-	m_Runner = m_pSyntaxTree.value()->getFunc();
+	auto eval_func = m_pSyntaxTree.value()->getFunc();
+
+	m_Runner = [eval_func]
 }
 
-optim::Model::Model(ModelFunc func)
+optim::Model::Model(EvalFunc func)
 {
 	m_Runner = [this, func]() {
 		return func(this->m_Constants, this->m_PerProblemInputs, this->m_Parameters);

@@ -1,19 +1,18 @@
 #include "models.hpp"
 
 #include "../Compute/lstq.hpp"
-#include "../Optim/lm.hpp"
 
 
 
 torch::Tensor models::adc_func(
     std::vector<torch::Tensor> staticvars, 
-    torch::Tensor dependents, torch::Tensor parameters) 
+    torch::Tensor per_problem_inputs, torch::Tensor parameters) 
 {
     using namespace torch::indexing;
 
     return parameters.index({Slice(), 0}).view({parameters.size(0), 1}) * 
         torch::exp(
-            -dependents.index({Slice(), Slice(), 0}).view({dependents.size(0),dependents.size(1)}) * 
+            -per_problem_inputs.index({Slice(), Slice(), 0}).view({per_problem_inputs.size(0),per_problem_inputs.size(1)}) * 
             parameters.index({Slice(), 1}).view({parameters.size(0), 1})
         );
 }
@@ -37,24 +36,4 @@ torch::Tensor models::simple_adc_model_linear(torch::Tensor bvals, torch::Tensor
     deps.index_put_({Slice(),1}, -1.0 * deps.index({Slice(), 1}));
 
     return deps;
-}
-
-torch::Tensor models::simple_adc_model_nonlinear(torch::Tensor bvals, torch::Tensor data, torch::Tensor parameter_guess)
-{
-    torch::Device cpudev("cpu");
-
-    optim::ModelFunc modfunc = adc_func;
-    optim::Model model(modfunc);
-
-    optim::LMP lmp(model);
-    lmp.setParameterGuess(parameter_guess);
-    lmp.setDependents(bvals);
-    lmp.setData(data);
-    lmp.setDefaultTensorOptions(parameter_guess.options());
-    lmp.setSwitching(10000, cpudev);
-    lmp.setCopyConvergingEveryN(2);
-
-    lmp.run();
-
-    return lmp.getParameters();
 }

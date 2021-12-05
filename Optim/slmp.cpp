@@ -25,7 +25,7 @@ optim::OptimResult optim::SLMP::operator()()
 	res.nonConvergingIndices = nci;
 	res.finalDeltas = delta;
 	
-	return res;
+	return std::move(res);
 }
 
 

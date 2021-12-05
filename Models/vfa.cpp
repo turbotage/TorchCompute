@@ -2,22 +2,26 @@
 #include "models.hpp"
 
 #include "../Compute/lstq.hpp"
-#include "../Optim/lm.hpp"
 
 
 torch::Tensor models::vfa_func(
     std::vector<torch::Tensor> staticvars, 
-    torch::Tensor dependents, torch::Tensor parameters)
+    torch::Tensor per_problem_inputs, torch::Tensor parameters)
 {
     using namespace torch::indexing;
 
     torch::Tensor temp = parameters.index({Slice(), 0}).view({parameters.size(0), 1}); // s0
-    temp *= torch::sin(dependents.index({Slice(), Slice(), 0}).view({dependents.size(0), dependents.size(1)})); // s0 * sin(FA)
+    temp *= torch::sin(per_problem_inputs.index({Slice(), Slice(), 0}).view({per_problem_inputs.size(0), per_problem_inputs.size(1)})); // s0 * sin(FA)
     torch::Tensor expterm = torch::exp(-staticvars[0]/parameters.index({Slice(), 1}).view({parameters.size(0), 1})); // exp(-TR/T1)
     temp *= (1 - expterm); // s0 * sin(FA) * (1-expterm)
-    temp /= (1- expterm*torch::cos(dependents.index({Slice(), Slice(), 0}).view({dependents.size(0), dependents.size(1)}))); // Full expression
+    temp /= (1- expterm*torch::cos(per_problem_inputs.index({Slice(), Slice(), 0}).view({per_problem_inputs.size(0), per_problem_inputs.size(1)}))); // Full expression
 
     return temp;
+}
+
+void models::vfa_jacobian_setter(std::unique_ptr<optim::Model>& pModel, torch::Tensor& jacobian)
+{
+
 }
 
 torch::Tensor models::simple_vfa_model_linear(torch::Tensor flip_angles, torch::Tensor data, torch::Tensor TR)
@@ -39,22 +43,3 @@ torch::Tensor models::simple_vfa_model_linear(torch::Tensor flip_angles, torch::
     return temp;
 }
 
-torch::Tensor models::simple_vfa_model_nonlinear(torch::Tensor flip_angles, torch::Tensor data, torch::Tensor TR, torch::Tensor parameter_guess)
-{
-    auto cpudev = torch::Device("cpu");
-
-    optim::ModelFunc modfunc = vfa_func;
-    optim::Model model(modfunc);
-
-    optim::LMP lmp(model);
-    lmp.setParameterGuess(parameter_guess);
-    lmp.setDependents(flip_angles);
-    lmp.setData(data);
-    lmp.setDefaultTensorOptions(parameter_guess.options());
-    lmp.setSwitching(10000, cpudev);
-    lmp.setCopyConvergingEveryN(2);
-
-    lmp.run();
-
-    return lmp.getParameters();
-}

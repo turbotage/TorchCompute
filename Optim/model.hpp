@@ -8,9 +8,35 @@
 
 
 namespace optim {
+	
+	// Function used to evaluate a model
+								
+	using EvalFunc = std::function<torch::Tensor(
+		// Constants					// PerProblemInputs		// Parameters
+		std::vector<torch::Tensor>&, 	torch::Tensor&, 		torch::Tensor&)>;
 
-	using ModelFunc = std::function<torch::Tensor(
-		std::vector<torch::Tensor>, torch::Tensor, torch::Tensor)>;
+
+
+
+	// Function used to get back the Jacobian for a model
+									// Derivative (Jacobian)
+	using DiffFunc = std::function<torch::Tensor(
+		// Constants					// PerProblemInputs		// Parameters
+		std::vector<torch::Tensor>&, 	torch::Tensor&, 		torch::Tensor&)>;
+
+
+
+
+	// Function used to either evaluate the model and get back the jacobian
+	using EvalAndDiffFunc = std::function<void(
+		// Constants					// PerProblemInputs			// Parameters
+		std::vector<torch::Tensor>&, 	torch::Tensor&, 			torch::Tensor&,
+		// Evaluate						// Derivative (Jacobian)
+		OptOutRef<torch::Tensor>, 		OptOutRef<torch::Tensor> )>;
+
+
+
+
 
 	class Model {
 	public:
@@ -30,13 +56,17 @@ namespace optim {
 			std::optional<std::unordered_map<std::string, int>> parameter_map,
 			std::optional<std::unordered_map<std::string, int>> staticvar_map);
 
-
 		/// <summary>
-		///	func(static_vars, dependents, parameters)
+		///	Create the model from a EvalFunc, Jacobian gets computed by default_jacobian_fetcher
 		/// </summary>
 		/// <param name="func"></param>
-		Model(ModelFunc func);
+		Model(EvalFunc func);
 
+		/// <summary>
+		///	Create the model from a EvalAndDiffFunc
+		/// </summary>
+		/// <param name="func"></param>
+		Model(EvalAndDiffFunc func);
 
 		/// <summary>
 		/// Send, parameters, dependents and staticvars to specified device if they
@@ -90,7 +120,10 @@ namespace optim {
 		/// <returns></returns>
 		ui32 getNumInputsPerProblem();
 
-
+		/// <summary>
+		/// Gets the current constants of the model
+		/// </summary>
+		/// <return></returns>
 		std::vector<torch::Tensor>& getConstants();
 
 		/// <summary>
@@ -106,17 +139,29 @@ namespace optim {
 		torch::Tensor& getParameters();
 
 		/// <summary>
-		/// Evaluates the model at last set static variables, dependents and static vars
+		/// Evaluates the model at last set variables
 		/// </summary>
 		/// <returns></returns>
-		torch::Tensor operator()();
+		void eval(torch::Tensor& value);
+
+		/// <summary>
+		/// Differentiates the model at last set variables (gives Jacobian)
+		/// </summary>
+		/// <returns></returns>
+		void diff(torch::Tensor& jacobian);
+
+		/// <summary>
+		/// Evaluates and differentiates the model at last set variables (gives Jacobian)
+		/// </summary>
+		/// <returns></returns>
+		void eval_diff(torch::Tensor& value, torch::Tensor& jacobian);
 
 	private:
 
 		using ExpGraphPtr = std::unique_ptr<expression::ExpressionGraph>;
 		std::optional<ExpGraphPtr> m_pSyntaxTree;
 		 
-		std::function<torch::Tensor()> m_Runner;
+		EvalAndDiffFunc m_EvalAndDiffFunc;
 
 		std::unordered_map<std::string, int> m_ConstantMap;
 		std::vector<torch::Tensor> m_Constants;
