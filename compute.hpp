@@ -14,7 +14,6 @@
 #include "Expression/shunter.hpp"
 
 // Optim
-#include "Optim/lm.hpp"
 #include "Optim/model.hpp"
-#include "Optim/solver.hpp"
+#include "Optim/slmp.hpp"
 

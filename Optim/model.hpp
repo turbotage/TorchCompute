@@ -32,7 +32,7 @@ namespace optim {
 		// Constants					// PerProblemInputs			// Parameters
 		std::vector<torch::Tensor>&, 	torch::Tensor&, 			torch::Tensor&,
 		// Evaluate						// Derivative (Jacobian)
-		OptOutRef<torch::Tensor>, 		OptOutRef<torch::Tensor> )>;
+		OutRef<torch::Tensor>,			OptOutRef<torch::Tensor> )>;
 
 
 
@@ -143,12 +143,6 @@ namespace optim {
 		/// </summary>
 		/// <returns></returns>
 		void eval(torch::Tensor& value);
-
-		/// <summary>
-		/// Differentiates the model at last set variables (gives Jacobian)
-		/// </summary>
-		/// <returns></returns>
-		void diff(torch::Tensor& jacobian);
 
 		/// <summary>
 		/// Evaluates and differentiates the model at last set variables (gives Jacobian)

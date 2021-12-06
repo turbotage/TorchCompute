@@ -3,6 +3,8 @@
 #include "../Expression/shunter.hpp"
 #include "../Expression/parsing.hpp"
 
+#include "../Compute/gradients.hpp"
+
 optim::Model::Model(std::string expression, torch::TensorOptions opts,
 	std::optional<std::unordered_map<std::string, int>> per_problem_input_map,
 	std::optional<std::unordered_map<std::string, int>> parameter_map,
@@ -63,14 +65,68 @@ optim::Model::Model(std::string expression, torch::TensorOptions opts,
 
 	auto eval_func = m_pSyntaxTree.value()->getFunc();
 
-	m_Runner = [eval_func]
+	m_EvalAndDiffFunc = [eval_func, this](std::vector<torch::Tensor>& c, torch::Tensor& pi,
+		torch::Tensor& pa, OptOutRef<torch::Tensor> e, OptOutRef<torch::Tensor> j)
+	{
+		if (e.has_value() && j.has_value()) {
+
+			m_Parameters.requires_grad_(true);
+
+			e.value().get() = eval_func();
+
+			j.value().get() = compute::jacobian(e.value().get(), m_Parameters).requires_grad_(false);
+
+			m_Parameters.requires_grad_(false);
+		}
+		else if (e.has_value()) {
+			e.value().get() = eval_func();
+		}
+		else if (j.has_value()) {
+			m_Parameters.requires_grad_(true);
+			j.value().get() = compute::jacobian(eval_func(), m_Parameters).requires_grad_(false);
+			m_Parameters.requires_grad_(false);
+		}
+		else {
+			throw std::runtime_error("Called avaluation functions with no output references to evaluate tensor or jacobian tensor");
+		}
+
+	};
 }
 
 optim::Model::Model(EvalFunc func)
 {
-	m_Runner = [this, func]() {
-		return func(this->m_Constants, this->m_PerProblemInputs, this->m_Parameters);
+	m_EvalAndDiffFunc = [this, func](std::vector<torch::Tensor>& c, torch::Tensor& pi,
+		torch::Tensor& pa, OptOutRef<torch::Tensor> e, OptOutRef<torch::Tensor> j) 
+	{
+		if (e.has_value() && j.has_value()) {
+
+			m_Parameters.requires_grad_(true);
+
+			e.value().get() = func(this->m_Constants, this->m_PerProblemInputs, this->m_Parameters);
+
+			j.value().get() = compute::jacobian(e.value().get(), m_Parameters).requires_grad_(false);
+
+			m_Parameters.requires_grad_(false);
+		}
+		else if (e.has_value()) {
+			e.value().get() = func(this->m_Constants, this->m_PerProblemInputs, this->m_Parameters);
+		}
+		else if (j.has_value()) {
+			m_Parameters.requires_grad_(true);
+			j.value().get() = compute::jacobian(func(this->m_Constants, this->m_PerProblemInputs, this->m_Parameters), 
+				m_Parameters).requires_grad_(false);
+			m_Parameters.requires_grad_(false);
+		}
+		else {
+			throw std::runtime_error("Called avaluation functions with no output references to evaluate tensor or jacobian tensor");
+		}
+
 	};
+}
+
+optim::Model::Model(EvalAndDiffFunc func)
+{
+	m_EvalAndDiffFunc = func;
 }
 
 
@@ -84,7 +140,7 @@ void optim::Model::to(torch::Device device)
 		}
 	}
 
-	// Dependents
+	// Per Problem Inputs
 	if (m_PerProblemInputs.device() != device) {
 		m_PerProblemInputs = m_PerProblemInputs.to(device);
 	}
@@ -167,7 +223,12 @@ torch::Tensor& optim::Model::getParameters()
 	return m_Parameters;
 }
 
-torch::Tensor optim::Model::operator()()
+void optim::Model::eval(torch::Tensor& value)
 {
-	return m_Runner();
+	m_EvalAndDiffFunc(this->m_Constants, this->m_PerProblemInputs, this->m_Parameters, value, std::nullopt);
+}
+
+void optim::Model::eval_diff(torch::Tensor& value, torch::Tensor& jacobian)
+{
+	m_EvalAndDiffFunc(this->m_Constants, this->m_PerProblemInputs, this->m_Parameters, value, std::ref(jacobian));
 }

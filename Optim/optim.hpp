@@ -9,8 +9,6 @@ namespace optim {
 															// Model			// Jacobian
 	using JacobianSetter = std::function<void(std::unique_ptr<optim::Model>&, torch::Tensor&)>;
 
-	void default_jacobian_setter(std::unique_ptr<optim::Model>& pModel, torch::Tensor& jacobian);
-
 
 	struct OptimizerSettings {
 
@@ -18,7 +16,6 @@ namespace optim {
 
 		std::unique_ptr<optim::Model>			pModel;
 		torch::Tensor							data;
-		JacobianSetter							jacobianSetter = default_jacobian_setter;
 		torch::Device							startDevice; // Set to CPU by default constructor
 		torch::Device							stopDevice;  // Set to CPU by default constructor
 		float									tolerance = 1e-4;
@@ -46,7 +43,6 @@ namespace optim {
 
 		std::unique_ptr<optim::Model>			m_pModel;
 		torch::Tensor							m_Data;
-		JacobianSetter							m_JacobianSetter;
 		torch::Device							m_StartDevice;
 		torch::Device							m_StopDevice;
 		float									m_Tolerance = 1e-4;

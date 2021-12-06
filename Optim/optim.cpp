@@ -2,16 +2,6 @@
 
 #include "../Compute/gradients.hpp"
 
-void optim::default_jacobian_setter(std::unique_ptr<optim::Model>& pModel, torch::Tensor& jacobian)
-{
-	i32 numProb = pModel->getNumProblems();
-	i32 numInpPerProb = pModel->getNumInputsPerProblem();
-
-	torch::Tensor y = (*pModel)();
-	jacobian = compute::jacobian(y, pModel->getParameters().requires_grad_(true)).requires_grad_(false);
-	pModel->getParameters().requires_grad_(false);
-}
-
 optim::OptimizerSettings::OptimizerSettings()
 	: startDevice(torch::Device("cpu")), stopDevice(torch::Device("cpu"))
 {
@@ -19,10 +9,8 @@ optim::OptimizerSettings::OptimizerSettings()
 }
 
 
-
-
 optim::Optimizer::Optimizer(OptimizerSettings settings)
-	:   m_pModel(std::move(settings.pModel)), m_Data(settings.data), m_JacobianSetter(settings.jacobianSetter),
+	:   m_pModel(std::move(settings.pModel)), m_Data(settings.data),
 		m_StartDevice(settings.startDevice), m_StopDevice(settings.stopDevice),
 		m_Tolerance(settings.tolerance), m_MaxIter(settings.maxIter)
 {

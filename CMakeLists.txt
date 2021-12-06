@@ -23,19 +23,17 @@ add_library(ComputeLib
     "Compute/random.cpp"
     "Compute/lstq.cpp"
     "Compute/linalg_utils.cpp"
-
+    
     "Optim/model.cpp"
     "Optim/optim.cpp"
     "Optim/slmp.cpp"
-
+    
     "Expression/expression.cpp"
     "Expression/shunter.cpp" 
     "Expression/parsing.cpp"
     "Expression/lexer.cpp"
-
-    "Models/adc.cpp"
-    "Models/vfa.cpp"
-    )
+    
+    "Models/models.cpp")
 
 #set_property(TARGET Compute PROPERTY CXX_STANDARD_REQUIRED 17)
 

@@ -141,9 +141,9 @@ void optim::SLMP::step()
 	torch::InferenceMode im_guard;
 
 	// Compute J
-	m_JacobianSetter(m_pModel, J);
+	m_pModel->eval_diff(res, J);
 	// Compute res
-	res = ((*m_pModel)() - data_slice).view({numProbs, numInputs, 1});
+	res = (res - data_slice).view({numProbs, numInputs, 1});
 
 	// Perform the dogleg calculations
 	dogleg();
@@ -163,7 +163,8 @@ void optim::SLMP::step()
 
 	// Objective function value at proposed new poin
 	torch::Tensor& et = pr_2;
-	et = 0.5 * torch::square(((*m_pModel)() - data_slice).view({numProbs, numInputs, 1})).sum(1).view({numProbs}); 
+	m_pModel->eval(et);
+	et = 0.5 * torch::square((et- data_slice).view({numProbs, numInputs, 1})).sum(1).view({numProbs}); 
 	
 	// actual decrease
 	torch::Tensor& actual = pr_1;

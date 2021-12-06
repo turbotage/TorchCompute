@@ -27,11 +27,16 @@ namespace optim {
 	class SLMP : public Optimizer {
 	public:
 
+		SLMP() = delete;
+		SLMP(const SLMP&) = delete;
+		SLMP& operator=(const SLMP&) = delete;
+
+		SLMP(SLMPSettings settings);
+
 		OptimResult operator()() override;
 
 	private:
 		
-		SLMP(SLMPSettings settings);
 
 	private:
 

@@ -21,6 +21,11 @@ typedef std::int_fast16_t i16;
 typedef std::int_fast8_t i8;
 
 // Used to signal output, functions with these parameters will fill the variable which the
+// reference points to
+template<typename T>
+using OutRef = T&;
+
+// Used to signal output, functions with these parameters will fill the variable which the
 // reference points to if OptOutRef isn't std::nullopt
 template<typename T>
 using OptOutRef = std::optional<std::reference_wrapper<T>>;
