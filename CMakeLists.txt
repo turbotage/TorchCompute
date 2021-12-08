@@ -17,7 +17,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Add source to this project's executable.
 #add_executable
 #add_library
-add_library(ComputeLib
+add_executable(ComputeLib
     "Compute/gradients.cpp"
     "Compute/kmeans.cpp"
     "Compute/random.cpp"
@@ -33,7 +33,10 @@ add_library(ComputeLib
     "Expression/parsing.cpp"
     "Expression/lexer.cpp"
     
-    "Models/models.cpp")
+    "Models/models.cpp"
+
+    "Tests/test_slmp.cpp"
+ "Expression/expression_nodes.cpp")
 
 #set_property(TARGET Compute PROPERTY CXX_STANDARD_REQUIRED 17)
 
@@ -74,5 +77,5 @@ target_precompile_headers(ComputeLib PUBLIC "pch.hpp")
 
 
 # Tests
-add_executable(ComputeTestSLMP "Tests/test_slmp.cpp")
-target_link_libraries(ComputeTestSLMP ComputeLib)
+#add_executable(ComputeTestSLMP "Tests/test_slmp.cpp")
+#target_link_libraries(ComputeTestSLMP ComputeLib)

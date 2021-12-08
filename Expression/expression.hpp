@@ -1,7 +1,24 @@
 #pragma once
 
 #include "../pch.hpp"
+
 #include "expression_nodes.hpp"
+
+/*
+The Lexer will create internal representations of variable names and numbers, how these look will determine
+the structure the shunter creates and finally how the expression tree is built. It is therefore extremly important
+that the following rules are followed by expressions
+
+GENERAL		:	expressions may not contain white-spaces (might be changed later)
+			:	expressions should only contain valid operators, functions and valid variable names
+			:	
+
+VARIABLES	:	variable names starts with '$'  (eg 2*sin($X0))
+				variable names can only contain alphanumerical characters
+				variable names may not contain the substrings {"NEG","NUMVAR"}
+
+*/
+
 
 namespace expression {
 
@@ -16,11 +33,11 @@ namespace expression {
 
 		void to(torch::Device device);
 
+		std::string getReadableTree();
+
 	private:
 
-		static std::function<torch::Tensor()> fetch_and_negate(
-			const std::function<torch::Tensor(torch::Tensor)>& negate,
-			const std::function<torch::Tensor()>& fetch);
+		static std::pair<std::string, bool> check_variable_sign(const std::string& varname);
 
 		static void handle_number(std::string numid, torch::Tensor& var, std::stack<std::unique_ptr<Node>>& node_stack);
 
@@ -37,10 +54,10 @@ namespace expression {
 		std::string m_Expression;
 		std::string m_LexedExpression;
 
+
 		std::map<std::string, torch::Tensor> m_Numbers;
 		std::map<std::string, std::function<torch::Tensor()>> m_VariableFetchers;
-		
-		std::map<std::string, std::function<torch::Tensor(torch::Tensor)>> m_VariableNegateMaps;
+		std::list<std::function<torch::Tensor()>> m_VariableNegates;
 
 		std::unique_ptr<Node> m_pRootNode;
 	};

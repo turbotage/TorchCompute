@@ -19,7 +19,7 @@ expression::Shunter::Shunter(std::string& expression)
 		if (str[0] == VARIABLE_START_CHARACTER) {
 			if (str.size() > 1) {
 				if (std::isalpha(str[1])) {
-					for (; i < str.size() && (std::isdigit(str[i]) || std::isalpha(str[i])); ++i)
+					for (; i < str.size() && (std::isdigit(str[i]) || std::isalpha(str[i]) || str[i] == '_'); ++i)
 						token += str[i];
 					return std::make_tuple(str.substr(i), Token(token, eTokenType::VARIABLE));
 				}

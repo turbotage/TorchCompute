@@ -18,6 +18,10 @@ namespace expression {
 
 		virtual std::function<torch::Tensor()> runner() = 0;
 
+		std::string getNodeName();
+
+		friend std::string readableNode(Node* node, ui32 nTabs);
+
 	protected:
 
 		std::string m_NodeStr;
@@ -28,15 +32,11 @@ namespace expression {
 	class NumberNode : public Node {
 	public:
 
-		NumberNode(std::string& num_name, torch::Tensor& val)
-			: m_NumberName(num_name), m_Value(val)
-		{
-			this->m_NodeStr = "num";
-		}
+		NumberNode(std::string& num_name, torch::Tensor& val);
 		
-		std::function<torch::Tensor()> runner() override {
-			return [this]() { return this->m_Value; };
-		}
+		std::function<torch::Tensor()> runner() override;
+
+		std::string getNumberName();
 
 	private:
 		std::string m_NumberName;
@@ -47,15 +47,11 @@ namespace expression {
 	class VariableNode : public Node {
 	public:
 
-		VariableNode(std::string& var_name, const std::function<torch::Tensor()>& var_fetcher)
-			: m_VariableName(var_name), m_VariableFetcher(var_fetcher)
-		{
-			this->m_NodeStr = "var";
-		}
+		VariableNode(std::string& var_name, const std::function<torch::Tensor()>& var_fetcher);
 
-		std::function<torch::Tensor()> runner() override {
-			return [this]() { return this->m_VariableFetcher(); };
-		}
+		std::function<torch::Tensor()> runner() override;
+
+		std::string getVarName();
 
 	private:
 		
@@ -68,21 +64,9 @@ namespace expression {
 	class AddNode : public Node {
 	public:
 
-		AddNode(std::unique_ptr<Node> left, std::unique_ptr<Node> right) 
-		{
-			this->m_NodeStr = "op:add";
-			this->m_Children.push_back(std::move(left));
-			this->m_Children.push_back(std::move(right));
-		}
+		AddNode(std::unique_ptr<Node> left, std::unique_ptr<Node> right);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Left = this->m_Children[0]->runner();
-			m_Right = this->m_Children[1]->runner();
-
-			return [this] {
-				return this->m_Left() + this->m_Right();
-			};
-		}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Left;
@@ -92,20 +76,9 @@ namespace expression {
 	class SubNode : public Node {
 	public:
 
-		SubNode(std::unique_ptr<Node> left, std::unique_ptr<Node> right) {
-			this->m_NodeStr = "op:sub";
-			this->m_Children.push_back(std::move(left));
-			this->m_Children.push_back(std::move(right));
-		}
+		SubNode(std::unique_ptr<Node> left, std::unique_ptr<Node> right);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Left = this->m_Children[0]->runner();
-			m_Right = this->m_Children[1]->runner();
-
-			return [this] {
-				return m_Left() - m_Right();
-			};
-		}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Left;
@@ -115,20 +88,9 @@ namespace expression {
 	class MulNode : public Node {
 	public:
 
-		MulNode(std::unique_ptr<Node> left, std::unique_ptr<Node> right) {
-			this->m_NodeStr = "op:mul";
-			this->m_Children.push_back(std::move(left));
-			this->m_Children.push_back(std::move(right));
-		}
+		MulNode(std::unique_ptr<Node> left, std::unique_ptr<Node> right);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Left = this->m_Children[0]->runner();
-			m_Right = this->m_Children[1]->runner();
-
-			return [this] {
-				return m_Left() * m_Right();
-			};
-		}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Left;
@@ -138,20 +100,9 @@ namespace expression {
 	class DivNode : public Node {
 	public:
 
-		DivNode(std::unique_ptr<Node> left, std::unique_ptr<Node> right) {
-			this->m_NodeStr = "op:div";
-			this->m_Children.push_back(std::move(left));
-			this->m_Children.push_back(std::move(right));
-		}
+		DivNode(std::unique_ptr<Node> left, std::unique_ptr<Node> right);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Left = this->m_Children[0]->runner();
-			m_Right = this->m_Children[1]->runner();
-
-			return [this] {
-				return m_Left() / m_Right();
-			};
-		}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Left;
@@ -163,18 +114,9 @@ namespace expression {
 	class SinNode : public Node {
 	public:
 
-		SinNode(std::unique_ptr<Node> input) {
-			this->m_NodeStr = "func:sin";
-			this->m_Children.push_back(std::move(input));
-		}
+		SinNode(std::unique_ptr<Node> input);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Input = this->m_Children[0]->runner();
-
-			return [this] {
-				return torch::sin(m_Input());
-			};
-		}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Input;
@@ -183,18 +125,9 @@ namespace expression {
 	class CosNode : public Node {
 	public:
 
-		CosNode(std::unique_ptr<Node> input) {
-			this->m_NodeStr = "func:cos";
-			this->m_Children.push_back(std::move(input));
-		}
+		CosNode(std::unique_ptr<Node> input);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Input = this->m_Children[0]->runner();
-
-			return [this] {
-				return torch::cos(m_Input());
-			};
-		}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Input;
@@ -203,18 +136,9 @@ namespace expression {
 	class TanNode : public Node {
 	public:
 
-		TanNode(std::unique_ptr<Node> input) {
-			this->m_NodeStr = "func:tan";
-			this->m_Children.push_back(std::move(input));
-		}
+		TanNode(std::unique_ptr<Node> input);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Input = this->m_Children[0]->runner();
-
-			return [this] {
-				return torch::tan(m_Input());
-			};
-		}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Input;
@@ -223,18 +147,9 @@ namespace expression {
 	class SinhNode : public Node {
 	public:
 
-		SinhNode(std::unique_ptr<Node> input) {
-			this->m_NodeStr = "func:sinh";
-			this->m_Children.push_back(std::move(input));
-		}
+		SinhNode(std::unique_ptr<Node> input);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Input = this->m_Children[0]->runner();
-
-			return [this] {
-				return torch::sinh(m_Input());
-			};
-		}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Input;
@@ -243,18 +158,9 @@ namespace expression {
 	class CoshNode : public Node {
 	public:
 
-		CoshNode(std::unique_ptr<Node> input) {
-			this->m_NodeStr = "func:cosh";
-			this->m_Children.push_back(std::move(input));
-		}
+		CoshNode(std::unique_ptr<Node> input);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Input = this->m_Children[0]->runner();
-
-			return [this] {
-				return torch::cosh(m_Input());
-			};
-		}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Input;
@@ -263,18 +169,9 @@ namespace expression {
 	class TanhNode : public Node {
 	public:
 
-		TanhNode(std::unique_ptr<Node> input) {
-			this->m_NodeStr = "func:tanh";
-			this->m_Children.push_back(std::move(input));
-		}
+		TanhNode(std::unique_ptr<Node> input);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Input = this->m_Children[0]->runner();
-
-			return [this] {
-				return torch::tanh(m_Input());
-			};
-		}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Input;
@@ -284,18 +181,9 @@ namespace expression {
 	class AsinNode : public Node {
 	public:
 
-		AsinNode(std::unique_ptr<Node> input) {
-			this->m_NodeStr = "func:asin";
-			this->m_Children.push_back(std::move(input));
-		}
+		AsinNode(std::unique_ptr<Node> input);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Input = this->m_Children[0]->runner();
-
-			return [this] {
-				return torch::asin(m_Input());
-			};
-		}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Input;
@@ -305,18 +193,9 @@ namespace expression {
 	class AcosNode : public Node {
 	public:
 
-		AcosNode(std::unique_ptr<Node> input) {
-			this->m_NodeStr = "func:acos";
-			this->m_Children.push_back(std::move(input));
-		}
+		AcosNode(std::unique_ptr<Node> input);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Input = this->m_Children[0]->runner();
-
-			return [this] {
-				return torch::acos(m_Input());
-			};
-		}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Input;
@@ -326,18 +205,9 @@ namespace expression {
 	class AtanNode : public Node {
 	public:
 
-		AtanNode(std::unique_ptr<Node> input) {
-			this->m_NodeStr = "func:atan";
-			this->m_Children.push_back(std::move(input));
-		}
+		AtanNode(std::unique_ptr<Node> input);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Input = this->m_Children[0]->runner();
-
-			return [this] {
-				return torch::atan(m_Input());
-			};
-		}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Input;
@@ -347,20 +217,9 @@ namespace expression {
 	class Atan2Node : public Node {
 	public:
 
-		Atan2Node(std::unique_ptr<Node> input, std::unique_ptr<Node> other) {
-			this->m_NodeStr = "func:atan2";
-			this->m_Children.push_back(std::move(input));
-			this->m_Children.push_back(std::move(other));
-		}
+		Atan2Node(std::unique_ptr<Node> input, std::unique_ptr<Node> other);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Input = this->m_Children[0]->runner();
-			m_Other = this->m_Children[1]->runner();
-
-			return [this] {
-				return torch::atan2(m_Input(), m_Other());
-			};
-		}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Input;
@@ -371,18 +230,9 @@ namespace expression {
 	class AsinhNode : public Node {
 	public:
 
-		AsinhNode(std::unique_ptr<Node> input) {
-			this->m_NodeStr = "func:asinh";
-			this->m_Children.push_back(std::move(input));
-		}
+		AsinhNode(std::unique_ptr<Node> input);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Input = this->m_Children[0]->runner();
-
-			return [this] {
-				return torch::asinh(m_Input());
-			};
-	}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Input;
@@ -392,18 +242,9 @@ namespace expression {
 	class AcoshNode : public Node {
 	public:
 
-		AcoshNode(std::unique_ptr<Node> input) {
-			this->m_NodeStr = "func:acosh";
-			this->m_Children.push_back(std::move(input));
-		}
+		AcoshNode(std::unique_ptr<Node> input);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Input = this->m_Children[0]->runner();
-
-			return [this] {
-				return torch::acosh(m_Input());
-			};
-		}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Input;
@@ -413,18 +254,9 @@ namespace expression {
 	class AtanhNode : public Node {
 	public:
 
-		AtanhNode(std::unique_ptr<Node> input) {
-			this->m_NodeStr = "func:atanh";
-			this->m_Children.push_back(std::move(input));
-		}
+		AtanhNode(std::unique_ptr<Node> input);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Input = this->m_Children[0]->runner();
-
-			return [this] {
-				return torch::atanh(m_Input());
-			};
-		}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Input;
@@ -436,18 +268,9 @@ namespace expression {
 	class ExpNode : public Node {
 	public:
 
-		ExpNode(std::unique_ptr<Node> input) {
-			this->m_NodeStr = "func:exp";
-			this->m_Children.push_back(std::move(input));
-		}
+		ExpNode(std::unique_ptr<Node> input);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Input = this->m_Children[0]->runner();
-
-			return [this] {
-				return torch::exp(m_Input());
-			};
-		}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Input;
@@ -457,20 +280,9 @@ namespace expression {
 	class PowNode : public Node {
 	public:
 
-		PowNode(std::unique_ptr<Node> base, std::unique_ptr<Node> exponent) {
-			this->m_NodeStr = "func:pow";
-			this->m_Children.push_back(std::move(base));
-			this->m_Children.push_back(std::move(exponent));
-		}
+		PowNode(std::unique_ptr<Node> base, std::unique_ptr<Node> exponent);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Base = this->m_Children[0]->runner();
-			m_Exponent = this->m_Children[1]->runner();
-
-			return [this] {
-				return torch::pow(m_Base(), m_Exponent());
-			};
-		}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Base;
@@ -481,18 +293,9 @@ namespace expression {
 	class LogNode : public Node {
 	public:
 
-		LogNode(std::unique_ptr<Node> input) {
-			this->m_NodeStr = "func:log";
-			this->m_Children.push_back(std::move(input));
-		}
+		LogNode(std::unique_ptr<Node> input);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Input = this->m_Children[0]->runner();
-
-			return [this] {
-				return torch::log(m_Input());
-			};
-	}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Input;
@@ -502,18 +305,9 @@ namespace expression {
 	class Log10Node : public Node {
 	public:
 
-		Log10Node(std::unique_ptr<Node> input) {
-			this->m_NodeStr = "func:log10";
-			this->m_Children.push_back(std::move(input));
-		}
+		Log10Node(std::unique_ptr<Node> input);
 
-		std::function<torch::Tensor()> runner() override {
-			m_Input = this->m_Children[0]->runner();
-
-			return [this] {
-				return torch::log10(m_Input());
-			};
-		}
+		std::function<torch::Tensor()> runner() override;
 
 	private:
 		std::function<torch::Tensor()> m_Input;

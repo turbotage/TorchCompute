@@ -17,3 +17,6 @@
 #include "Optim/model.hpp"
 #include "Optim/slmp.hpp"
 
+// Models
+#include "Models/models.hpp"
+

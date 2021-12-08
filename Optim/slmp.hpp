@@ -5,6 +5,8 @@
 #include "model.hpp"
 #include "optim.hpp"
 
+#include <limits>
+
 namespace optim {
 
 	struct SLMPSettings : public OptimizerSettings {
@@ -14,29 +16,24 @@ namespace optim {
 		float mu = 0.25;
 		float eta = 0.75;
 		std::optional<torch::Device> switchDevice;
-		ui32 switchAtN = 5000;
+		ui32 switchAtN = -1; // Don't switch on default
 	};
-
+	 
 	struct SLMPResult : public OptimResult {
 		torch::Tensor finalDeltas;
 	};
 
-
-
 	// Scaled Levenberg-Marquardt with Powel Dogleg (trust region LM)
-	class SLMP : public Optimizer {
+	class SLMP : public Optimizer<SLMPResult> {
 	public:
 
 		SLMP() = delete;
 		SLMP(const SLMP&) = delete;
 		SLMP& operator=(const SLMP&) = delete;
 
-		SLMP(SLMPSettings settings);
+		SLMP(SLMPSettings& settings);
 
-		OptimResult operator()() override;
-
-	private:
-		
+		SLMPResult eval() override;
 
 	private:
 
@@ -65,7 +62,7 @@ namespace optim {
 		torch::Device m_CurrentDevice;
 
 		std::optional<torch::Device> m_SwitchDevice;
-		ui32 m_SwitchNumber;
+		i32 m_SwitchNumber = -1;
 		bool m_HasSwitched = false;
 
 		torch::Tensor m_Parameters;
@@ -73,14 +70,6 @@ namespace optim {
 
 
 	private:
-
-		torch::Tensor data_slice;
-
-		torch::Tensor nci;
-
-		i32 numProbs;
-		i32 numInputs;
-		i32 numParams;
 
 		enum MaskTypes {
 			SUCCESSFUL_CHOLESKY = 0,
@@ -90,35 +79,35 @@ namespace optim {
 			INTERPOLATED = 8,
 		};
 
+		torch::Tensor nci;
+
+		i32 numProbs;
+		i32 numInputs;
+		i32 numParams;
+
+		torch::Tensor data_slice;
+		
 		// (nProbs, nPerProbInps, 1) (PRIN)
 		torch::Tensor res;					// fp
-		torch::Tensor pr_in_1_1;			// fp (Jp)
+		torch::Tensor res_t;				// fp
 
 		// (nProbs, nParams, 1) (PRPA)
 		torch::Tensor pD;					// fp
-		torch::Tensor pr_pa_1_1;			// fp (pCP, g, )
 
 		// (nProbs, nParams)
-		torch::Tensor pr_pa_1;				// fp (Jn, t)
-
-
-		// (nProbs, nPerProbInps, nParams) (PRINPA)
+		// (nProbs, nPerProbInps, nParams)
 		torch::Tensor J;					// fp
-		torch::Tensor pr_in_pa_1;			// fp (Js)
 
-		// (nProbs, nParams, nParams) (PRPAPA)
-		torch::Tensor pr_pa_pa_1;			// fp (D, Hs_chol)
-		torch::Tensor pr_pa_pa_2;			// fp (Hs, )
+		// (nProbs, nPerProbInps, 1)
+		torch::Tensor JpD;
+
+		// (nProbs, nParams, nParams)
 
 		// (nProbs)
 		torch::Tensor delta;				// fp
 
 		torch::Tensor step_mask;			// int32
 
-		torch::Tensor pr_0;					// bool (chol_success, full_gn, interpol_step, gain_mask)
-
-		torch::Tensor pr_1;					// fp (pGN_Norm, ep)
-		torch::Tensor pr_2;					// fp (pCP_Norm, et)
 
 
 	};

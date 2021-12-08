@@ -27,12 +27,12 @@ namespace optim {
 
 
 
-	// Function used to either evaluate the model and get back the jacobian
+	// Function used to either evaluate the model and get back the jacobian (or get residuals)
 	using EvalAndDiffFunc = std::function<void(
 		// Constants					// PerProblemInputs			// Parameters
 		std::vector<torch::Tensor>&, 	torch::Tensor&, 			torch::Tensor&,
-		// Evaluate						// Derivative (Jacobian)
-		OutRef<torch::Tensor>,			OptOutRef<torch::Tensor> )>;
+		// Values						// Derivative (Jacobian)	// Data
+		torch::Tensor&,					OptOutRef<torch::Tensor>,	OptOutRef<const torch::Tensor>)>;
 
 
 
@@ -51,10 +51,10 @@ namespace optim {
 		/// <param name="dependent_map"></param>
 		/// <param name="parameter_map"></param>
 		/// <param name="staticvar_map"></param>
-		Model(std::string expression, torch::TensorOptions opts,
+		Model(std::string expression,
 			std::optional<std::unordered_map<std::string, int>> dependent_map,
 			std::optional<std::unordered_map<std::string, int>> parameter_map,
-			std::optional<std::unordered_map<std::string, int>> staticvar_map);
+			std::optional<std::unordered_map<std::string, int>> constant_map);
 
 		/// <summary>
 		///	Create the model from a EvalFunc, Jacobian gets computed by default_jacobian_fetcher
@@ -69,6 +69,12 @@ namespace optim {
 		Model(EvalAndDiffFunc func);
 
 		/// <summary>
+		///	Gets printable string to the expression this model runs (if run by expression)
+		/// </summary>
+		/// <param name="func"></param>
+		std::string getReadableExpressionTree();
+
+		/// <summary>
 		/// Send, parameters, dependents and staticvars to specified device if they
 		/// don't already reside there.
 		/// </summary>
@@ -81,7 +87,7 @@ namespace optim {
 		/// done, since no new tensor needs to be created.
 		/// </summary>
 		/// <param name="staticvars"></param>
-		void setConstants(std::vector<torch::Tensor> constants);
+		void setConstants(const std::vector<torch::Tensor>& constants);
 
 		/// <summary>
 		/// The known per problem inputs of the model, the x
@@ -145,10 +151,25 @@ namespace optim {
 		void eval(torch::Tensor& value);
 
 		/// <summary>
+		/// Evaluates the model at last set variables
+		/// Returns the residuals instread of model values
+		/// </summary>
+		/// <returns></returns>
+		void res(torch::Tensor& value, const torch::Tensor& data);
+
+		/// <summary>
 		/// Evaluates and differentiates the model at last set variables (gives Jacobian)
 		/// </summary>
 		/// <returns></returns>
 		void eval_diff(torch::Tensor& value, torch::Tensor& jacobian);
+
+		/// <summary>
+		/// Evaluates and differentiates the model at last set variables (gives Jacobian)
+		/// gives back residuals instead of model value
+		/// </summary>
+		/// <returns></returns>
+		void res_diff(torch::Tensor& value, torch::Tensor& jacobian, const torch::Tensor& data);
+
 
 	private:
 
@@ -165,8 +186,6 @@ namespace optim {
 
 		std::unordered_map<std::string, int> m_ParameterMap;
 		torch::Tensor m_Parameters;
-
-		torch::TensorOptions m_TensorOptions;
 	};
 
 }

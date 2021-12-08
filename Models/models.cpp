@@ -3,7 +3,7 @@
 
 
 void models::adc_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Tensor& per_problem_inputs, torch::Tensor& parameters,
-	OutRef<torch::Tensor> values, OptOutRef<torch::Tensor> jacobian)
+	OutRef<torch::Tensor> values, OptOutRef<torch::Tensor> jacobian, OptOutRef<const torch::Tensor> data)
 {
 	using namespace torch::indexing;
 
@@ -17,23 +17,29 @@ void models::adc_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Ten
 	torch::Tensor S0 = par.index({ Slice(), 0 }).view({ par.size(0), 1 });
 	torch::Tensor ADC = par.index({ Slice(), 1 }).view({ par.size(0), 1 });
 
+	torch::Tensor b;
 	torch::Tensor expterm;
-	if (per_problem_inputs.defined()) { // There were different b-values for all pixels
+	if (per_problem_inputs.defined()) { // There were different b-values for all problems
 		numData = ppi.size(1);
-		expterm = torch::exp(- ADC * ppi.index({ Slice(), Slice(), 0 }).view({ ppi.size(0), ppi.size(1) }));
+		b = ppi.index({ Slice(), Slice(), 0 }).view({ ppi.size(0), ppi.size(1) });
 	}
 	else {
 		numData = constants[0].size(0);
-		expterm = torch::exp(-constants[0] * ADC);
+		b = constants[0];
 	}
+	expterm = torch::exp(-b * ADC);
 
 	values = S0 * expterm;
 
 	if (jacobian.has_value()) {
-		jacobian.index_put_({Slice(), 0}, expterm)
+		torch::Tensor& J = jacobian.value().get();
+		J.index_put_({ Slice(), Slice(), 0 }, expterm);
+		J.index_put_({ Slice(), Slice(), 1 }, -b * values);
 	}
 
-
+	if (data.has_value()) {
+		values = values - data.value().get();
+	}
 }
 
 
@@ -60,19 +66,54 @@ torch::Tensor models::simple_adc_model_linear(torch::Tensor bvals, torch::Tensor
 
 
 
-torch::Tensor models::vfa_func(
-	std::vector<torch::Tensor> staticvars,
-	torch::Tensor per_problem_inputs, torch::Tensor parameters)
+void models::vfa_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Tensor& per_problem_inputs, torch::Tensor& parameters,
+	OutRef<torch::Tensor> values, OptOutRef<torch::Tensor> jacobian, OptOutRef<const torch::Tensor> data)
 {
 	using namespace torch::indexing;
 
-	torch::Tensor temp = parameters.index({ Slice(), 0 }).view({ parameters.size(0), 1 }); // s0
-	temp *= torch::sin(per_problem_inputs.index({ Slice(), Slice(), 0 }).view({ per_problem_inputs.size(0), per_problem_inputs.size(1) })); // s0 * sin(FA)
-	torch::Tensor expterm = torch::exp(-staticvars[0] / parameters.index({ Slice(), 1 }).view({ parameters.size(0), 1 })); // exp(-TR/T1)
-	temp *= (1 - expterm); // s0 * sin(FA) * (1-expterm)
-	temp /= (1 - expterm * torch::cos(per_problem_inputs.index({ Slice(), Slice(), 0 }).view({ per_problem_inputs.size(0), per_problem_inputs.size(1) }))); // Full expression
+	torch::Tensor& ppi = per_problem_inputs;
+	torch::Tensor& par = parameters;
 
-	return temp;
+	ui32 numProbs = par.size(0);
+	ui32 numParams = par.size(1);
+	ui32 numData;
+
+	torch::Tensor S0 = par.index({ Slice(), 0 }).view({ par.size(0), 1 });
+	torch::Tensor T1 = par.index({ Slice(), 1 }).view({ par.size(0), 1 });
+	torch::Tensor TR = constants[0];
+
+	torch::Tensor FA;
+	if (per_problem_inputs.defined()) { // There were different FA-values for all problems
+		numData = ppi.size(1);
+		FA = ppi.index({ Slice(), Slice(), 0 }).view({ ppi.size(0), ppi.size(1) });
+	}
+	else {
+		numData = constants[1].size(0);
+		FA = constants[1];
+	}
+	
+	torch::Tensor expterm = torch::exp(-TR / T1);
+	torch::Tensor denom = (1 - expterm * torch::cos(FA));
+
+	values = torch::sin(FA);
+
+	if (jacobian.has_value()) {
+		torch::Tensor& J = jacobian.value().get();
+		J.index_put_({ Slice(), Slice(), 0 }, values * (1 - expterm) / denom );
+		J.index_put_({ Slice(), Slice(), 1 }, S0 * values * ((torch::cos(FA)-1) / torch::square(denom)) * expterm * TR / torch::square(T1));
+	}
+
+	if (jacobian.has_value()) {
+		torch::Tensor& J = jacobian.value().get();
+		values = J.index({ Slice(), Slice(),0 }) * S0;
+	}
+	else {
+		values = S0 * values * (1 - expterm) / denom;
+	}
+
+	if (data.has_value()) {
+		values = values - data.value().get();
+	}
 }
 
 torch::Tensor models::simple_vfa_model_linear(torch::Tensor flip_angles, torch::Tensor data, torch::Tensor TR)
@@ -93,3 +134,4 @@ torch::Tensor models::simple_vfa_model_linear(torch::Tensor flip_angles, torch::
 
 	return temp;
 }
+
