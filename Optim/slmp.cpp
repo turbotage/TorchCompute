@@ -35,8 +35,6 @@ void optim::SLMP::dogleg()
 {
 	using namespace torch::indexing;
 
-	//std::cout << "params:\n" << m_pModel->getParameters() << std::endl;
-
 	c10::InferenceMode im_guard;
 
 	torch::Tensor pGN_Norm;
@@ -120,10 +118,10 @@ void optim::SLMP::dogleg()
 
 		torch::Tensor GN_CP = GN - CP;
 		torch::Tensor A = torch::square(GN_CP).sum(1);
-		torch::Tensor B = 2.0 * (CP * GN_CP).sum(1);
+		torch::Tensor B = 2.0f * (CP * GN_CP).sum(1);
 		torch::Tensor C = torch::square(CP).sum(1) - torch::square(delta.index({interpol_step}).view({masksum, 1}));
 
-		torch::Tensor k = 0.5 * (-B + torch::sqrt(torch::square(B) - 4 * A * C)) / A;
+		torch::Tensor k = 0.5f * (-B + torch::sqrt(torch::square(B) - 4.0f * A * C)) / A;
 
 		pD.index_put_({interpol_step, Slice()}, CP + k.view({masksum,1,1})*(GN - CP));
 		step_mask.index_put_({interpol_step}, MaskTypes::INTERPOLATED);
@@ -157,7 +155,7 @@ void optim::SLMP::step()
 		// Calculate actual reduction
 		{
 			// Objective function value at current point
-			torch::Tensor ep = 0.5 * torch::square(res).sum(1).view({ numProbs });
+			torch::Tensor ep = 0.5f * torch::square(res).sum(1).view({ numProbs });
 
 			// Trailing point
 			m_pModel->setParameters(currentParams + pD.view({ numProbs, numParams }));
@@ -167,7 +165,7 @@ void optim::SLMP::step()
 			m_pModel->res(res_t, data_slice);
 			res_t = res_t.view({ numProbs, numInputs, 1 });
 
-			torch::Tensor et = 0.5 * torch::square(res_t).sum(1).view({ numProbs });
+			torch::Tensor et = 0.5f * torch::square(res_t).sum(1).view({ numProbs });
 
 			// actual decrease
 			actual = ep - et;
@@ -177,7 +175,7 @@ void optim::SLMP::step()
 
 		// predicted decrease
 		torch::Tensor predicted = -torch::bmm(res.transpose(1, 2), JpD).view({ numProbs }) -
-			0.5 * torch::square(JpD).sum(1).view({ numProbs });
+			0.5f * torch::square(JpD).sum(1).view({ numProbs });
 
 		// gain rato
 		rho = actual / predicted;
@@ -187,7 +185,7 @@ void optim::SLMP::step()
 	gain_mask = rho <= m_Mu;
 
 	// For poor gain ratios, decrease the trust region
-	delta.index_put_({gain_mask}, 0.5 * delta.index({gain_mask}));
+	delta.index_put_({gain_mask}, 0.5f * delta.index({gain_mask}));
 
 	// This mask gives all problems which had poor gain ratio and also didn't have structural problems (cholesky didn't fail)
 	// these problems should not take a step
@@ -206,7 +204,7 @@ void optim::SLMP::step()
 	gain_mask = rho >= m_Eta;
 
 	// For a good gain ratio we increase the trust region
-	delta.index_put_({gain_mask}, 2.0*delta.index({gain_mask}));
+	delta.index_put_({gain_mask}, 2.0f*delta.index({gain_mask}));
 
 }
 
@@ -215,8 +213,6 @@ bool optim::SLMP::handle_convergence()
 	using namespace torch::indexing;
 
 	c10::InferenceMode im_guard;
-
-	std::cout << "paramshape:\n" << m_pModel->getParameters().sizes() << std::endl;
 
 	// plane convergence
 	torch::Tensor converges = torch::sqrt(torch::square(JpD).sum(1).view({numProbs})) <=
@@ -305,7 +301,7 @@ void optim::SLMP::setup_solve() {
 
 	numProbs = m_pModel->getNumProblems();
 	numParams = m_pModel->getNumParametersPerProblem();
-	numInputs = m_pModel->getNumInputsPerProblem();
+	numInputs = m_Data.size(1);
 
 	torch::TensorOptions nci_ops =
 		torch::TensorOptions().dtype(c10::ScalarType::Long).device(m_StartDevice);
@@ -332,8 +328,6 @@ void optim::SLMP::solve()
 	setup_solve();
 
 	for (ui32 iter = 0; iter < m_MaxIter; ++iter) {
-
-		std::cout << "iter: " << iter << "numProbs: " << numProbs << std::endl;
 
 		step();
 

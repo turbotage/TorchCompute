@@ -1,13 +1,12 @@
 
 #include "../compute.hpp"
 
-void slmp_cpu_adc_vfa_anal(int n, bool print) {
-
+void gn_cpu_adc_vfa_anal(int n, bool print) {
 	std::cout << "ADC model" << std::endl;
 	std::cout << "per problem b-vals : eval_and_diff" << std::endl;
 
-	optim::SLMPSettings settings;
-	
+	optim::SGNSettings settings;
+
 	std::unique_ptr<optim::Model> pModel;
 	{
 		using namespace torch::indexing;
@@ -17,7 +16,7 @@ void slmp_cpu_adc_vfa_anal(int n, bool print) {
 		torch::TensorOptions dops;
 		dops.dtype(torch::kFloat64);
 
-		auto params =	torch::rand({ n, 2 }, dops);
+		auto params = torch::rand({ n, 2 }, dops);
 
 		auto ppi = torch::rand({ n, 3, 1 }, dops);
 
@@ -41,7 +40,7 @@ void slmp_cpu_adc_vfa_anal(int n, bool print) {
 			std::cout << "true params: " << params << std::endl;
 		}
 
-		optim::SLMPResult res = optim::SLMP(settings).eval();
+		optim::SGNResult res = optim::SGN(settings).eval();
 
 		if (print) {
 			std::cout << "found params: " << res.finalParameters << std::endl;
@@ -88,7 +87,7 @@ void slmp_cpu_adc_vfa_anal(int n, bool print) {
 			std::cout << "true params: " << params << std::endl;
 		}
 
-		optim::SLMPResult res = optim::SLMP(settings).eval();
+		optim::SGNResult res = optim::SGN(settings).eval();
 
 		if (print) {
 			std::cout << "found params: " << res.finalParameters << std::endl;
@@ -103,7 +102,7 @@ void slmp_cuda_adc_vfa_anal(int n, bool print) {
 	std::cout << "ADC model" << std::endl;
 	std::cout << "per problem b-vals : eval_and_diff : switch to cpu" << std::endl;
 
-	optim::SLMPSettings settings;
+	optim::SGNSettings settings;
 
 	std::unique_ptr<optim::Model> pModel;
 	{
@@ -141,7 +140,7 @@ void slmp_cuda_adc_vfa_anal(int n, bool print) {
 			std::cout << "true params: " << params << std::endl;
 		}
 
-		optim::SLMPResult res = optim::SLMP(settings).eval();
+		optim::SGNResult res = optim::SGN(settings).eval();
 
 		if (print) {
 			std::cout << "found params: " << res.finalParameters << std::endl;
@@ -189,7 +188,7 @@ void slmp_cuda_adc_vfa_anal(int n, bool print) {
 			std::cout << "true params: " << params << std::endl;
 		}
 
-		optim::SLMPResult res = optim::SLMP(settings).eval();
+		optim::SGNResult res = optim::SGN(settings).eval();
 
 		if (print) {
 			std::cout << "found params: " << res.finalParameters << std::endl;
@@ -201,28 +200,28 @@ void slmp_cuda_adc_vfa_anal(int n, bool print) {
 }
 
 
+
 int main() {
 
 	try {
-		slmp_cpu_adc_vfa_anal(4, true);
+		gn_cpu_adc_vfa_anal(4, true);
 	}
 	catch (c10::Error e1) {
 		std::cout << e1.what() << std::endl;
 	}
 
 	try {
-		slmp_cpu_adc_vfa_anal(40000, false);
+		gn_cpu_adc_vfa_anal(40000, false);
 	}
 	catch (c10::Error e1) {
 		std::cout << e1.what() << std::endl;
 	}
 
 	try {
-		slmp_cuda_adc_vfa_anal(100000, false);
+		slmp_cuda_adc_vfa_anal(200000, false);
 	}
 	catch (c10::Error e1) {
 		std::cout << e1.what() << std::endl;
 	}
 
 }
-

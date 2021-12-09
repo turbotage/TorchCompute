@@ -14,10 +14,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 #set(CMAKE_CXX_STANDARD 17)
 #set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+#option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+
 # Add source to this project's executable.
 #add_executable
 #add_library
-add_executable(ComputeLib
+add_library(ComputeLib
     "Compute/gradients.cpp"
     "Compute/kmeans.cpp"
     "Compute/random.cpp"
@@ -27,16 +29,17 @@ add_executable(ComputeLib
     "Optim/model.cpp"
     "Optim/optim.cpp"
     "Optim/slmp.cpp"
+    "Optim/gn.cpp"
+    "Optim/sgn.cpp"
     
+    "Expression/expression_nodes.cpp"
     "Expression/expression.cpp"
     "Expression/shunter.cpp" 
     "Expression/parsing.cpp"
     "Expression/lexer.cpp"
     
     "Models/models.cpp"
-
-    "Tests/test_slmp.cpp"
- "Expression/expression_nodes.cpp")
+)
 
 #set_property(TARGET Compute PROPERTY CXX_STANDARD_REQUIRED 17)
 
@@ -52,7 +55,7 @@ endif(MSVC)
 
 
 # TODO: Add tests and install targets if needed.
-find_package(Torch REQUIRED)
+find_package(Torch REQUIRED CONFIG)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
 target_link_libraries(ComputeLib PRIVATE "${TORCH_LIBRARIES}")
@@ -74,8 +77,23 @@ endif (MSVC)
 
 target_precompile_headers(ComputeLib PUBLIC "pch.hpp")
 
-
+set_target_properties(ComputeLib PROPERTIES PUBLIC_HEADER "compute.hpp")
 
 # Tests
-#add_executable(ComputeTestSLMP "Tests/test_slmp.cpp")
-#target_link_libraries(ComputeTestSLMP ComputeLib)
+add_executable(ComputeTestExpMod "Tests/test_expression_model.cpp")
+target_link_libraries(ComputeTestExpMod ComputeLib)
+
+add_executable(ComputeTestGN "Tests/test_gn.cpp")
+target_link_libraries(ComputeTestGN ComputeLib)
+
+add_executable(ComputeTestSGN "Tests/test_sgn.cpp")
+target_link_libraries(ComputeTestSGN ComputeLib)
+
+add_executable(ComputeTestSLMP "Tests/test_slmp.cpp")
+target_link_libraries(ComputeTestSLMP ComputeLib)
+
+add_executable(ComputeTestLSTQ "Tests/test_lstq.cpp")
+target_link_libraries(ComputeTestLSTQ ComputeLib)
+
+add_executable(ComputeTestLinearFit "Tests/test_linear_fit.cpp")
+target_link_libraries(ComputeTestLinearFit ComputeLib)

@@ -16,7 +16,7 @@ namespace optim {
 		float mu = 0.25;
 		float eta = 0.75;
 		std::optional<torch::Device> switchDevice;
-		ui32 switchAtN = -1; // Don't switch on default
+		i32 switchAtN = -1; // Don't switch on default
 	};
 	 
 	struct SLMPResult : public OptimResult {

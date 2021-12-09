@@ -58,10 +58,10 @@ torch::Tensor models::simple_adc_model_linear(torch::Tensor bvals, torch::Tensor
 	// deps = parameters, reuse of var
 	deps = compute::lstq_qr(deps, torch::log(data));
 
-	deps.index_put_({ Slice(),0 }, torch::exp(deps.index({ Slice(),0 })));
-	deps.index_put_({ Slice(),1 }, -1.0 * deps.index({ Slice(), 1 }));
+	deps.index_put_({ Slice(),0 }, torch::exp(deps.index({ Slice(), 0 })));
+	deps.index_put_({ Slice(),1 }, -1.0f * deps.index({ Slice(), 1 }));
 
-	return deps;
+	return deps.view({data.size(0), 2});
 }
 
 
@@ -93,22 +93,22 @@ void models::vfa_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Ten
 	}
 	
 	torch::Tensor expterm = torch::exp(-TR / T1);
-	torch::Tensor denom = (1 - expterm * torch::cos(FA));
+	torch::Tensor denom = (1.0f - expterm * torch::cos(FA));
 
 	values = torch::sin(FA);
 
 	if (jacobian.has_value()) {
 		torch::Tensor& J = jacobian.value().get();
-		J.index_put_({ Slice(), Slice(), 0 }, values * (1 - expterm) / denom );
-		J.index_put_({ Slice(), Slice(), 1 }, S0 * values * ((torch::cos(FA)-1) / torch::square(denom)) * expterm * TR / torch::square(T1));
+		J.index_put_({ Slice(), Slice(), 0 }, values * (1.0f - expterm) / denom );
+		J.index_put_({ Slice(), Slice(), 1 }, S0 * values * ((torch::cos(FA)-1.0f) / torch::square(denom)) * expterm * TR / torch::square(T1));
 	}
 
 	if (jacobian.has_value()) {
 		torch::Tensor& J = jacobian.value().get();
-		values = J.index({ Slice(), Slice(),0 }) * S0;
+		values = J.index({ Slice(), Slice(), 0}) * S0;
 	}
 	else {
-		values = S0 * values * (1 - expterm) / denom;
+		values = S0 * values * (1.0f - expterm) / denom;
 	}
 
 	if (data.has_value()) {
@@ -120,18 +120,26 @@ torch::Tensor models::simple_vfa_model_linear(torch::Tensor flip_angles, torch::
 {
 	using namespace torch::indexing;
 
-	torch::Tensor temp = data.view({ data.size(0), data.size(1), 1 }) / torch::sin(flip_angles); // s_n/sin(FA)
+	torch::Tensor deps;
+	if (flip_angles.size(0) == 1) {
+		deps = flip_angles.repeat({ data.size(0), 1, 1 });
+	}
+	else {
+		deps = flip_angles;
+	}
+
+	torch::Tensor temp = data / torch::sin(deps.squeeze()); // s_n/sin(FA)
 	{
-		torch::Tensor rdatatan = data.view({ data.size(0), data.size(1), 1 }) / torch::tan(flip_angles); // s_n/tan(FA)
-		temp = compute::lstq_qr(rdatatan, temp);
+		torch::Tensor rdatatan = data / torch::tan(deps.squeeze()); // s_n/tan(FA)
+		temp = compute::lstq_qr(rdatatan.view({ rdatatan.size(0),rdatatan.size(1), 1 }), temp);
 	}
 
 	// Set S0
-	temp.index_put_({ Slice(), Slice(), 0 },
-		temp.index({ Slice(), Slice(), 0 }) / (1 - temp.index({ Slice(), Slice(), 1 })));
+	temp.index_put_({ Slice(), 0 },
+		temp.index({ Slice(), 0 }) / (1.0f - temp.index({Slice(), 1 })));
 	// Set T1
-	temp.index_put_({ Slice(), Slice(), 0 }, -TR / torch::log(temp.index({ Slice(), Slice(), 1 })));
+	temp.index_put_({ Slice(), 1 }, -TR / torch::log(temp.index({ Slice(), 1 })));
 
-	return temp;
+	return temp.view({data.size(0), 2});
 }
 
