@@ -34,8 +34,16 @@ namespace optim {
 		// IMPORTANT! Any class implementing this virtual function should also call on_eval() at the begining 
 		virtual ReturnType eval() = 0;
 
+		void abort();
+
+		std::pair<ui32, ui32> getIterInfo();
+
 	protected:
 		
+		void set_iter_info(ui32 iter, ui32 non_converging_probs);
+
+		bool should_stop();
+
 		void on_eval();
 
 		~Optimizer();
@@ -49,9 +57,14 @@ namespace optim {
 		ui32									m_MaxIter = 50;
 
 	private:
-		
-
 		bool m_HasRun = false;
+		
+	private:
+		// Thread access
+		std::atomic<i32> m_NonConvergingProblems;
+		std::atomic<ui32> m_Iter = 0;
+		std::atomic<bool> m_ShouldStop = false;
+
 
 	};
 
@@ -66,6 +79,33 @@ namespace optim {
 		assert(m_pModel != nullptr && "Tried to create optimizer with pModel=nullptr");
 		assert(m_pModel->getParameters().defined() && "Tried to create optimizer with no parameters");
 		assert(m_pModel->getParameters().numel() > 0 && "Tried to create optimizer with no parameters");
+
+		m_NonConvergingProblems = settings.data.size(0);
+	}
+
+	template<typename ReturnType>
+	inline void Optimizer<ReturnType>::abort()
+	{
+		m_ShouldStop = true;
+	}
+
+	template<typename ReturnType>
+	inline std::pair<ui32, ui32> Optimizer<ReturnType>::getIterInfo()
+	{
+		return std::make_pair(m_Iter.load(), m_NonConvergingProblems.load());
+	}
+
+	template<typename ReturnType>
+	inline void Optimizer<ReturnType>::set_iter_info(ui32 iter, ui32 non_converging_probs)
+	{
+		m_Iter = iter;
+		m_NonConvergingProblems = non_converging_probs;
+	}
+
+	template<typename ReturnType>
+	inline bool Optimizer<ReturnType>::should_stop()
+	{
+		return m_ShouldStop;
 	}
 
 	template<typename ReturnType>

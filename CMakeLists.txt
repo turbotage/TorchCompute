@@ -97,3 +97,6 @@ target_link_libraries(ComputeTestLSTQ ComputeLib)
 
 add_executable(ComputeTestLinearFit "Tests/test_linear_fit.cpp")
 target_link_libraries(ComputeTestLinearFit ComputeLib)
+
+add_executable(ComputeTestThreading "Tests/test_threading.cpp")
+target_link_libraries(ComputeTestThreading ComputeLib)

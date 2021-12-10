@@ -178,6 +178,10 @@ void optim::GN::solve()
 		if (handle_convergence())
 			break;
 
+		if (Optimizer::should_stop())
+			break;
+		Optimizer::set_iter_info(iter, numProbs);
+
 		if ((numProbs < m_SwitchNumber) && !m_HasSwitched)
 			switch_device();
 	}

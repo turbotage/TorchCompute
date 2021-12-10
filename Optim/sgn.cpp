@@ -180,10 +180,15 @@ void optim::SGN::solve()
 	setup_solve();
 
 	for (ui32 iter = 0; iter < m_MaxIter; ++iter) {
+
 		step();
 
 		if (handle_convergence())
 			break;
+
+		if (Optimizer::should_stop())
+			break;
+		Optimizer::set_iter_info(iter, numProbs);
 
 		if ((numProbs < m_SwitchNumber) && !m_HasSwitched)
 			switch_device();
