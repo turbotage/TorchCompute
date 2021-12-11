@@ -3,6 +3,7 @@
 
 
 void test_linear_adc(int n, bool print) {
+	using namespace tc;
 
 	std::cout << "ADC-model - cpu" << std::endl;
 	{
@@ -59,6 +60,7 @@ void test_linear_adc(int n, bool print) {
 }
 
 void test_linear_vfa(int n, bool print) {
+	using namespace tc;
 
 	std::cout << "VFA-model - cpu" << std::endl;
 	{

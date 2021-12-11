@@ -4,6 +4,8 @@
 #include <chrono>
 
 void gn_cpu_adc_vfa_anal(int n, bool print) {
+	using namespace tc;
+
 	std::cout << "ADC model" << std::endl;
 	std::cout << "per problem b-vals : eval_and_diff" << std::endl;
 
@@ -101,6 +103,8 @@ void gn_cpu_adc_vfa_anal(int n, bool print) {
 }
 
 void slmp_cuda_adc_vfa_anal(int n, bool print) {
+	using namespace tc;
+
 	std::cout << "ADC model" << std::endl;
 	std::cout << "per problem b-vals : eval_and_diff : switch to cpu" << std::endl;
 

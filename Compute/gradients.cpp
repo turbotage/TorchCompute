@@ -3,7 +3,7 @@
 
 
 
-torch::Tensor compute::jacobian(torch::Tensor y, torch::Tensor x)
+torch::Tensor tc::compute::jacobian(torch::Tensor y, torch::Tensor x)
 {
 	assert(y.sizes()[0] == x.sizes()[0]);
 
@@ -38,7 +38,7 @@ torch::Tensor compute::jacobian(torch::Tensor y, torch::Tensor x)
 
 
 // I suspect a bug in this jacobian version
-torch::Tensor compute::jacobian2(torch::Tensor y, torch::Tensor x)
+torch::Tensor tc::compute::jacobian2(torch::Tensor y, torch::Tensor x)
 {
 	std::vector<torch::Tensor> grad_array;
 	auto input_arr = std::vector<torch::Tensor>(1, x);

@@ -2,17 +2,17 @@
 #include "../Compute/lstq.hpp"
 
 
-void models::adc_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Tensor& per_problem_inputs, torch::Tensor& parameters,
-	OutRef<torch::Tensor> values, OptOutRef<torch::Tensor> jacobian, OptOutRef<const torch::Tensor> data)
+void tc::models::adc_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Tensor& per_problem_inputs, torch::Tensor& parameters,
+	tc::OutRef<torch::Tensor> values, tc::OptOutRef<torch::Tensor> jacobian, tc::OptOutRef<const torch::Tensor> data)
 {
 	using namespace torch::indexing;
 
 	torch::Tensor& ppi = per_problem_inputs;
 	torch::Tensor& par = parameters;
 
-	ui32 numProbs = par.size(0);
-	ui32 numParams = par.size(1);
-	ui32 numData;
+	tc::ui32 numProbs = par.size(0);
+	tc::ui32 numParams = par.size(1);
+	tc::ui32 numData;
 
 	torch::Tensor S0 = par.index({ Slice(), 0 }).view({ par.size(0), 1 });
 	torch::Tensor ADC = par.index({ Slice(), 1 }).view({ par.size(0), 1 });
@@ -43,7 +43,7 @@ void models::adc_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Ten
 }
 
 
-torch::Tensor models::simple_adc_model_linear(torch::Tensor bvals, torch::Tensor data)
+torch::Tensor tc::models::simple_adc_model_linear(torch::Tensor bvals, torch::Tensor data)
 {
 	using namespace torch::indexing;
 
@@ -66,17 +66,17 @@ torch::Tensor models::simple_adc_model_linear(torch::Tensor bvals, torch::Tensor
 
 
 
-void models::vfa_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Tensor& per_problem_inputs, torch::Tensor& parameters,
-	OutRef<torch::Tensor> values, OptOutRef<torch::Tensor> jacobian, OptOutRef<const torch::Tensor> data)
+void tc::models::vfa_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Tensor& per_problem_inputs, torch::Tensor& parameters,
+	tc::OutRef<torch::Tensor> values, tc::OptOutRef<torch::Tensor> jacobian, tc::OptOutRef<const torch::Tensor> data)
 {
 	using namespace torch::indexing;
 
 	torch::Tensor& ppi = per_problem_inputs;
 	torch::Tensor& par = parameters;
 
-	ui32 numProbs = par.size(0);
-	ui32 numParams = par.size(1);
-	ui32 numData;
+	tc::ui32 numProbs = par.size(0);
+	tc::ui32 numParams = par.size(1);
+	tc::ui32 numData;
 
 	torch::Tensor S0 = par.index({ Slice(), 0 }).view({ par.size(0), 1 });
 	torch::Tensor T1 = par.index({ Slice(), 1 }).view({ par.size(0), 1 });
@@ -116,7 +116,7 @@ void models::vfa_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Ten
 	}
 }
 
-torch::Tensor models::simple_vfa_model_linear(torch::Tensor flip_angles, torch::Tensor data, torch::Tensor TR)
+torch::Tensor tc::models::simple_vfa_model_linear(torch::Tensor flip_angles, torch::Tensor data, torch::Tensor TR)
 {
 	using namespace torch::indexing;
 

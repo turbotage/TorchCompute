@@ -6,7 +6,7 @@
 
 
 
-std::tuple<std::map<std::string, torch::Tensor>, std::string> expression::Lexer::operator()(const std::string& expression)
+std::tuple<std::map<std::string, torch::Tensor>, std::string> tc::expression::Lexer::operator()(const std::string& expression)
 {
 	std::string exp = expression;
 	std::map<std::string, std::string> numberstringmap = lexfix(exp);
@@ -26,27 +26,27 @@ std::tuple<std::map<std::string, torch::Tensor>, std::string> expression::Lexer:
 	return std::make_tuple(std::move(numbermap), exp);
 }
 
-
-
-
-bool is_negative(std::string& expression, int i) {
-	if (i > 0) {
-		if (expression[i - 1] == '-') {
-			if (i > 1) {
-				char c = expression[i - 2];
-				if (c == ',' || c == '(') {
+namespace {
+	bool is_negative(std::string& expression, int i) {
+		if (i > 0) {
+			if (expression[i - 1] == '-') {
+				if (i > 1) {
+					char c = expression[i - 2];
+					if (c == ',' || c == '(') {
+						return true;
+					}
+				}
+				else {
 					return true;
 				}
 			}
-			else {
-				return true;
-			}
 		}
+		return false;
 	}
-	return false;
 }
 
-std::map<std::string, std::string> expression::Lexer::lexfix(std::string& expression)
+
+std::map<std::string, std::string> tc::expression::Lexer::lexfix(std::string& expression)
 {
 	std::string regstr = "^\\d+(([.]\\d+))?([eE][+-]?\\d+)?([i]?)";
 	std::regex r(regstr);

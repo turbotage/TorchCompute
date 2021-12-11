@@ -3,6 +3,7 @@
 
 
 void compare_graph_vs_anal() {
+	using namespace tc;
 
 	torch::TensorOptions dops;
 	dops = dops.dtype(torch::kFloat64).device(torch::Device("cuda:0"));
@@ -36,7 +37,7 @@ void compare_graph_vs_anal() {
 		std::unordered_map<std::string, int> constsmap;
 		constsmap["$TR"] = 0;
 
-		std::unique_ptr<optim::Model> pModel2 = std::make_unique<optim::Model>(expr, ppimap, parmap, constsmap);
+		std::unique_ptr<optim::Model> pModel2 = std::make_unique<optim::Model>(expr, parmap, ppimap, constsmap);
 		pModel2->setParameters(params);
 		pModel2->setPerProblemInputs(ppi);
 		pModel2->setConstants(std::vector<torch::Tensor>{ TR });
@@ -81,7 +82,7 @@ void compare_graph_vs_anal() {
 		parmap["$X0"] = 0;
 		parmap["$X1"] = 1;
 
-		std::unique_ptr<optim::Model> pModel2 = std::make_unique<optim::Model>(expr, ppimap, parmap, std::nullopt);
+		std::unique_ptr<optim::Model> pModel2 = std::make_unique<optim::Model>(expr, parmap, ppimap, std::nullopt);
 		pModel2->setParameters(params);
 		pModel2->setPerProblemInputs(ppi);
 		pModel2->to(dops.device());

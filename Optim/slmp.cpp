@@ -1,21 +1,21 @@
 #include "slmp.hpp"
 
 
-optim::SLMPSettings::SLMPSettings() 
+tc::optim::SLMPSettings::SLMPSettings() 
 {
 
 }
 
 
 
-optim::SLMP::SLMP(SLMPSettings& settings)
+tc::optim::SLMP::SLMP(SLMPSettings& settings)
 	: m_Mu(settings.mu), m_Eta(settings.eta), m_CurrentDevice(settings.startDevice), 
 	m_SwitchDevice(settings.switchDevice), m_SwitchNumber(settings.switchAtN),
 	Optimizer(settings)
 {
 }
 
-optim::SLMPResult optim::SLMP::eval()
+tc::optim::SLMPResult tc::optim::SLMP::eval()
 {
 	Optimizer::on_eval();
 
@@ -31,7 +31,7 @@ optim::SLMPResult optim::SLMP::eval()
 }
 
 
-void optim::SLMP::dogleg()
+void tc::optim::SLMP::dogleg()
 {
 	using namespace torch::indexing;
 
@@ -111,7 +111,7 @@ void optim::SLMP::dogleg()
 	// Those who had successfull chol and has no bit set in full_gn or cp_step will be those who should be interpolated
 	torch::Tensor interpol_step = step_mask == MaskTypes::SUCCESSFUL_CHOLESKY;
 	{
-		i32 masksum = interpol_step.sum().item<int64_t>();
+		tc::i32 masksum = interpol_step.sum().item<int64_t>();
 
 		torch::Tensor CP = pCP.index({interpol_step, Slice()});
 		torch::Tensor GN = pD.index({interpol_step, Slice()});
@@ -129,7 +129,7 @@ void optim::SLMP::dogleg()
 	}
 }
 
-void optim::SLMP::step()
+void tc::optim::SLMP::step()
 {
 	using namespace torch::indexing;
 
@@ -208,7 +208,7 @@ void optim::SLMP::step()
 
 }
 
-bool optim::SLMP::handle_convergence()
+bool tc::optim::SLMP::handle_convergence()
 {
 	using namespace torch::indexing;
 
@@ -256,7 +256,7 @@ bool optim::SLMP::handle_convergence()
 	return false;
 }
 
-void optim::SLMP::switch_device() {
+void tc::optim::SLMP::switch_device() {
 	if (!m_SwitchDevice.has_value())
 		return;
 	m_HasSwitched = true;
@@ -289,7 +289,7 @@ void optim::SLMP::switch_device() {
 	m_CurrentDevice = dev;
 }
 
-void optim::SLMP::setup_solve() {
+void tc::optim::SLMP::setup_solve() {
 	
 	m_pModel->to(m_StartDevice);
 	m_Data = m_Data.to(m_StartDevice);
@@ -323,11 +323,11 @@ void optim::SLMP::setup_solve() {
 
 }
 
-void optim::SLMP::solve()
+void tc::optim::SLMP::solve()
 {
 	setup_solve();
 
-	for (ui32 iter = 0; iter < m_MaxIter; ++iter) {
+	for (tc::ui32 iter = 0; iter < m_MaxIter; ++iter) {
 
 		step();
 
@@ -346,7 +346,7 @@ void optim::SLMP::solve()
 	finalize_solve();
 }
 
-void optim::SLMP::finalize_solve() 
+void tc::optim::SLMP::finalize_solve() 
 {
 	using namespace torch::indexing;
 	// Copy the non-converging problems back to the final parameter tensor

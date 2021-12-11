@@ -4,7 +4,7 @@
 #include "../Compute/gradients.hpp"
 
 
-optim::OptimizerSettings::OptimizerSettings()
+tc::optim::OptimizerSettings::OptimizerSettings()
 	: startDevice(torch::Device("cpu"))
 {
 

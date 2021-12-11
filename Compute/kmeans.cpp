@@ -3,14 +3,14 @@
 
 #include <c10/cuda/CUDACachingAllocator.h>
 
-compute::KMeans::KMeans(int nclusters, int maxiter=50, float tol=0.001, KMeansModeBits mode=eKMeansMode::EUCLIDEAN) {
+tc::compute::KMeans::KMeans(int nclusters, int maxiter=50, float tol=0.001, KMeansModeBits mode=eKMeansMode::EUCLIDEAN) {
 	m_nClusters = nclusters;
 	m_MaxIter = maxiter;
 	m_Tol = tol;
 	m_KMeansMode = mode;
 }
 
-torch::Tensor compute::KMeans::cosineSimilarity(torch::Tensor a, torch::Tensor b) {
+torch::Tensor tc::compute::KMeans::cosineSimilarity(torch::Tensor a, torch::Tensor b) {
 	auto a_norm = a.norm(c10::nullopt, -1, true);
 	auto b_norm = b.norm(c10::nullopt, -1, true);
 	a = a / (a_norm + torch::tensor(1e-8));
@@ -18,14 +18,14 @@ torch::Tensor compute::KMeans::cosineSimilarity(torch::Tensor a, torch::Tensor b
 	return torch::matmul(a, b.transpose(-2, -1));
 }
 
-torch::Tensor compute::KMeans::euclideanSimilarity(torch::Tensor a, torch::Tensor b) {
+torch::Tensor tc::compute::KMeans::euclideanSimilarity(torch::Tensor a, torch::Tensor b) {
 	using namespace torch::indexing;
 	return 2 * torch::matmul(a, b.transpose(-2, -1)) -
 		torch::pow(a, 2).sum(1).index({ "...", Slice(), None }) -
 		torch::pow(b, 2).sum(1).index({ "...", None, Slice() });
 }
 
-std::tuple<torch::Tensor, torch::Tensor> compute::KMeans::maxSimilarity(torch::Tensor a, torch::Tensor b) {
+std::tuple<torch::Tensor, torch::Tensor> tc::compute::KMeans::maxSimilarity(torch::Tensor a, torch::Tensor b) {
 	using namespace torch::indexing;
 
 	auto device = a.device();
@@ -95,7 +95,7 @@ std::tuple<torch::Tensor, torch::Tensor> compute::KMeans::maxSimilarity(torch::T
 	return std::make_tuple(max_sim_v, max_sim_i);
 }
 
-torch::Tensor compute::KMeans::fit_predict(torch::Tensor X, std::optional<torch::Tensor> centroids) {
+torch::Tensor tc::compute::KMeans::fit_predict(torch::Tensor X, std::optional<torch::Tensor> centroids) {
 	using namespace torch::indexing;
 	
 	uint64_t batch_size = X.size(0);
@@ -105,7 +105,7 @@ torch::Tensor compute::KMeans::fit_predict(torch::Tensor X, std::optional<torch:
 	auto ops = X.options();
 
 	if (!centroids.has_value())
-		centroids = X.index({ compute::random::random_choice(0, batch_size, m_nClusters, ops) });
+		centroids = X.index({ tc::compute::random::random_choice(0, batch_size, m_nClusters, ops) });
 
 	auto num_points_in_clusters = torch::ones(m_nClusters, ops);
 

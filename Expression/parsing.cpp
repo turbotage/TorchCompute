@@ -3,7 +3,7 @@
 #include <regex>
 
 
-std::tuple<std::string, std::string, expression::NumberTypeBits> expression::extractNumberString(const std::string& str)
+std::tuple<std::string, std::string, tc::expression::NumberTypeBits> tc::expression::extractNumberString(const std::string& str)
 {
 	std::string r1 = "^\\d*(([.]\\d{3})+)?([.]\\d+)?([eE][+-]?\\d+)?";
 	std::regex r(r1);
@@ -37,7 +37,7 @@ std::tuple<std::string, std::string, expression::NumberTypeBits> expression::ext
 	return std::make_tuple(str.substr(matchit), mstr, flag);
 }
 
-std::tuple<std::string, double, expression::NumberTypeBits> expression::getNumberFromString(const std::string& str)
+std::tuple<std::string, double, tc::expression::NumberTypeBits> tc::expression::getNumberFromString(const std::string& str)
 {
 	std::string r1 = "^\\d*(([.]\\d{3})+)?([.]\\d+)?([eE][+-]?\\d+)?";
 	std::regex r(r1);
@@ -72,7 +72,7 @@ std::tuple<std::string, double, expression::NumberTypeBits> expression::getNumbe
 	return std::make_tuple(str.substr(matchit), ret, flag);
 }
 
-std::tuple<double, expression::NumberTypeBits> expression::getNumber(std::string str)
+std::tuple<double, tc::expression::NumberTypeBits> tc::expression::getNumber(std::string str)
 {
 	if (str.empty())
 		throw std::runtime_error("tried to getNumber from empty string");
@@ -86,7 +86,7 @@ std::tuple<double, expression::NumberTypeBits> expression::getNumber(std::string
 	return std::make_tuple(std::stod(str), flag);
 }
 
-std::function<torch::Tensor()> expression::defaultNumberResolver(std::string str, torch::TensorOptions& ops)
+std::function<torch::Tensor()> tc::expression::defaultNumberResolver(std::string str, torch::TensorOptions& ops)
 {
 	double number;
 	NumberTypeBits type;
@@ -126,14 +126,14 @@ std::function<torch::Tensor()> expression::defaultNumberResolver(std::string str
 
 /*
 
-void expression::special_print(std::string str) {
+void tc::expression::special_print(std::string str) {
 	for (int i = 0; i < str.size(); ++i) {
 		std::cout << (int)str[i];
 	}
 	std::cout << std::endl;
 }
 
-void expression::print_match(std::smatch m) {
+void tc::expression::print_match(std::smatch m) {
 	for (auto& a : m) {
 		std::cout << a << " , ";
 	}
@@ -141,7 +141,7 @@ void expression::print_match(std::smatch m) {
 	std::cout << std::endl;
 }
 
-std::tuple<std::string, std::complex<double>> expression::get_next_number_match(const std::string& str) {
+std::tuple<std::string, std::complex<double>> tc::expression::get_next_number_match(const std::string& str) {
 	// Long complex number regex matcher
 	std::string r1 = "^(?=[iI.\\d+-])([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?(?![iI.\\d]))?([+-]?(?:(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?)?[iI])?$";
 

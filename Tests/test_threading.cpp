@@ -5,6 +5,8 @@
 #include <chrono>
 
 void test_threading(int n) {
+	using namespace tc;
+
 	std::cout << "ADC model" << std::endl;
 	std::cout << "per problem b-vals : eval_and_diff" << std::endl;
 

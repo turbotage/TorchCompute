@@ -3,17 +3,17 @@
 #include "lexer.hpp"
 #include "shunter.hpp"
 
-expression::ExpressionGraph::ExpressionGraph(std::string expression)
+tc::expression::ExpressionGraph::ExpressionGraph(const std::string& expression)
 {
 	m_Expression = expression;
 
-	expression::Lexer lex;
+	tc::expression::Lexer lex;
 
 	// Lex expression, get variable map and variable setter map
-	std::tie(m_Numbers, m_LexedExpression) = lex(expression);
+	std::tie(m_Numbers, m_LexedExpression) = lex(m_Expression);
 
 	// Run shunting yard algorithm, get token stack in RPT
-	expression::Shunter shunter(m_LexedExpression);
+	tc::expression::Shunter shunter(m_LexedExpression);
 	std::stack<Token> token_stack(shunter());
 
 	std::stack<std::unique_ptr<Node>> node_stack;
@@ -76,29 +76,29 @@ expression::ExpressionGraph::ExpressionGraph(std::string expression)
 	node_stack.pop();
 }
 
-std::function<torch::Tensor()> expression::ExpressionGraph::getFunc()
+std::function<torch::Tensor()> tc::expression::ExpressionGraph::getFunc()
 {
 	return m_pRootNode->runner();
 }
 
-void expression::ExpressionGraph::setVariableFetcher(std::string var_name, const std::function<torch::Tensor()>& var_fetcher)
+void tc::expression::ExpressionGraph::setVariableFetcher(const std::string& var_name, const std::function<torch::Tensor()>& var_fetcher)
 {
 	m_VariableFetchers[var_name] = var_fetcher;
 }
 
-void expression::ExpressionGraph::to(torch::Device device)
+void tc::expression::ExpressionGraph::to(const torch::Device& device)
 {
 	for (auto& t : m_Numbers) {
 		t.second.to(device);
 	}
 }
 
-std::string expression::ExpressionGraph::getReadableTree()
+std::string tc::expression::ExpressionGraph::getReadableTree()
 {
 	return readableNode(m_pRootNode.get(), 1);
 }
 
-std::pair<std::string, bool> expression::ExpressionGraph::check_variable_sign(const std::string& varname)
+std::pair<std::string, bool> tc::expression::ExpressionGraph::check_variable_sign(const std::string& varname)
 {
 	bool neg = false;
 	std::string ret = varname;
@@ -123,18 +123,18 @@ std::pair<std::string, bool> expression::ExpressionGraph::check_variable_sign(co
 
 
 
-void expression::ExpressionGraph::handle_number(std::string numid, torch::Tensor& var, std::stack<std::unique_ptr<Node>>& node_stack) {
+void tc::expression::ExpressionGraph::handle_number(const std::string& numid, torch::Tensor& var, std::stack<std::unique_ptr<Node>>& node_stack) {
 	std::unique_ptr<Node> ptr = std::make_unique<NumberNode>(numid, var);
 	node_stack.push(std::move(ptr));
 }
 
-void expression::ExpressionGraph::handle_variable(std::string varid, const std::function<torch::Tensor()>& var_fetcher, std::stack<std::unique_ptr<Node>>& node_stack)
+void tc::expression::ExpressionGraph::handle_variable(const std::string& varid, const std::function<torch::Tensor()>& var_fetcher, std::stack<std::unique_ptr<Node>>& node_stack)
 {
 	std::unique_ptr<Node> ptr = std::make_unique<VariableNode>(varid, var_fetcher);
 	node_stack.push(std::move(ptr));
 }
 
-void expression::ExpressionGraph::handle_function(std::string funcid, std::stack<std::unique_ptr<Node>>& node_stack)
+void tc::expression::ExpressionGraph::handle_function(const std::string& funcid, std::stack<std::unique_ptr<Node>>& node_stack)
 {
 	std::unique_ptr<Node> ptr;
 	if (funcid == "sin") { // Trigonometry
@@ -194,6 +194,14 @@ void expression::ExpressionGraph::handle_function(std::string funcid, std::stack
 		ptr = std::make_unique<ExpNode>(std::move(node_stack.top()));
 		node_stack.pop();
 	}
+	else if (funcid == "sqrt") {
+		ptr = std::make_unique<SqrtNode>(std::move(node_stack.top()));
+		node_stack.pop();
+	}
+	else if (funcid == "square") {
+		ptr = std::make_unique<SquareNode>(std::move(node_stack.top()));
+		node_stack.pop();
+	}
 	else if (funcid == "pow") {
 		auto base = std::move(node_stack.top()); node_stack.pop();
 		ptr = std::make_unique<PowNode>(std::move(base), std::move(node_stack.top()));
@@ -214,7 +222,7 @@ void expression::ExpressionGraph::handle_function(std::string funcid, std::stack
 	node_stack.push(std::move(ptr));
 }
 
-void expression::ExpressionGraph::handle_operation(std::string opid, std::stack<std::unique_ptr<Node>>& node_stack)
+void tc::expression::ExpressionGraph::handle_operation(const std::string& opid, std::stack<std::unique_ptr<Node>>& node_stack)
 {
 	std::unique_ptr<Node> ptr;
 	if (opid == "+") {

@@ -3,16 +3,18 @@
 
 void slmp_cpu_adc_vfa_anal(int n, bool print) {
 
+	using namespace tc;
+
 	std::cout << "ADC model" << std::endl;
 	std::cout << "per problem b-vals : eval_and_diff" << std::endl;
 
-	optim::SLMPSettings settings;
+	tc::optim::SLMPSettings settings;
 	
-	std::unique_ptr<optim::Model> pModel;
+	std::unique_ptr<tc::optim::Model> pModel;
 	{
 		using namespace torch::indexing;
 
-		pModel = std::make_unique<optim::Model>(models::adc_eval_and_diff);
+		pModel = std::make_unique<tc::optim::Model>(models::adc_eval_and_diff);
 
 		torch::TensorOptions dops;
 		dops.dtype(torch::kFloat64);
@@ -100,6 +102,9 @@ void slmp_cpu_adc_vfa_anal(int n, bool print) {
 }
 
 void slmp_cuda_adc_vfa_anal(int n, bool print) {
+
+	using namespace tc;
+
 	std::cout << "ADC model" << std::endl;
 	std::cout << "per problem b-vals : eval_and_diff : switch to cpu" << std::endl;
 

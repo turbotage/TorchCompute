@@ -6,7 +6,7 @@
 #include "parsing.hpp"
 
 
-expression::Shunter::Shunter(std::string& expression)
+tc::expression::Shunter::Shunter(std::string& expression)
 	: m_Expression(expression)
 {
 	m_Operators = DEFAULT_OPERATORS;
@@ -15,7 +15,7 @@ expression::Shunter::Shunter(std::string& expression)
 	m_VariableTokenizer = [](const std::string& str) {
 		std::string token;
 		token += str[0];
-		ui32 i = 1;
+		tc::ui32 i = 1;
 		if (str[0] == VARIABLE_START_CHARACTER) {
 			if (str.size() > 1) {
 				if (std::isalpha(str[1])) {
@@ -33,7 +33,7 @@ expression::Shunter::Shunter(std::string& expression)
 	m_FunctionTokenizer = [](const std::string& str) {
 		std::string token;
 		token += str[0];
-		ui32 i = 1;
+		tc::ui32 i = 1;
 		if (std::isalpha(str[0])) {
 			for (; i < str.size() && (std::isdigit(str[i]) || std::isalpha(str[i])); ++i)
 				token += str[i];
@@ -47,14 +47,14 @@ expression::Shunter::Shunter(std::string& expression)
 	m_OperatorTokenizer = [this](const std::string& str) {
 		std::string token;
 
-		ui32 longestOpString = 0;
+		tc::ui32 longestOpString = 0;
 		for (auto& op : m_Operators) {
-			ui32 opLength = std::get<0>(op).length();
+			tc::ui32 opLength = std::get<0>(op).length();
 			if (opLength > longestOpString)
 				longestOpString = opLength;
 		}
 
-		for (ui32 i = 0; i < longestOpString; ++i) {
+		for (tc::ui32 i = 0; i < longestOpString; ++i) {
 			token += str[0];
 			for (auto& op : m_Operators) {
 				if (token == std::get<0>(op)) {
@@ -68,32 +68,32 @@ expression::Shunter::Shunter(std::string& expression)
 
 }
 
-void expression::Shunter::setOperators(std::vector<OperatorTuple> operators)
+void tc::expression::Shunter::setOperators(std::vector<OperatorTuple> operators)
 {
 	m_Operators = operators;
 }
 
-void expression::Shunter::setVariableTokenizer(Tokenizer variableTokenizer)
+void tc::expression::Shunter::setVariableTokenizer(Tokenizer variableTokenizer)
 {
 	m_VariableTokenizer = variableTokenizer;
 }
 
-void expression::Shunter::setFunctionTokenizer(Tokenizer functionTokenizer)
+void tc::expression::Shunter::setFunctionTokenizer(Tokenizer functionTokenizer)
 {
 	m_FunctionTokenizer = functionTokenizer;
 }
 
-void expression::Shunter::setOperatorTokenizer(Tokenizer operatorTokenizer)
+void tc::expression::Shunter::setOperatorTokenizer(Tokenizer operatorTokenizer)
 {
 	m_OperatorTokenizer = operatorTokenizer;
 }
 
-std::deque<expression::Token> expression::Shunter::operator()()
+std::deque<tc::expression::Token> tc::expression::Shunter::operator()()
 {
 	return shunt();
 }
 
-int expression::Shunter::getOpPrecedence(Token t)
+int tc::expression::Shunter::getOpPrecedence(Token t)
 {
 	for (auto& op : m_Operators) {
 		if (std::get<0>(op) == t.token_str) {
@@ -103,7 +103,7 @@ int expression::Shunter::getOpPrecedence(Token t)
 	throw std::runtime_error("Tried to get precedence of non-existing operator");
 }
 
-int expression::Shunter::getOpAssociativity(Token t)
+int tc::expression::Shunter::getOpAssociativity(Token t)
 {
 	for (auto& op : m_Operators) {
 		if (std::get<0>(op) == t.token_str) {
@@ -113,7 +113,7 @@ int expression::Shunter::getOpAssociativity(Token t)
 	throw std::runtime_error("Tried to get precedence of non-existing operator");
 }
 
-std::tuple<std::string, expression::Token> expression::Shunter::getNextToken(const std::string& str)
+std::tuple<std::string, tc::expression::Token> tc::expression::Shunter::getNextToken(const std::string& str)
 {
 	if (str.empty())
 		return std::make_tuple(str, Token());
@@ -144,7 +144,7 @@ std::tuple<std::string, expression::Token> expression::Shunter::getNextToken(con
 	return std::make_tuple(str, Token());
 }
 
-std::deque <expression::Token> expression::Shunter::shunt()
+std::deque <tc::expression::Token> tc::expression::Shunter::shunt()
 {
 	std::string expr = m_Expression;
 

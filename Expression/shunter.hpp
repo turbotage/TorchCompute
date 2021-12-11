@@ -2,95 +2,97 @@
 
 #include "../pch.hpp"
 
-namespace expression {
+namespace tc {
+	namespace expression {
 
-	// Used to convert expression to RPT or postfix
-	enum eTokenType {
-		INVALID,
-		VARIABLE,
-		FUNCTION,
-		OPERATOR
-	};
-	typedef std::uint8_t TokenTypeFlags;
+		// Used to convert expression to RPT or postfix
+		enum eTokenType {
+			INVALID,
+			VARIABLE,
+			FUNCTION,
+			OPERATOR
+		};
+		typedef std::uint8_t TokenTypeFlags;
 
-	enum eOperatorAssociativity {
-		LEFT,
-		RIGHT
-	};
-	typedef std::uint8_t OperatorAssociativityFlags;
+		enum eOperatorAssociativity {
+			LEFT,
+			RIGHT
+		};
+		typedef std::uint8_t OperatorAssociativityFlags;
 
-	enum eOperatorPrecedence {
-		BASIC,
-		ADDITION,
-		MULTIPLICATION,
-		EXPONENTIATION
-	};
-	typedef std::uint8_t OperatorPrecedenceFlags;
-
-
-	constexpr char VARIABLE_START_CHARACTER = '$';
-
-	using OperatorTuple = std::tuple<std::string, OperatorPrecedenceFlags, OperatorAssociativityFlags>;
-	const std::vector<OperatorTuple> DEFAULT_OPERATORS =
-	{
-		{"+", eOperatorPrecedence::ADDITION,		eOperatorAssociativity::LEFT},
-		{"-", eOperatorPrecedence::ADDITION,		eOperatorAssociativity::LEFT},
-		{"*", eOperatorPrecedence::MULTIPLICATION,	eOperatorAssociativity::LEFT},
-		{"/", eOperatorPrecedence::MULTIPLICATION,	eOperatorAssociativity::LEFT},
-		{"^", eOperatorPrecedence::EXPONENTIATION,	eOperatorAssociativity::RIGHT},
-	};
-
-	struct Token {
-
-		Token()
-			: token_str(""), token_type(eTokenType::INVALID) {}
-
-		Token(std::string tstr, TokenTypeFlags ttype)
-			: token_str(tstr), token_type(ttype) {}
-
-		std::string token_str;
-		TokenTypeFlags token_type;
-	};
-
-	typedef std::function<std::tuple<std::string, Token>(const std::string&)> Tokenizer;
+		enum eOperatorPrecedence {
+			BASIC,
+			ADDITION,
+			MULTIPLICATION,
+			EXPONENTIATION
+		};
+		typedef std::uint8_t OperatorPrecedenceFlags;
 
 
+		constexpr char VARIABLE_START_CHARACTER = '$';
 
-	class Shunter {
-	public:
+		using OperatorTuple = std::tuple<std::string, OperatorPrecedenceFlags, OperatorAssociativityFlags>;
+		const std::vector<OperatorTuple> DEFAULT_OPERATORS =
+		{
+			{"+", eOperatorPrecedence::ADDITION,		eOperatorAssociativity::LEFT},
+			{"-", eOperatorPrecedence::ADDITION,		eOperatorAssociativity::LEFT},
+			{"*", eOperatorPrecedence::MULTIPLICATION,	eOperatorAssociativity::LEFT},
+			{"/", eOperatorPrecedence::MULTIPLICATION,	eOperatorAssociativity::LEFT},
+			{"^", eOperatorPrecedence::EXPONENTIATION,	eOperatorAssociativity::RIGHT},
+		};
 
-		Shunter(std::string& expression);
+		struct Token {
 
-		// Optional
-		void setOperators(std::vector<OperatorTuple> operators);
-		// Optional
-		void setVariableTokenizer(Tokenizer variableTokenizer);
-		// Optional
-		void setFunctionTokenizer(Tokenizer functionTokenizer);
-		// Optional
-		void setOperatorTokenizer(Tokenizer operatorTokenizer);
+			Token()
+				: token_str(""), token_type(eTokenType::INVALID) {}
 
-		std::deque<Token> operator()();
+			Token(std::string tstr, TokenTypeFlags ttype)
+				: token_str(tstr), token_type(ttype) {}
 
-	private:
+			std::string token_str;
+			TokenTypeFlags token_type;
+		};
 
-		int getOpPrecedence(Token t);
-		int getOpAssociativity(Token t);
+		typedef std::function<std::tuple<std::string, Token>(const std::string&)> Tokenizer;
 
-		std::tuple<std::string, Token> getNextToken(const std::string& str);
 
-		std::deque<Token> shunt();
 
-	private:
+		class Shunter {
+		public:
 
-		std::string m_Expression;
+			Shunter(std::string& expression);
 
-		std::vector<OperatorTuple> m_Operators;
+			// Optional
+			void setOperators(std::vector<OperatorTuple> operators);
+			// Optional
+			void setVariableTokenizer(Tokenizer variableTokenizer);
+			// Optional
+			void setFunctionTokenizer(Tokenizer functionTokenizer);
+			// Optional
+			void setOperatorTokenizer(Tokenizer operatorTokenizer);
 
-		Tokenizer m_VariableTokenizer;
-		Tokenizer m_FunctionTokenizer;
-		Tokenizer m_OperatorTokenizer;
+			std::deque<Token> operator()();
 
-	};
+		private:
 
+			int getOpPrecedence(Token t);
+			int getOpAssociativity(Token t);
+
+			std::tuple<std::string, Token> getNextToken(const std::string& str);
+
+			std::deque<Token> shunt();
+
+		private:
+
+			std::string m_Expression;
+
+			std::vector<OperatorTuple> m_Operators;
+
+			Tokenizer m_VariableTokenizer;
+			Tokenizer m_FunctionTokenizer;
+			Tokenizer m_OperatorTokenizer;
+
+		};
+
+	}
 }

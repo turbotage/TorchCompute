@@ -1,7 +1,7 @@
 
 #include "lstq.hpp"
 
-torch::Tensor compute::lstq_qr(torch::Tensor x, torch::Tensor y) {
+torch::Tensor tc::compute::lstq_qr(torch::Tensor x, torch::Tensor y) {
 
 	int64_t nProbs = x.size(0);
 	int64_t nPoints = x.size(1);
@@ -25,7 +25,7 @@ torch::Tensor compute::lstq_qr(torch::Tensor x, torch::Tensor y) {
 }
 
 // Not implemented
-torch::Tensor compute::lstq_svd(torch::Tensor x, torch::Tensor y) {
+torch::Tensor tc::compute::lstq_svd(torch::Tensor x, torch::Tensor y) {
 
 	int64_t nProbs = x.size(0);
 	int64_t nPoints = x.size(1);

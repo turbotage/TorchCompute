@@ -1,17 +1,17 @@
 #include "sgn.hpp"
 
-optim::SGNSettings::SGNSettings()
+tc::optim::SGNSettings::SGNSettings()
 {
 }
 
 
-optim::SGN::SGN(SGNSettings& settings)
+tc::optim::SGN::SGN(SGNSettings& settings)
 	: m_CurrentDevice(settings.startDevice), m_SwitchDevice(settings.switchDevice),
 	m_SwitchNumber(settings.switchAtN), Optimizer(settings)
 {
 }
 
-optim::SGNResult optim::SGN::eval()
+tc::optim::SGNResult tc::optim::SGN::eval()
 {
 	Optimizer::on_eval();
 
@@ -25,7 +25,7 @@ optim::SGNResult optim::SGN::eval()
 	return std::move(res);
 }
 
-void optim::SGN::step()
+void tc::optim::SGN::step()
 {
 	using namespace torch::indexing;
 
@@ -69,7 +69,7 @@ void optim::SGN::step()
 
 }
 
-bool optim::SGN::handle_convergence()
+bool tc::optim::SGN::handle_convergence()
 {
 	using namespace torch::indexing;
 
@@ -115,7 +115,7 @@ bool optim::SGN::handle_convergence()
 
 }
 
-void optim::SGN::switch_device()
+void tc::optim::SGN::switch_device()
 {
 	if (!m_SwitchDevice.has_value())
 		return;
@@ -146,7 +146,7 @@ void optim::SGN::switch_device()
 	m_CurrentDevice = dev;
 }
 
-void optim::SGN::setup_solve() {
+void tc::optim::SGN::setup_solve() {
 	m_pModel->to(m_StartDevice);
 	m_Data = m_Data.to(m_StartDevice);
 
@@ -175,11 +175,11 @@ void optim::SGN::setup_solve() {
 	res = torch::empty({ numProbs, numInputs, 1 }, fp_ops);
 }
 
-void optim::SGN::solve()
+void tc::optim::SGN::solve()
 {
 	setup_solve();
 
-	for (ui32 iter = 0; iter < m_MaxIter; ++iter) {
+	for (tc::ui32 iter = 0; iter < m_MaxIter; ++iter) {
 
 		step();
 
@@ -197,7 +197,7 @@ void optim::SGN::solve()
 	finalize_solve();
 }
 
-void optim::SGN::finalize_solve()
+void tc::optim::SGN::finalize_solve()
 {
 	using namespace torch::indexing;
 	// Copy the non-converging problems back to the final parameter tensor

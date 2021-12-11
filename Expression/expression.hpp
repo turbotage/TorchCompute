@@ -19,50 +19,51 @@ VARIABLES	:	variable names starts with '$'  (eg 2*sin($X0))
 
 */
 
+namespace tc {
+	namespace expression {
 
-namespace expression {
+		class ExpressionGraph {
+		public:
 
-	class ExpressionGraph {
-	public:
+			ExpressionGraph(const std::string& expression);
 
-		ExpressionGraph(std::string expression);
+			std::function<torch::Tensor()> getFunc();
 
-		std::function<torch::Tensor()> getFunc();
+			void setVariableFetcher(const std::string& var_name, const std::function<torch::Tensor()>& var_fetcher);
 
-		void setVariableFetcher(std::string var_name, const std::function<torch::Tensor()>& var_fetcher);
+			void to(const torch::Device& device);
 
-		void to(torch::Device device);
+			std::string getReadableTree();
 
-		std::string getReadableTree();
+		private:
 
-	private:
+			static std::pair<std::string, bool> check_variable_sign(const std::string& varname);
 
-		static std::pair<std::string, bool> check_variable_sign(const std::string& varname);
+			static void handle_number(const std::string& numid, torch::Tensor& var, std::stack<std::unique_ptr<Node>>& node_stack);
 
-		static void handle_number(std::string numid, torch::Tensor& var, std::stack<std::unique_ptr<Node>>& node_stack);
+			static void handle_variable(const std::string& varid,
+				const std::function<torch::Tensor()>& var_fetcher, std::stack<std::unique_ptr<Node>>& node_stack);
 
-		static void handle_variable(std::string varid, 
-			const std::function<torch::Tensor()>& var_fetcher, std::stack<std::unique_ptr<Node>>& node_stack);
+			static void handle_function(const std::string& funcid, std::stack<std::unique_ptr<Node>>& node_stack);
 
-		static void handle_function(std::string funcid, std::stack<std::unique_ptr<Node>>& node_stack);
-
-		static void handle_operation(std::string opid, std::stack<std::unique_ptr<Node>>& node_stack);
-
-
-	private:
-
-		std::string m_Expression;
-		std::string m_LexedExpression;
+			static void handle_operation(const std::string& opid, std::stack<std::unique_ptr<Node>>& node_stack);
 
 
-		std::map<std::string, torch::Tensor> m_Numbers;
-		std::map<std::string, std::function<torch::Tensor()>> m_VariableFetchers;
-		std::list<std::function<torch::Tensor()>> m_VariableNegates;
+		private:
 
-		std::unique_ptr<Node> m_pRootNode;
-	};
+			std::string m_Expression;
+			std::string m_LexedExpression;
 
 
-	
+			std::map<std::string, torch::Tensor> m_Numbers;
+			std::map<std::string, std::function<torch::Tensor()>> m_VariableFetchers;
+			std::list<std::function<torch::Tensor()>> m_VariableNegates;
 
+			std::unique_ptr<Node> m_pRootNode;
+		};
+
+
+
+
+	}
 }

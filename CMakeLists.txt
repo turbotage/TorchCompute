@@ -100,3 +100,6 @@ target_link_libraries(ComputeTestLinearFit ComputeLib)
 
 add_executable(ComputeTestThreading "Tests/test_threading.cpp")
 target_link_libraries(ComputeTestThreading ComputeLib)
+
+add_executable(ComputeTestDiffExpression "Tests/test_diff_expression.cpp")
+target_link_libraries(ComputeTestDiffExpression ComputeLib)
