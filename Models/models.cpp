@@ -1,4 +1,5 @@
 #include "models.hpp"
+#include "models.hpp"
 #include "../Compute/lstq.hpp"
 
 
@@ -142,4 +143,14 @@ torch::Tensor tc::models::simple_vfa_model_linear(torch::Tensor flip_angles, tor
 
 	return temp.view({data.size(0), 2});
 }
+
+
+
+void tc::models::ir_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Tensor& per_problem_inputs, torch::Tensor& parameters, 
+	tc::OutRef<torch::Tensor> values, tc::OptOutRef<torch::Tensor> jacboian, tc::OptOutRef<const torch::Tensor> data)
+{
+	throw std::runtime_error("IR Not Implemented Yet");
+}
+
+
 

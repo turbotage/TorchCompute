@@ -4,6 +4,7 @@
 
 void compare_graph_vs_anal() {
 	using namespace tc;
+	using namespace torch::indexing;
 
 	torch::TensorOptions dops;
 	dops = dops.dtype(torch::kFloat64).device(torch::Device("cuda:0"));
@@ -14,6 +15,7 @@ void compare_graph_vs_anal() {
 
 	std::cout << "VFA-model\n\n";
 
+	
 	{
 		auto TR = torch::full({ 1 }, 1, dops);
 
@@ -62,6 +64,7 @@ void compare_graph_vs_anal() {
 		std::cout << "J:\n" << J << std::endl;
 
 	}
+	
 
 	std::cout << "\n ADC-model \n\n";
 

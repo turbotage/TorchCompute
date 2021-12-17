@@ -72,7 +72,7 @@ namespace tc {
 	
 		private:
 	
-			enum MaskTypes {
+			enum eMaskTypes {
 				SUCCESSFUL_CHOLESKY = 0,
 				UNSUCCESSFUL_CHOLESKY = 1,
 				FULL_GAUSS_NEWTON = 2,

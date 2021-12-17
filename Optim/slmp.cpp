@@ -70,11 +70,11 @@ void tc::optim::SLMP::dogleg()
 			// Fill pD with the Gauss-Newton step
 			// chol(-gs,Hs) gives the solution to the scaled Gauss-Newton subproblem)
 			// We multiply with D from right to get back the unscaled solution
-			chol_success = step_mask == MaskTypes::SUCCESSFUL_CHOLESKY;
+			chol_success = step_mask == eMaskTypes::SUCCESSFUL_CHOLESKY;
 			pD.index_put_({ chol_success, Slice() },
 				torch::bmm(D.index({ chol_success, Slice() }), torch::cholesky_solve(-gs.index({ chol_success, Slice() }), Hs_chol.index({ chol_success, Slice() }))));
 			// Set step_mask for all unsuccessfull solves
-			step_mask.index_put_({ torch::logical_not(chol_success) }, MaskTypes::UNSUCCESSFUL_CHOLESKY);
+			step_mask.index_put_({ torch::logical_not(chol_success) }, eMaskTypes::UNSUCCESSFUL_CHOLESKY);
 		}
 
 		// Calculate pGN_Norm
@@ -96,20 +96,20 @@ void tc::optim::SLMP::dogleg()
 
 	// Indicate that all problems with successful cholesky decomp and GN-step less than trust region radius are taking a full GN-step
 	torch::Tensor full_gn = torch::logical_and(chol_success, pGN_Norm < delta);
-	step_mask.index_put_({full_gn}, torch::bitwise_or(step_mask.index({full_gn}), MaskTypes::FULL_GAUSS_NEWTON));
+	step_mask.index_put_({full_gn}, torch::bitwise_or(step_mask.index({full_gn}), eMaskTypes::FULL_GAUSS_NEWTON));
 
 
 	// Those who couldn't take a full GN-step and have CP-point outside trust region, scale the negative gradient as step
 	torch::Tensor cp_step = torch::logical_and(pCP_Norm > delta, torch::logical_not(full_gn)); // Those who didn't take a full step and has CP outside trustreg
-	cp_step = torch::logical_or(cp_step, step_mask == MaskTypes::UNSUCCESSFUL_CHOLESKY); // We wan't unsuccessfull choleskys to also move in the gradient
+	cp_step = torch::logical_or(cp_step, step_mask == eMaskTypes::UNSUCCESSFUL_CHOLESKY); // We wan't unsuccessfull choleskys to also move in the gradient
 
 	pD.index_put_({cp_step, Slice(), Slice()}, -pCP.index({cp_step, Slice(), Slice()}) * 
 		(delta.index({cp_step}) / pCP_Norm.index({cp_step})).unsqueeze(1).unsqueeze(2));
-	step_mask.index_put_({cp_step}, torch::bitwise_or(step_mask.index({cp_step}), MaskTypes::SCALED_GRADIENT));
+	step_mask.index_put_({cp_step}, torch::bitwise_or(step_mask.index({cp_step}), eMaskTypes::SCALED_GRADIENT));
 
 	// If neither Gauss-Newton nor Cauchy step is accepted, find the intersection of line CP-pGN and circle with radius delta
 	// Those who had successfull chol and has no bit set in full_gn or cp_step will be those who should be interpolated
-	torch::Tensor interpol_step = step_mask == MaskTypes::SUCCESSFUL_CHOLESKY;
+	torch::Tensor interpol_step = step_mask == eMaskTypes::SUCCESSFUL_CHOLESKY;
 	{
 		tc::i32 masksum = interpol_step.sum().item<int64_t>();
 
@@ -124,8 +124,7 @@ void tc::optim::SLMP::dogleg()
 		torch::Tensor k = 0.5f * (-B + torch::sqrt(torch::square(B) - 4.0f * A * C)) / A;
 
 		pD.index_put_({interpol_step, Slice()}, CP + k.view({masksum,1,1})*(GN - CP));
-		step_mask.index_put_({interpol_step}, MaskTypes::INTERPOLATED);
-
+		step_mask.index_put_({interpol_step}, eMaskTypes::INTERPOLATED);
 	}
 }
 
@@ -191,7 +190,7 @@ void tc::optim::SLMP::step()
 	// these problems should not take a step
 	gain_mask = torch::logical_and(
 						torch::logical_not(
-							torch::bitwise_and(step_mask, MaskTypes::UNSUCCESSFUL_CHOLESKY) == MaskTypes::UNSUCCESSFUL_CHOLESKY), 
+							torch::bitwise_and(step_mask, eMaskTypes::UNSUCCESSFUL_CHOLESKY) == eMaskTypes::UNSUCCESSFUL_CHOLESKY), 
 							gain_mask);
 
 	m_pModel->getParameters().index_put_({gain_mask, Slice()}, currentParams.index({gain_mask, Slice()})); // Now all steps are set
@@ -217,6 +216,8 @@ bool tc::optim::SLMP::handle_convergence()
 	// plane convergence
 	torch::Tensor converges = torch::sqrt(torch::square(JpD).sum(1).view({numProbs})) <=
 		m_Tolerance * (1 + torch::sqrt(torch::square(res).sum(1).view({numProbs})));
+
+	converges = torch::logical_and(converges, step_mask == eMaskTypes::FULL_GAUSS_NEWTON);
 
 	// Copy the converging problems back to the final parameter tensor
 	m_Parameters.index_put_({ nci.index({converges}), Slice() },
