@@ -15,7 +15,6 @@ void compare_graph_vs_anal() {
 
 	std::cout << "VFA-model\n\n";
 
-	
 	{
 		auto TR = torch::full({ 1 }, 1, dops);
 

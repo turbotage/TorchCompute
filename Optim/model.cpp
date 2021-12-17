@@ -1,4 +1,5 @@
-#include "model.hpp"
+#include "../pch.hpp"
+
 #include "model.hpp"
 
 #include "../Expression/shunter.hpp"
@@ -68,10 +69,10 @@ tc::optim::Model::Model(const std::string& expression,
 		torch::Tensor& pa, torch::Tensor& e, tc::OptOutRef<torch::Tensor> j, tc::OptOutRef<const torch::Tensor> d)
 	{
 		if (j.has_value()) {
-			m_Parameters.requires_grad_(true);
+			pa = pa.requires_grad_(true);
 			e = eval_func();
-			j.value().get() = compute::jacobian(e, m_Parameters).detach_();
-			m_Parameters.requires_grad_(false);
+			j.value().get() = compute::jacobian(e, pa).detach_();
+			pa = pa.requires_grad_(false);
 			e.detach_();
 		}
 		else {
@@ -285,6 +286,10 @@ void tc::optim::Model::setParameters(torch::Tensor parameters)
 	}
 
 	m_Parameters = std::move(parameters);
+}
+
+bool tc::optim::Model::hasPerProblemInputs() {
+	return m_PerProblemInputs.defined();
 }
 
 tc::ui32 tc::optim::Model::getNumProblems()

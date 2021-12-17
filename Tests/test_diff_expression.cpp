@@ -20,7 +20,7 @@ void test_diff_adc(int n, bool print) {
 	std::string expr = "$S0*exp(-$b*$ADC)";
 	std::vector<std::string> diffexpr;
 	diffexpr.push_back("exp(-$b*$ADC)");
-	diffexpr.push_back("-$b*exp(-$b*$ADC)");
+	diffexpr.push_back("-$b*$S0*exp(-$b*$ADC)");
 
 	std::unordered_map<std::string, int> parmap;
 	parmap["$S0"] = 0;
@@ -112,6 +112,9 @@ int main() {
 	}
 	catch (c10::Error e1) {
 		std::cout << e1.what() << std::endl;
+	}
+	catch (std::runtime_error e2) {
+		std::cout << e2.what() << std::endl;
 	}
 
 	try {

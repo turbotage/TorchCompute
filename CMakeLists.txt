@@ -14,11 +14,13 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 #set(CMAKE_CXX_STANDARD 17)
 #set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-#option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
-
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+message("BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
 # Add source to this project's executable.
 #add_executable
 #add_library
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 add_library(ComputeLib
     "Compute/gradients.cpp"
     "Compute/kmeans.cpp"
@@ -29,6 +31,7 @@ add_library(ComputeLib
     "Optim/model.cpp"
     "Optim/optim.cpp"
     "Optim/slmp.cpp"
+    "Optim/stlmp.cpp"
     "Optim/gn.cpp"
     "Optim/sgn.cpp"
     
@@ -40,7 +43,7 @@ add_library(ComputeLib
     
     "Models/models.cpp"
 )
-
+set_target_properties(ComputeLib PROPERTIES COMPILE_PDB_NAME "ComputeLib")
 #set_property(TARGET Compute PROPERTY CXX_STANDARD_REQUIRED 17)
 
 if (MSVC)
@@ -52,14 +55,14 @@ if (MSVC)
 else()
     set(CMAKE_PREFIX_PATH "/home/turbotage/Lib/libtorch/share/cmake/Torch")
 endif(MSVC)
-
+message("CMAKE_PREFIX_PATH: ${CMAKE_PREFIX_PATH}")
 
 # TODO: Add tests and install targets if needed.
 find_package(Torch REQUIRED CONFIG)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
-target_link_libraries(ComputeLib PRIVATE "${TORCH_LIBRARIES}")
-target_include_directories(ComputeLib PRIVATE "${TORCH_INCLUDE_DIRS}")
+target_link_libraries(ComputeLib PUBLIC "${TORCH_LIBRARIES}")
+target_include_directories(ComputeLib PUBLIC "${TORCH_INCLUDE_DIRS}")
 
 
 # The following code block is suggested to be used on Windows.
@@ -80,11 +83,23 @@ target_precompile_headers(ComputeLib PUBLIC "pch.hpp")
 set_target_properties(ComputeLib PROPERTIES PUBLIC_HEADER "compute.hpp")
 
 # Tests
+add_executable(ComputeTestDiffExpression "Tests/test_diff_expression.cpp")
+target_link_libraries(ComputeTestDiffExpression ComputeLib)
+
 add_executable(ComputeTestExpMod "Tests/test_expression_model.cpp")
 target_link_libraries(ComputeTestExpMod ComputeLib)
 
+add_executable(ComputeTestExpOptim "Tests/test_expression_optim.cpp")
+target_link_libraries(ComputeTestExpOptim ComputeLib)
+
 add_executable(ComputeTestGN "Tests/test_gn.cpp")
 target_link_libraries(ComputeTestGN ComputeLib)
+
+add_executable(ComputeTestLinearFit "Tests/test_linear_fit.cpp")
+target_link_libraries(ComputeTestLinearFit ComputeLib)
+
+add_executable(ComputeTestLSTQ "Tests/test_lstq.cpp")
+target_link_libraries(ComputeTestLSTQ ComputeLib)
 
 add_executable(ComputeTestSGN "Tests/test_sgn.cpp")
 target_link_libraries(ComputeTestSGN ComputeLib)
@@ -92,14 +107,5 @@ target_link_libraries(ComputeTestSGN ComputeLib)
 add_executable(ComputeTestSLMP "Tests/test_slmp.cpp")
 target_link_libraries(ComputeTestSLMP ComputeLib)
 
-add_executable(ComputeTestLSTQ "Tests/test_lstq.cpp")
-target_link_libraries(ComputeTestLSTQ ComputeLib)
-
-add_executable(ComputeTestLinearFit "Tests/test_linear_fit.cpp")
-target_link_libraries(ComputeTestLinearFit ComputeLib)
-
 add_executable(ComputeTestThreading "Tests/test_threading.cpp")
 target_link_libraries(ComputeTestThreading ComputeLib)
-
-add_executable(ComputeTestDiffExpression "Tests/test_diff_expression.cpp")
-target_link_libraries(ComputeTestDiffExpression ComputeLib)

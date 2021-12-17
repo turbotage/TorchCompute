@@ -21,14 +21,8 @@ void gn_cpu_adc_anal(int n, bool print) {
 		dops.dtype(torch::kFloat64);
 
 		auto params = torch::rand({ n, 2 }, dops);
-		params.index_put_({ Slice(), 0 }, 5000.0f);
-		params.index_put_({ Slice(), 1 }, 0.002f);
 
 		auto ppi = torch::rand({ n, 4, 1 }, dops);
-		ppi.index_put_({ Slice(), 0, 0 }, 200.0f);
-		ppi.index_put_({ Slice(), 1, 0 }, 400.0f);
-		ppi.index_put_({ Slice(), 2, 0 }, 600.0f);
-		ppi.index_put_({ Slice(), 3, 0 }, 800.0f);
 
 		pModel->setParameters(params);
 		pModel->setPerProblemInputs(ppi);
@@ -37,9 +31,7 @@ void gn_cpu_adc_anal(int n, bool print) {
 		pModel->eval(data);
 
 
-		auto guess = torch::empty({ n, 2 }, dops);
-		guess.index_put_({ Slice(), 0 }, 1000.0f);
-		guess.index_put_({ Slice(), 1 }, 0.004);
+		auto guess = torch::rand({ n, 2 }, dops);
 		pModel->setParameters(guess);
 
 		settings.pModel = std::move(pModel);
@@ -94,7 +86,7 @@ void gn_cpu_vfa_anal(int n, bool print) {
 		pModel->setPerProblemInputs(ppi);
 		pModel->setConstants(std::vector<torch::Tensor>{ TR });
 
-		torch::Tensor data = torch::empty({ n, 4 }, dops);
+		torch::Tensor data = torch::rand({ n, 4 }, dops);
 		pModel->eval(data);
 
 
@@ -150,9 +142,7 @@ void gn_cuda_adc_anal(int n, bool print) {
 		pModel->eval(data);
 
 
-		auto guess = torch::empty({ n, 2 }, dops);
-		guess.index_put_({ Slice(), 0 }, 0.5);
-		guess.index_put_({ Slice(), 1 }, 0.5);
+		auto guess = torch::rand({ n, 2 }, dops);
 		pModel->setParameters(guess);
 
 		settings.pModel = std::move(pModel);
@@ -209,9 +199,7 @@ void gn_cuda_vfa_anal(int n, bool print) {
 		pModel->eval(data);
 
 
-		auto guess = torch::empty({ n, 2 }, dops);
-		guess.index_put_({ Slice(), 0 }, 0.5);
-		guess.index_put_({ Slice(), 1 }, 0.5);
+		auto guess = torch::rand({ n, 2 }, dops);
 		pModel->setParameters(guess);
 
 		settings.pModel = std::move(pModel);
@@ -244,7 +232,7 @@ int main() {
 	catch (c10::Error e1) {
 		std::cout << e1.what() << std::endl;
 	}
-	/*
+	
 	try {
 		gn_cpu_vfa_anal(40000, false);
 	}
@@ -265,6 +253,6 @@ int main() {
 	catch (c10::Error e1) {
 		std::cout << e1.what() << std::endl;
 	}
-	*/
+	
 
 }

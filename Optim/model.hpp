@@ -116,6 +116,12 @@ namespace tc {
 			void setParameters(torch::Tensor parameters);
 
 			/// <summary>
+			/// Not all models use PerProblemInputs
+			/// </summary>
+			/// <returns></returns>
+			bool hasPerProblemInputs();
+
+			/// <summary>
 			/// Get number of problems in the model
 			/// </summary>
 			/// <returns></returns>

@@ -51,7 +51,7 @@ namespace tc {
 			bool m_HasSwitched = false;
 
 			torch::Tensor m_Parameters;
-			torch::Tensor m_PerProblemInputs;
+			std::optional<torch::Tensor> m_PerProblemInputs;
 
 		private:
 

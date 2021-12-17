@@ -15,7 +15,7 @@ namespace tc {
 			torch::Tensor							data;
 			torch::Device							startDevice; // Set to CPU by default constructor
 			float									tolerance = 1e-4;
-			tc::ui32									maxIter = 50;
+			tc::ui32								maxIter = 50;
 		};
 
 		struct OptimResult {

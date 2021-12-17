@@ -1,3 +1,5 @@
+#include "../pch.hpp"
+
 #include "sgn.hpp"
 
 tc::optim::SGNSettings::SGNSettings()
@@ -28,12 +30,13 @@ tc::optim::SGNResult tc::optim::SGN::eval()
 void tc::optim::SGN::step()
 {
 	using namespace torch::indexing;
-
-	torch::InferenceMode im_guard;
+	torch::NoGradGuard no_grad_guard;
 
 	res = res.view({ numProbs, numInputs });
 	m_pModel->res_diff(res, J, data_slice);
 	res = res.view({ numProbs, numInputs, 1 });
+	
+	torch::InferenceMode im_guard;
 
 	torch::Tensor Jn = torch::sqrt(torch::square(J).sum(1));
 
@@ -73,7 +76,7 @@ bool tc::optim::SGN::handle_convergence()
 {
 	using namespace torch::indexing;
 
-	c10::InferenceMode im_guard;
+	torch::NoGradGuard no_grad_guard;
 
 	torch::Tensor converges = torch::sqrt(torch::square(JpD).sum(1).view({ numProbs })) <=
 		m_Tolerance * (1 + torch::sqrt(torch::square(res).sum(1).view({ numProbs })));
@@ -119,12 +122,17 @@ void tc::optim::SGN::switch_device()
 {
 	if (!m_SwitchDevice.has_value())
 		return;
+
+	torch::NoGradGuard no_grad_guard;
 	m_HasSwitched = true;
 
 	torch::Device& dev = m_SwitchDevice.value();
 
 	m_Parameters = m_Parameters.to(dev);
-	m_PerProblemInputs = m_PerProblemInputs.to(dev);
+
+	if (m_PerProblemInputs.has_value())
+		m_PerProblemInputs = m_PerProblemInputs.value().to(dev);
+	
 	m_Data = m_Data.to(dev);
 
 	m_pModel->to(dev);
@@ -147,11 +155,16 @@ void tc::optim::SGN::switch_device()
 }
 
 void tc::optim::SGN::setup_solve() {
+
+	torch::NoGradGuard no_grad_guard;
+
 	m_pModel->to(m_StartDevice);
 	m_Data = m_Data.to(m_StartDevice);
 
 	m_Parameters = m_pModel->getParameters();
-	m_PerProblemInputs = m_pModel->getPerProblemInputs();
+
+	if (m_pModel->hasPerProblemInputs())
+		m_PerProblemInputs = m_pModel->getPerProblemInputs();
 
 	data_slice = m_Data;
 
