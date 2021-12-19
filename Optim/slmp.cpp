@@ -30,7 +30,6 @@ tc::optim::SLMPResult tc::optim::SLMP::eval()
 	return res;
 }
 
-
 void tc::optim::SLMP::dogleg()
 {
 	using namespace torch::indexing;

@@ -3,6 +3,7 @@
 #include "../pch.hpp"
 
 #include "model.hpp"
+#include <atomic>
 
 namespace tc {
 	namespace optim {
@@ -14,7 +15,7 @@ namespace tc {
 			std::unique_ptr<optim::Model>			pModel;
 			torch::Tensor							data;
 			torch::Device							startDevice; // Set to CPU by default constructor
-			float									tolerance = 1e-4;
+			float									tolerance = 1e-6;
 			tc::ui32								maxIter = 50;
 		};
 
