@@ -17,7 +17,7 @@ namespace tc {
 
 		struct SGNResult : public OptimResult {};
 
-		class SGN : public Optimizer<SGNResult> {
+		class SGN : public Optimizer {
 		public:
 
 			SGN() = delete;
@@ -26,7 +26,7 @@ namespace tc {
 
 			SGN(SGNSettings& settings);
 
-			SGNResult eval() override;
+			SGNResult eval();
 
 		private:
 

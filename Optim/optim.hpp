@@ -25,14 +25,10 @@ namespace tc {
 			torch::Tensor nonConvergingIndices;
 		};
 
-		template<typename ReturnType>
 		class Optimizer {
 		public:
 
 			Optimizer(OptimizerSettings& settings);
-
-			// IMPORTANT! Any class implementing this virtual function should also call on_eval() at the begining 
-			virtual ReturnType eval() = 0;
 
 			void abort();
 
@@ -44,6 +40,7 @@ namespace tc {
 
 			bool should_stop();
 
+			// This should always be called at begining of eval in other Optimizers deriving from this
 			void on_eval();
 
 			~Optimizer();
@@ -68,6 +65,7 @@ namespace tc {
 
 		};
 
+		/*
 		template<typename ReturnType>
 		inline Optimizer<ReturnType>::Optimizer(OptimizerSettings& settings)
 			: m_pModel(std::move(settings.pModel)), m_Data(settings.data),
@@ -120,5 +118,6 @@ namespace tc {
 		{
 			assert(m_HasRun && "on_eval() was never run, incorrect implementation of Optimizer");
 		}
+		*/
 	}
 }

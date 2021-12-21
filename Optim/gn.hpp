@@ -17,7 +17,7 @@ namespace tc {
 
 		struct GNResult : public OptimResult {};
 
-		class GN : public Optimizer<GNResult> {
+		class GN : public Optimizer {
 		public:
 
 			GN() = delete;
@@ -26,7 +26,7 @@ namespace tc {
 
 			GN(GNSettings& settings);
 
-			GNResult eval() override;
+			GNResult eval();
 
 		private:
 

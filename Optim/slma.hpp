@@ -23,7 +23,7 @@ namespace tc {
 
 		};
 
-		class SLMA : public Optimizer<SLMAResult> {
+		class SLMA : public Optimizer {
 		public:
 
 			SLMA() = delete;
@@ -32,7 +32,7 @@ namespace tc {
 
 			SLMA(SLMASettings& settings);
 
-			SLMAResult eval() override;
+			SLMAResult eval();
 
 		private:
 

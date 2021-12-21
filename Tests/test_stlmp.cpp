@@ -135,6 +135,169 @@ void stlmp_cpu_vfa_anal_specific(int n, bool print) {
 		auto par = stlmp.getIterInfo();
 		std::cout << "iter: " << par.first << std::endl;
 
+		if (print) {
+			std::cout << "found params: " << res.finalParameters << std::endl;
+		}
+
+		std::cout << "No crash, Success!" << std::endl;
+	}
+
+}
+
+void stlmp_cpu_adc_anal(int n, bool print) {
+	using namespace tc;
+
+	std::cout << "ADC model" << std::endl;
+	std::cout << "per problem b-vals : eval_and_diff" << std::endl;
+
+	tc::optim::STLMPSettings settings;
+
+	{
+		using namespace torch::indexing;
+
+		std::unique_ptr<optim::Model> pModel = std::make_unique<optim::Model>(models::adc_eval_and_diff);
+
+		torch::TensorOptions dops;
+		dops = dops.dtype(torch::kFloat64);
+
+		auto params = torch::rand({ n, 2 }, dops);
+
+		auto ppi = torch::rand({ n, 4, 1 }, dops);
+
+		pModel->setParameters(params);
+		pModel->setPerProblemInputs(ppi);
+
+		torch::Tensor data = torch::empty({ n, 4 }, dops);
+		pModel->eval(data);
+
+		auto guess = torch::rand({ n, 2 }, dops);
+		pModel->setParameters(guess);
+
+		settings.pModel = std::move(pModel);
+		settings.data = data;
+		settings.maxIter = 100;
+
+		if (print) {
+			std::cout << "true params: " << params << std::endl;
+		}
+
+		optim::STLMP stlmp(settings);
+		optim::STLMPResult res = stlmp.eval();
+		auto par = stlmp.getIterInfo();
+		std::cout << "iter: " << par.first << std::endl;
+
+
+		if (print) {
+			std::cout << "found params: " << res.finalParameters << std::endl;
+		}
+
+		std::cout << "No crash, Success!" << std::endl;
+	}
+}
+
+void stlmp_cpu_vfa_anal(int n, bool print) {
+	using namespace tc;
+
+
+	std::cout << "VFA model" << std::endl;
+	std::cout << "per problem FA-vals : eval_and_diff" << std::endl;
+
+	tc::optim::STLMPSettings settings;
+	{
+		using namespace torch::indexing;
+
+		std::unique_ptr<tc::optim::Model> pModel = std::make_unique<optim::Model>(models::vfa_eval_and_diff);
+
+		torch::TensorOptions dops;
+		dops.dtype(torch::kFloat64);
+
+		auto params = torch::rand({ n, 2 }, dops);
+
+		auto ppi = torch::rand({ n, 4, 1 }, dops);
+
+		auto TR = torch::full({ 1 }, 1, dops);
+
+		pModel->setParameters(params);
+		pModel->setPerProblemInputs(ppi);
+		pModel->setConstants(std::vector<torch::Tensor>{ TR });
+
+		torch::Tensor data = torch::empty({ n, 4 }, dops);
+		pModel->eval(data);
+
+
+		auto guess = torch::empty({ n, 2 }, dops);
+		guess.index_put_({ Slice(), 0 }, 0.5);
+		guess.index_put_({ Slice(), 1 }, 0.5);
+		pModel->setParameters(guess);
+
+		settings.pModel = std::move(pModel);
+		settings.data = data;
+		settings.maxIter = 100;
+
+		if (print) {
+			std::cout << "true params: " << params << std::endl;
+		}
+
+		optim::STLMP stlmp(settings);
+		optim::STLMPResult res = stlmp.eval();
+		auto par = stlmp.getIterInfo();
+		std::cout << "iter: " << par.first << std::endl;
+
+		if (print) {
+			std::cout << "found params: " << res.finalParameters << std::endl;
+		}
+
+		std::cout << "No crash, Success!" << std::endl;
+	}
+}
+
+void stlmp_cuda_adc_anal(int n, bool print) {
+
+	using namespace tc;
+
+	std::cout << "ADC model" << std::endl;
+	std::cout << "per problem b-vals : eval_and_diff : switch to cpu" << std::endl;
+
+	optim::STLMPSettings settings;
+
+	std::unique_ptr<optim::Model> pModel;
+	{
+		using namespace torch::indexing;
+
+		pModel = std::make_unique<optim::Model>(models::adc_eval_and_diff);
+
+		torch::TensorOptions dops;
+		dops = dops.dtype(torch::kFloat64).device(torch::Device("cuda:0"));
+
+		auto params = torch::rand({ n, 2 }, dops);
+
+		auto ppi = torch::rand({ n, 3, 1 }, dops);
+
+		pModel->setParameters(params);
+		pModel->setPerProblemInputs(ppi);
+
+		torch::Tensor data = torch::empty({ n, 3 }, dops);
+		pModel->eval(data);
+
+
+		auto guess = torch::rand({ n, 2 }, dops);
+		pModel->setParameters(guess);
+
+		settings.pModel = std::move(pModel);
+		settings.data = data;
+		settings.maxIter = 100;
+		settings.startDevice = torch::Device("cuda:0");
+		settings.switchDevice = torch::Device("cpu");
+		settings.switchAtN = 10000;
+
+		if (print) {
+			std::cout << "true params: " << params << std::endl;
+		}
+
+		optim::STLMP stlmp(settings);
+		optim::STLMPResult res = stlmp.eval();
+		auto par = stlmp.getIterInfo();
+		std::cout << "iter: " << par.first << std::endl;
 
 		if (print) {
 			std::cout << "found params: " << res.finalParameters << std::endl;
@@ -144,6 +307,67 @@ void stlmp_cpu_vfa_anal_specific(int n, bool print) {
 	}
 
 }
+
+void stlmp_cuda_vfa_anal(int n, bool print) {
+
+	using namespace tc;
+
+	optim::STLMPSettings settings;
+
+	std::unique_ptr<optim::Model> pModel;
+
+	std::cout << "VFA model" << std::endl;
+	std::cout << "per problem FA-vals : eval_and_diff" << std::endl;
+	{
+		using namespace torch::indexing;
+
+		pModel = std::make_unique<optim::Model>(models::vfa_eval_and_diff);
+
+		torch::TensorOptions dops;
+		dops = dops.dtype(torch::kFloat64).device(torch::Device("cuda:0"));
+
+		auto params = torch::rand({ n, 2 }, dops);
+
+		auto ppi = torch::rand({ n, 4, 1 }, dops);
+
+		pModel->setParameters(params);
+		pModel->setPerProblemInputs(ppi);
+		auto TR = torch::full({ 1 }, 1, dops);
+		pModel->setConstants(std::vector<torch::Tensor>{ TR });
+
+		torch::Tensor data = torch::empty({ n, 4 }, dops);
+		pModel->eval(data);
+
+
+		auto guess = torch::rand({ n, 2 }, dops);
+		pModel->setParameters(guess);
+
+		settings.pModel = std::move(pModel);
+		settings.data = data;
+		settings.maxIter = 100;
+		settings.startDevice = torch::Device("cuda:0");
+		//settings.switchDevice = torch::Device("cpu");
+		//settings.switchAtN = 10000;
+
+		if (print) {
+			std::cout << "true params: " << params << std::endl;
+		}
+
+		optim::STLMP stlmp(settings);
+		optim::STLMPResult res = stlmp.eval();
+		auto par = stlmp.getIterInfo();
+		std::cout << "iter: " << par.first << std::endl;
+
+		if (print) {
+			std::cout << "found params: " << res.finalParameters << std::endl;
+		}
+
+		std::cout << "No crash, Success!" << std::endl;
+	}
+
+}
+
+
 
 int main() {
 
@@ -163,6 +387,47 @@ int main() {
 
 	try {
 		stlmp_cpu_vfa_anal_specific(1, true);
+	}
+	catch (c10::Error e1) {
+		std::cout << e1.what() << std::endl;
+	}
+	catch (std::runtime_error e2) {
+		std::cout << e2.what() << std::endl;
+	}
+
+	try {
+		stlmp_cpu_adc_anal(1, true);
+	}
+	catch (c10::Error e1) {
+		std::cout << e1.what() << std::endl;
+	}
+	catch (std::runtime_error e2) {
+		std::cout << e2.what() << std::endl;
+	}
+
+
+	try {
+		stlmp_cpu_adc_anal(40000, false);
+	}
+	catch (c10::Error e1) {
+		std::cout << e1.what() << std::endl;
+	}
+	catch (std::runtime_error e2) {
+		std::cout << e2.what() << std::endl;
+	}
+
+	try {
+		stlmp_cuda_adc_anal(100000, false);
+	}
+	catch (c10::Error e1) {
+		std::cout << e1.what() << std::endl;
+	}
+	catch (std::runtime_error e2) {
+		std::cout << e2.what() << std::endl;
+	}
+
+	try {
+		stlmp_cuda_vfa_anal(100000, false);
 	}
 	catch (c10::Error e1) {
 		std::cout << e1.what() << std::endl;

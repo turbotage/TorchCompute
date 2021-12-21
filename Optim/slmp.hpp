@@ -23,7 +23,7 @@ namespace tc {
 		};
 
 		// Scaled Levenberg-Marquardt with Powel Dogleg (trust region LM)
-		class SLMP : public Optimizer<SLMPResult> {
+		class SLMP : public Optimizer {
 		public:
 
 			SLMP() = delete;
@@ -32,7 +32,7 @@ namespace tc {
 
 			SLMP(SLMPSettings& settings);
 
-			SLMPResult eval() override;
+			SLMPResult eval();
 
 		private:
 
