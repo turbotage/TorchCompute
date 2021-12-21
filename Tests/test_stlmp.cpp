@@ -1,7 +1,7 @@
 
 #include "../compute.hpp"
 
-void slmp_cpu_adc_anal_specific(int n, bool print) {
+void stlmp_cpu_adc_anal_specific(int n, bool print) {
 
 	using namespace tc;
 
@@ -38,14 +38,14 @@ void slmp_cpu_adc_anal_specific(int n, bool print) {
 		std::cout << "data:\n" << data << std::endl;
 
 		auto guess = torch::empty({ n, 2 }, dops);
-		guess.index_put_({ Slice(), 0 }, 20.0f);
+		guess.index_put_({ Slice(), 0 }, 200.0f);
 		guess.index_put_({ Slice(), 1 }, 0.05f);
 		pModel->setParameters(guess);
 
 		settings.pModel = std::move(pModel);
 		settings.data = data;
-		settings.maxIter = 100;
-		settings.tolerance = 1e-6;
+		settings.maxIter = 200;
+		settings.tolerance = 1e-5;
 
 		if (print) {
 			std::cout << "true params: " << params << std::endl;
@@ -66,14 +66,14 @@ void slmp_cpu_adc_anal_specific(int n, bool print) {
 
 }
 
-void slmp_cpu_vfa_anal_specific(int n, bool print) {
+void stlmp_cpu_vfa_anal_specific(int n, bool print) {
 
 	using namespace tc;
 
 	std::cout << "VFA model" << std::endl;
 	std::cout << "per problem b-vals : eval_and_diff" << std::endl;
 
-	tc::optim::SLMASettings settings;
+	tc::optim::STLMPSettings settings;
 
 	std::unique_ptr<tc::optim::Model> pModel;
 	{
@@ -110,27 +110,29 @@ void slmp_cpu_vfa_anal_specific(int n, bool print) {
 		pModel->setConstants(std::vector<torch::Tensor>{TR, fa});
 
 		torch::Tensor data = torch::empty({ n, 4 }, dops);
+		data += torch::rand({ n,4 }, dops);
+
 		pModel->eval(data);
 
 		std::cout << "data:\n" << data << std::endl;
 
 		auto guess = torch::empty({ n, 2 }, dops);
-		guess.index_put_({ Slice(), 0 }, 400.0f);
-		guess.index_put_({ Slice(), 1 }, 0.6f);
+		guess.index_put_({ Slice(), 0 }, 1e4f);
+		guess.index_put_({ Slice(), 1 }, 0.05f);
 		pModel->setParameters(guess);
 
 		settings.pModel = std::move(pModel);
 		settings.data = data;
 		settings.maxIter = 200;
-		settings.tolerance = 1e-8;
+		settings.tolerance = 1e-5;
 
 		if (print) {
 			std::cout << "true params: " << params << std::endl;
 		}
 
-		optim::SLMA slma(settings);
-		optim::SLMAResult res = slma.eval();
-		auto par = slma.getIterInfo();
+		optim::STLMP stlmp(settings);
+		optim::STLMPResult res = stlmp.eval();
+		auto par = stlmp.getIterInfo();
 		std::cout << "iter: " << par.first << std::endl;
 
 
@@ -143,24 +145,32 @@ void slmp_cpu_vfa_anal_specific(int n, bool print) {
 
 }
 
-
 int main() {
 
+
 	
 	try {
-		slmp_cpu_adc_anal_specific(1, true);
+		stlmp_cpu_adc_anal_specific(1, true);
 	}
 	catch (c10::Error e1) {
 		std::cout << e1.what() << std::endl;
+	}
+	catch (std::runtime_error e2) {
+		std::cout << e2.what() << std::endl;
 	}
 	
 
+
 	try {
-		slmp_cpu_vfa_anal_specific(1, true);
+		stlmp_cpu_vfa_anal_specific(1, true);
 	}
 	catch (c10::Error e1) {
 		std::cout << e1.what() << std::endl;
+	}
+	catch (std::runtime_error e2) {
+		std::cout << e2.what() << std::endl;
 	}
 
 }
+
 

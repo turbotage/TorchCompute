@@ -32,6 +32,7 @@ add_library(ComputeLib
     "Optim/optim.cpp"
     "Optim/slmp.cpp"
     "Optim/slma.cpp"
+    "Optim/stlmp.cpp"
     "Optim/gn.cpp"
     "Optim/sgn.cpp"
     
@@ -109,6 +110,9 @@ target_link_libraries(ComputeTestSLMA ComputeLib)
 
 add_executable(ComputeTestSLMP "Tests/test_slmp.cpp")
 target_link_libraries(ComputeTestSLMP ComputeLib)
+
+add_executable(ComputeTestSTLMP "Tests/test_stlmp.cpp")
+target_link_libraries(ComputeTestSTLMP ComputeLib)
 
 add_executable(ComputeTestThreading "Tests/test_threading.cpp")
 target_link_libraries(ComputeTestThreading ComputeLib)

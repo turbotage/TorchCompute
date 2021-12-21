@@ -46,7 +46,6 @@ void compare_graph_vs_anal() {
 
 		std::cout << pModel2->getReadableExpressionTree() << std::endl;
 
-
 		torch::Tensor eval = torch::empty({ n, 2 }, dops);
 		torch::Tensor J = torch::empty({ n, 4, 2 }, dops);
 

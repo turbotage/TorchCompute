@@ -54,6 +54,8 @@ void tc::optim::SLMA::step()
 	torch::Tensor Hs = torch::bmm(Js.transpose(1, 2), Js);
 
 	Hs = Hs + lambda.unsqueeze(1).unsqueeze(2) * torch::diag_embed(Hs.diagonal(0, -2, -1));
+	//Hs = Hs + lambda.unsqueeze(1).unsqueeze(2) * torch::diag_embed(Jn*Jn);
+
 
 	torch::Tensor Hs_chol;
 	std::tie(Hs_chol, step_mask) = torch::linalg_cholesky_ex(Hs);
@@ -86,20 +88,35 @@ void tc::optim::SLMA::step()
 	//Objective function value at current point
 	torch::Tensor et = 0.5f * torch::square(res_t).sum(1).view({ numProbs });
 
-	torch::Tensor gain_mask = et < ep;
+	torch::Tensor rho = (ep - et) / (-torch::bmm(res.transpose(1,2), JpD).view({numProbs}) - 
+		0.5f * torch::square(JpD).sum(1).view({numProbs}));
 
+	torch::Tensor gain_mask = rho >= 0.0f;
+
+	// gain mask indicates we had reduction, accept step and decrease lambda
 	lambda.index_put_({ gain_mask }, lambda.index({ gain_mask }) * m_Decrease);
 	step_mask.index_put_({ gain_mask }, step_mask.index({ gain_mask }).bitwise_or(eMaskTypes::LAMBDA_DECREASED));
 
 	gain_mask = torch::logical_not(gain_mask);
+	// gain mask indicated bad reduction ratio, increase lambda
 	lambda.index_put_({ gain_mask }, lambda.index({ gain_mask }) * m_Increase);
 	step_mask.index_put_({ gain_mask }, step_mask.index({ gain_mask }).bitwise_or(eMaskTypes::LAMBDA_INCREASED));
 
+	// If lambda have been increase above max value set it to max value
+	torch::Tensor lambda_mask = lambda >= m_LambdaMax;
+	lambda.index_put_({ lambda_mask }, m_LambdaMax);
+
+	// If lambda > m_LambdaMax it is time we take a step.
+	gain_mask = torch::logical_and(gain_mask, torch::logical_not(lambda_mask));
+	// gain mask indicates bad gain_ratio and lambda < m_LambdaMax
+
 	m_pModel->getParameters().index_put_({ gain_mask, Slice()}, currentParams.index({gain_mask, Slice()}));
 
-	//std::cout << "pD:\n" << pD << std::endl;
-	//std::cout << "lambda:\n" << lambda << std::endl;
-	//std::cout << "step:\n" << step_mask << std::endl;
+	std::cout << "Hs:\n" << Hs << std::endl;
+	std::cout << "pD:\n" << pD << std::endl;
+	std::cout << "params:\n" << m_pModel->getParameters() << std::endl;
+	std::cout << "lambda:\n" << lambda << std::endl;
+	std::cout << "step:\n" << step_mask << std::endl;
 
 }
 
@@ -113,7 +130,7 @@ bool tc::optim::SLMA::handle_convergence()
 	torch::Tensor converges = torch::sqrt(torch::square(JpD).sum(1).view({ numProbs })) <=
 		m_Tolerance * (1 + torch::sqrt(torch::square(res).sum(1).view({ numProbs })));
 
-	converges = torch::logical_and(converges, g_norm <= m_Tolerance * 100.0f * (1.0f + ep));
+	converges = torch::logical_and(converges, g_norm <= -m_Tolerance * 10.0f * (1.0f + ep));
 
 	// We only converge when damping being turned off
 	converges = torch::logical_and(converges, step_mask == eMaskTypes::LAMBDA_DECREASED);
@@ -236,7 +253,7 @@ void tc::optim::SLMA::setup_solve()
 	ep = torch::empty({ numProbs }, fp_ops);
 	g_norm = torch::empty({ numProbs }, fp_ops);
 	
-	lambda = torch::ones({ numProbs }, fp_ops);
+	lambda = torch::full({ numProbs }, 100.0f, fp_ops);
 }
 
 void tc::optim::SLMA::solve()

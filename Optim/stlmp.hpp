@@ -1,7 +1,5 @@
 #pragma once
 
-#include "../pch.hpp"
-
 #include "model.hpp"
 #include "optim.hpp"
 
@@ -10,31 +8,37 @@
 namespace tc {
 	namespace optim {
 
-		struct SLMASettings : public OptimizerSettings {
+		struct STLMPSettings : public OptimizerSettings {
 
-			SLMASettings();
+			STLMPSettings();
 
+			float mu = 0.25;
+			float eta = 0.75;
+			float minimumTrustRadius = 1e-30;
 			std::optional<torch::Device> switchDevice;
 			tc::i32 switchAtN = -1; // Don't switch on default
-
 		};
 
-		struct SLMAResult : public OptimResult {
-
+		struct STLMPResult : public OptimResult {
+			torch::Tensor finalDeltas;
 		};
 
-		class SLMA : public Optimizer<SLMAResult> {
+		// Scaled Levenberg-Marquardt with Powel Dogleg (trust region LM)
+		class STLMP : public Optimizer<STLMPResult> {
 		public:
 
-			SLMA() = delete;
-			SLMA(const SLMA&) = delete;
-			SLMA& operator=(const SLMA&) = delete;
+			STLMP() = delete;
+			STLMP(const STLMP&) = delete;
+			STLMP& operator=(const STLMP&) = delete;
 
-			SLMA(SLMASettings& settings);
+			STLMP(STLMPSettings& settings);
 
-			SLMAResult eval() override;
+			STLMPResult eval() override;
 
 		private:
+
+			// sets pD and step_mask
+			void dogleg();
 
 			// performs a step
 			void step();
@@ -52,6 +56,10 @@ namespace tc {
 			void finalize_solve();
 
 		private:
+			float m_Mu;
+			float m_Eta;
+
+			float m_MinimumTrustRadius;
 
 			torch::Device m_CurrentDevice;
 
@@ -65,15 +73,13 @@ namespace tc {
 
 		private:
 
-			float m_Increase = 5.0f;
-			float m_Decrease = 1.0f / 10.0f;
-			float m_LambdaMax = 1e7;
-
 			enum eMaskTypes {
 				SUCCESSFUL_CHOLESKY = 0,
 				UNSUCCESSFUL_CHOLESKY = 1,
-				LAMBDA_DECREASED = 2,
-				LAMBDA_INCREASED = 4
+				FULL_GAUSS_NEWTON = 2,
+				SCALED_GRADIENT = 4,
+				INTERPOLATED = 8,
+				NO_STEP = 16 // For debug only
 			};
 
 			torch::Tensor nci;
@@ -86,10 +92,7 @@ namespace tc {
 
 			// (nProbs, nPerProbInps, 1) (PRIN)
 			torch::Tensor res;					// fp
-			torch::Tensor res_t;
-
-			torch::Tensor ep;
-			torch::Tensor g_norm;
+			torch::Tensor res_t;				// fp
 
 			// (nProbs, nParams, 1) (PRPA)
 			torch::Tensor pD;					// fp
@@ -104,12 +107,13 @@ namespace tc {
 			// (nProbs, nParams, nParams)
 
 			// (nProbs)
-			torch::Tensor lambda;				// fp
+			torch::Tensor delta;				// fp
 
 			torch::Tensor step_mask;			// int32
+
+
 
 		};
 
 	}
 }
-
