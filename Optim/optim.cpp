@@ -2,6 +2,7 @@
 #include "optim.hpp"
 #include "optim.hpp"
 #include "optim.hpp"
+#include "optim.hpp"
 #include "../pch.hpp"
 
 #include "optim.hpp"
@@ -42,6 +43,10 @@ void tc::optim::Optimizer::abort()
 std::pair<tc::ui32, tc::ui32> tc::optim::Optimizer::getIterInfo()
 {
 	return std::make_pair(m_Iter.load(), m_NonConvergingProblems.load());
+}
+
+void tc::optim::Optimizer::on_abort()
+{
 }
 
 void tc::optim::Optimizer::set_iter_info(tc::ui32 iter, tc::ui32 non_converging_probs)

@@ -36,7 +36,7 @@ namespace tc {
 
 		protected:
 
-			virtual void on_abort() {}
+			virtual void on_abort();
 
 			void set_iter_info(tc::ui32 iter, tc::ui32 non_converging_probs);
 
@@ -45,7 +45,7 @@ namespace tc {
 			// This should always be called at begining of eval in other Optimizers deriving from this
 			void on_eval();
 
-			~Optimizer();
+			virtual ~Optimizer();
 
 		protected:
 
