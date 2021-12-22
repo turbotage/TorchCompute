@@ -29,6 +29,7 @@ namespace tc {
 		public:
 
 			Optimizer(OptimizerSettings& settings);
+			virtual ~Optimizer();
 
 			void abort();
 
@@ -45,7 +46,6 @@ namespace tc {
 			// This should always be called at begining of eval in other Optimizers deriving from this
 			void on_eval();
 
-			virtual ~Optimizer();
 
 		protected:
 
