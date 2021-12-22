@@ -36,6 +36,8 @@ namespace tc {
 
 		protected:
 
+			virtual void on_abort() {}
+
 			void set_iter_info(tc::ui32 iter, tc::ui32 non_converging_probs);
 
 			bool should_stop();
