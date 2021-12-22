@@ -1,3 +1,5 @@
+#include "../pch.hpp"
+
 #include "parsing.hpp"
 
 #include <regex>

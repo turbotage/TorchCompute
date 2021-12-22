@@ -1,3 +1,5 @@
+#include "../pch.hpp"
+
 #include "expression.hpp"
 
 #include "lexer.hpp"

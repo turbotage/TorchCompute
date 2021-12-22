@@ -1,3 +1,5 @@
+#include "../pch.hpp"
+
 #include "random.hpp"
 
 torch::Tensor tc::compute::random::random_choice(int start, int end, int nsamples, torch::TensorOptions tops)

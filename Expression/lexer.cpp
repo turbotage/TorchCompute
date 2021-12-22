@@ -1,3 +1,5 @@
+#include "../pch.hpp"
+
 #include "lexer.hpp"
 
 #include <regex>

@@ -1,3 +1,5 @@
+#include "../pch.hpp"
+
 #include "kmeans.hpp"
 #include "random.hpp"
 
