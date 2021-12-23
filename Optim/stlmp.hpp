@@ -35,6 +35,8 @@ namespace tc {
 
 			STLMPResult eval();
 
+			std::unique_ptr<OptimResult> base_eval() override;
+
 		private:
 
 			// sets pD and step_mask

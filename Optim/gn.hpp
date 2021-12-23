@@ -28,6 +28,8 @@ namespace tc {
 
 			GNResult eval();
 
+			std::unique_ptr<OptimResult> base_eval() override;
+
 		private:
 
 			void step();

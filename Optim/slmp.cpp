@@ -1,3 +1,4 @@
+#include "slmp.hpp"
 #include "../pch.hpp"
 
 #include "slmp.hpp"
@@ -28,6 +29,21 @@ tc::optim::SLMPResult tc::optim::SLMP::eval()
 	res.finalDeltas = delta;
 	
 	return res;
+}
+
+std::unique_ptr<tc::optim::OptimResult> tc::optim::SLMP::base_eval()
+{
+	Optimizer::on_eval();
+
+	solve();
+
+	std::unique_ptr<SLMPResult> ret = std::make_unique<SLMPResult>();
+	ret->finalParameters = m_Parameters;
+	ret->pFinalModel = std::move(m_pModel);
+	ret->nonConvergingIndices = nci;
+	ret->finalDeltas = delta;
+
+	return ret;
 }
 
 void tc::optim::SLMP::dogleg()

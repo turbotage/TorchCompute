@@ -38,6 +38,7 @@ tc::optim::Optimizer::~Optimizer()
 void tc::optim::Optimizer::abort()
 {
 	m_ShouldStop = true;
+	on_abort();
 }
 
 std::pair<tc::ui32, tc::ui32> tc::optim::Optimizer::getIterInfo()

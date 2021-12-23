@@ -1,3 +1,4 @@
+#include "slma.hpp"
 #include "../pch.hpp"
 
 #include "slma.hpp"
@@ -9,7 +10,9 @@ tc::optim::SLMASettings::SLMASettings()
 
 tc::optim::SLMA::SLMA(SLMASettings& settings)
 	: m_CurrentDevice(settings.startDevice), m_SwitchDevice(settings.switchDevice), 
-	m_SwitchNumber(settings.switchAtN), Optimizer(settings)
+	m_SwitchNumber(settings.switchAtN), m_Increase(settings.lambdaIncrease),
+	m_Decrease(settings.lambdaDecrease), m_LambdaMax(settings.lambdaMax),
+	m_LambdaMin(settings.lambdaMin), Optimizer(settings)
 {
 	
 }
@@ -24,8 +27,24 @@ tc::optim::SLMAResult tc::optim::SLMA::eval()
 	res.finalParameters = m_Parameters;
 	res.pFinalModel = std::move(m_pModel);
 	res.nonConvergingIndices = nci;
+	res.finalLambdas = lambda;
 
 	return res;
+}
+
+std::unique_ptr<tc::optim::OptimResult> tc::optim::SLMA::base_eval()
+{
+	Optimizer::on_eval();
+
+	solve();
+
+	std::unique_ptr<SLMAResult> ret = std::make_unique<SLMAResult>();
+	ret->finalParameters = m_Parameters;
+	ret->pFinalModel = std::move(m_pModel);
+	ret->nonConvergingIndices = nci;
+	ret->finalLambdas = lambda;
+
+	return ret;
 }
 
 void tc::optim::SLMA::step()
@@ -103,8 +122,12 @@ void tc::optim::SLMA::step()
 	step_mask.index_put_({ gain_mask }, step_mask.index({ gain_mask }).bitwise_or(eMaskTypes::LAMBDA_INCREASED));
 
 	// If lambda have been increase above max value set it to max value
-	torch::Tensor lambda_mask = lambda >= m_LambdaMax;
+	torch::Tensor lambda_mask = lambda > m_LambdaMax;
 	lambda.index_put_({ lambda_mask }, m_LambdaMax);
+
+	// If lambda have been decreased below min value set it to min value
+	lambda_mask = lambda < m_LambdaMin;
+	lambda.index_put_({ lambda_mask }, m_LambdaMin);
 
 	// If lambda > m_LambdaMax it is time we take a step.
 	gain_mask = torch::logical_and(gain_mask, torch::logical_not(lambda_mask));

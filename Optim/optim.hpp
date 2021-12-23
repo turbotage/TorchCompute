@@ -31,6 +31,8 @@ namespace tc {
 			Optimizer(OptimizerSettings& settings);
 			virtual ~Optimizer();
 
+			virtual std::unique_ptr<OptimResult> base_eval() = 0;
+
 			void abort();
 
 			std::pair<tc::ui32, tc::ui32> getIterInfo();

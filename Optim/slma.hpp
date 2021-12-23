@@ -17,10 +17,15 @@ namespace tc {
 			std::optional<torch::Device> switchDevice;
 			tc::i32 switchAtN = -1; // Don't switch on default
 
+			float lambdaIncrease = 5.0f;
+			float lambdaDecrease = 1.0 / 10.0f;
+			float lambdaMax = 1e7;
+			float lambdaMin = 1e-7;
+
 		};
 
 		struct SLMAResult : public OptimResult {
-
+			torch::Tensor finalLambdas;
 		};
 
 		class SLMA : public Optimizer {
@@ -33,6 +38,8 @@ namespace tc {
 			SLMA(SLMASettings& settings);
 
 			SLMAResult eval();
+
+			std::unique_ptr<OptimResult> base_eval() override;
 
 		private:
 
@@ -68,6 +75,7 @@ namespace tc {
 			float m_Increase = 5.0f;
 			float m_Decrease = 1.0f / 10.0f;
 			float m_LambdaMax = 1e7;
+			float m_LambdaMin = 0;
 
 			enum eMaskTypes {
 				SUCCESSFUL_CHOLESKY = 0,

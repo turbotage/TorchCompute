@@ -1,3 +1,4 @@
+#include "sgn.hpp"
 #include "../pch.hpp"
 
 #include "sgn.hpp"
@@ -25,6 +26,20 @@ tc::optim::SGNResult tc::optim::SGN::eval()
 	res.nonConvergingIndices = nci;
 
 	return std::move(res);
+}
+
+std::unique_ptr<tc::optim::OptimResult> tc::optim::SGN::base_eval()
+{
+	Optimizer::on_eval();
+
+	solve();
+
+	std::unique_ptr<SGNResult> ret = std::make_unique<SGNResult>();
+	ret->finalParameters = m_Parameters;
+	ret->pFinalModel = std::move(m_pModel);
+	ret->nonConvergingIndices = nci;
+
+	return ret;
 }
 
 void tc::optim::SGN::step()

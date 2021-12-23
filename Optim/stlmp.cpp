@@ -1,3 +1,4 @@
+#include "stlmp.hpp"
 #include "../pch.hpp"
 
 #include "stlmp.hpp"
@@ -28,6 +29,21 @@ tc::optim::STLMPResult tc::optim::STLMP::eval()
 	res.finalDeltas = delta;
 
 	return res;
+}
+
+std::unique_ptr<tc::optim::OptimResult> tc::optim::STLMP::base_eval()
+{
+	Optimizer::on_eval();
+
+	solve();
+
+	std::unique_ptr<STLMPResult> ret = std::make_unique<STLMPResult>();
+	ret->finalParameters = m_Parameters;
+	ret->pFinalModel = std::move(m_pModel);
+	ret->nonConvergingIndices = nci;
+	ret->finalDeltas = delta;
+
+	return ret;
 }
 
 void tc::optim::STLMP::dogleg()

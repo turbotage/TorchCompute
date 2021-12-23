@@ -1,3 +1,4 @@
+#include "gn.hpp"
 #include "../pch.hpp"
 
 #include "gn.hpp"
@@ -27,6 +28,20 @@ tc::optim::GNResult tc::optim::GN::eval()
 	res.nonConvergingIndices = nci;
 
 	return std::move(res);
+}
+
+std::unique_ptr<tc::optim::OptimResult> tc::optim::GN::base_eval()
+{
+	Optimizer::on_eval();
+
+	solve();
+
+	std::unique_ptr<GNResult> ret = std::make_unique<GNResult>();
+	ret->finalParameters = m_Parameters;
+	ret->pFinalModel = std::move(m_pModel);
+	ret->nonConvergingIndices = nci;
+
+	return ret;
 }
 
 void tc::optim::GN::step()
