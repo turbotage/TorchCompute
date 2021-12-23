@@ -20,6 +20,7 @@
 #include "Optim/stlmp.hpp"
 #include "Optim/sgn.hpp"
 #include "Optim/gn.hpp"
+#include "Optim/optim.hpp"
 
 // Models
 #include "Models/models.hpp"
