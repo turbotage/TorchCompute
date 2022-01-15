@@ -17,7 +17,7 @@ void slmp_cpu_adc_anal_specific(int n, bool print) {
 		std::unique_ptr<optim::Model> pModel = std::make_unique<optim::Model>(models::adc_eval_and_diff);
 
 		torch::TensorOptions dops;
-		dops = dops.dtype(torch::kFloat64);
+		dops = dops.dtype(torch::kFloat32);
 
 		auto params =	torch::rand({ n, 2 }, dops);
 		params.index_put_({ Slice(), 0 }, 1000.0f);
@@ -38,8 +38,8 @@ void slmp_cpu_adc_anal_specific(int n, bool print) {
 		std::cout << "data:\n" << data << std::endl;
 
 		auto guess = torch::empty({ n, 2 }, dops);
-		guess.index_put_({ Slice(), 0 }, 200.0f);
-		guess.index_put_({ Slice(), 1 }, 0.005f);
+		guess.index_put_({ Slice(), 0 }, 1000.05f);
+		guess.index_put_({ Slice(), 1 }, 0.0050001f);
 		pModel->setParameters(guess);
 
 		settings.pModel = std::move(pModel);
