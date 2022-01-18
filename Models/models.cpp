@@ -249,6 +249,10 @@ void tc::models::t2_eval_and_diff(std::vector<torch::Tensor>& constants, torch::
 		numData = ppi.size(1);
 		TE = ppi.index({ Slice(), Slice(), 0 }).view({ ppi.size(0), ppi.size(1) });
 	}
+	else {
+		numData = constants[0].size(0);
+		TE = constants[0];
+	}
 	expterm = torch::exp(-TE / T2);
 
 	values = S0 * expterm;
