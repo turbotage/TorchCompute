@@ -298,15 +298,15 @@ void tc::optim::SLMP::switch_device() {
 	data_slice =			data_slice.to(dev);
 
 	res =					torch::empty({ numProbs, numInputs, 1 }, dops); //res.to(dev);
-	res_t =					torch::empty({ numProbs, numInputs, 1 }, dops); //res_t.to(dev);
+	res_t = 				torch::empty({ numProbs, numInputs, 1 }, dops); //res_t.to(dev);
 
 	pD =					torch::empty({ numProbs, numParams, 1 }, dops); //pD.to(dev);
 
-	J =						torch::empty({ numProbs, numInputs, numParams }, dops); //J.to(dev);
+	J = 					torch::empty({ numProbs, numInputs, numParams }, dops); //J.to(dev);
 	JpD =					torch::empty({ numProbs, numInputs, 1 }, dops); //JpD.to(dev);
 
-	delta =					delta.to(dev);
-	step_mask =				torch::empty({numProbs}, dops.dtype(torch::kInt32));
+	delta = 				delta.to(dev);
+	step_mask = 			torch::empty({numProbs}, dops.dtype(torch::kInt32));
 
 	m_CurrentDevice = dev;
 }

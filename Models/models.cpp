@@ -167,20 +167,23 @@ void tc::models::ir_eval_and_diff(std::vector<torch::Tensor>& constants, torch::
 
 	torch::Tensor TR = constants[0];
 	torch::Tensor TI = constants[1];
-	torch::Tensor FA_term = (torch::cos(constants[2]) -1);
+
+	torch::Tensor FA_term = (torch::cos(constants[2]) - 1);
 
 	torch::Tensor expterm1 = FA_term*torch::exp(-TI/T1);
 	torch::Tensor expterm2 = torch::exp(-TR/T1);
 
 	values = (1 + expterm1 - expterm2);
 
+	torch::Tensor derivsign = values / torch::abs(values);
+
 	if (jacobian.has_value()) {
 		torch::Tensor& J = jacobian.value().get();
-		J.index_put_({ Slice(), Slice(), 0 }, values);
-		J.index_put_({ Slice(), Slice(), 1 }, S0 * (1 + (expterm1 * TI / torch::square(T1)) - (expterm2 * TR / torch::square(T1))));
+		J.index_put_({ Slice(), Slice(), 0 }, derivsign * values);
+		J.index_put_({ Slice(), Slice(), 1 }, derivsign * S0 * (1 + (expterm1 * TI / torch::square(T1)) - (expterm2 * TR / torch::square(T1))));
 	}
 
-	values = S0 * values;
+	values = torch::abs(S0 * values);
 
 	if (data.has_value()) {
 		values = values - data.value().get();
@@ -214,14 +217,16 @@ void tc::models::ir_varfa_eval_and_diff(std::vector<torch::Tensor>& constants, t
 
 	values = (1 + totexp - expterm2);
 
+	torch::Tensor derivsign = values / torch::abs(values);
+
 	if (jacobian.has_value()) {
 		torch::Tensor& J = jacobian.value().get();
-		J.index_put_({ Slice(), Slice(), 0 }, values);
-		J.index_put_({ Slice(), Slice(), 1 }, S0 * (1 + (totexp * TI / torch::square(T1)) - (expterm2 * TR / torch::square(T1))));
-		J.index_put_({ Slice(), Slice(), 2 }, S0 * FA_term * expterm1);
+		J.index_put_({ Slice(), Slice(), 0 }, derivsign * values);
+		J.index_put_({ Slice(), Slice(), 1 }, derivsign * S0 * (1 + (totexp * TI / torch::square(T1)) - (expterm2 * TR / torch::square(T1))));
+		J.index_put_({ Slice(), Slice(), 2 }, derivsign * S0 * FA_term * expterm1);
 	}
 
-	values = S0 * values;
+	values = torch::abs(S0 * values);
 
 	if (data.has_value()) {
 		values = values - data.value().get();

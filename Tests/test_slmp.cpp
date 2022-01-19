@@ -38,32 +38,101 @@ void slmp_cpu_adc_anal_specific(int n, bool print) {
 		std::cout << "data:\n" << data << std::endl;
 
 		auto guess = torch::empty({ n, 2 }, dops);
-		guess.index_put_({ Slice(), 0 }, 1000.05f);
-		guess.index_put_({ Slice(), 1 }, 0.0050001f);
+		guess.index_put_({ Slice(), 0 }, 1200.0f);
+		guess.index_put_({ Slice(), 1 }, 0.005f);
 		pModel->setParameters(guess);
 
 		settings.pModel = std::move(pModel);
 		settings.data = data;
-		settings.maxIter = 40;
+		settings.maxIter = 100;
 
 		if (print) {
 			std::cout << "true params: " << params << std::endl;
 		}
 
 		optim::SLMP slmp(settings);
-		optim::SLMPResult res = slmp.eval();
+		//optim::SLMPResult res = slmp.eval();
+		auto res = slmp.base_eval();
+
 		auto par = slmp.getIterInfo();
 		std::cout << "iter: " << par.first << std::endl;
 
 
 		if (print) {
-			std::cout << "found params: " << res.finalParameters << std::endl;
+			std::cout << "found params: " << res->finalParameters << std::endl;
 		}
 
 		std::cout << "No crash, Success!" << std::endl;
 	}
 
 }
+
+void slmp_cpu_adc_anal_specific2(int n, bool print) {
+
+	using namespace tc;
+
+	std::cout << "ADC model" << std::endl;
+	std::cout << "per problem b-vals : eval_and_diff" << std::endl;
+
+	tc::optim::SLMPSettings settings;
+
+	std::unique_ptr<tc::optim::Model> pModel;
+	{
+		using namespace torch::indexing;
+
+		std::unique_ptr<optim::Model> pModel = std::make_unique<optim::Model>(models::adc_eval_and_diff);
+
+		torch::TensorOptions dops;
+		dops = dops.dtype(torch::kFloat32);
+
+		auto params = torch::rand({ n, 2 }, dops);
+		params.index_put_({ Slice(), 0 }, 1000.0f);
+		params.index_put_({ Slice(), 1 }, 0.002f);
+
+		auto b = torch::rand({ n, 4 }, dops);
+		b.index_put_({ 0, 0 }, 200.0f);
+		b.index_put_({ 0, 1 }, 400.0f);
+		b.index_put_({ 0, 2 }, 600.0f);
+		b.index_put_({ 0, 3 }, 800.0f);
+
+		pModel->setParameters(params);
+		pModel->setConstants(std::vector<torch::Tensor>{b});
+
+		torch::Tensor data = torch::empty({ n, 4 }, dops);
+		pModel->eval(data);
+
+		std::cout << "data:\n" << data << std::endl;
+
+		auto guess = torch::empty({ n, 2 }, dops);
+		guess.index_put_({ Slice(), 0 }, 1200.0f);
+		guess.index_put_({ Slice(), 1 }, 0.005f);
+		pModel->setParameters(guess);
+
+		settings.pModel = std::move(pModel);
+		settings.data = data;
+		settings.maxIter = 100;
+
+		if (print) {
+			std::cout << "true params: " << params << std::endl;
+		}
+
+		optim::SLMP slmp(settings);
+		//optim::SLMPResult res = slmp.eval();
+		auto res = slmp.base_eval();
+
+		auto par = slmp.getIterInfo();
+		std::cout << "iter: " << par.first << std::endl;
+
+
+		if (print) {
+			std::cout << "found params: " << res->finalParameters << std::endl;
+		}
+
+		std::cout << "No crash, Success!" << std::endl;
+	}
+
+}
+
 
 void slmp_cpu_vfa_anal_specific(int n, bool print) {
 
@@ -91,7 +160,7 @@ void slmp_cpu_vfa_anal_specific(int n, bool print) {
 		std::unique_ptr<optim::Model> pModel = std::make_unique<optim::Model>(expr, parmap, std::nullopt, constsmap);
 
 		torch::TensorOptions dops;
-		dops = dops.dtype(torch::kFloat64);
+		dops = dops.dtype(torch::kFloat32);
 
 		auto params = torch::rand({ n, 2 }, dops);
 		params.index_put_({ Slice(), 0 }, 1000.0f);
@@ -101,9 +170,9 @@ void slmp_cpu_vfa_anal_specific(int n, bool print) {
 
 		auto fa = torch::rand({ 1, 4 }, dops);
 		fa.index_put_({ 0, 0 }, 10.0f * 3.141592f / 180.0f);
-		fa.index_put_({ 0, 1 }, 25.0f * 3.141592f / 180.0f);
-		fa.index_put_({ 0, 2 }, 50.0f * 3.141592f / 180.0f);
-		fa.index_put_({ 0, 3 }, 75.0f * 3.141592f / 180.0f);
+		fa.index_put_({ 0, 1 }, 20.0f * 3.141592f / 180.0f);
+		fa.index_put_({ 0, 2 }, 30.0f * 3.141592f / 180.0f);
+		fa.index_put_({ 0, 3 }, 45.0f * 3.141592f / 180.0f);
 
 		pModel->setParameters(params);
 		pModel->setConstants(std::vector<torch::Tensor>{TR, fa});
@@ -116,8 +185,8 @@ void slmp_cpu_vfa_anal_specific(int n, bool print) {
 		std::cout << "data:\n" << data << std::endl;
 
 		auto guess = torch::empty({ n, 2 }, dops);
-		guess.index_put_({ Slice(), 0 }, 1e4f);
-		guess.index_put_({ Slice(), 1 }, 0.05f);
+		guess.index_put_({ Slice(), 0 }, 200.0f);
+		guess.index_put_({ Slice(), 1 }, 0.1f);
 		pModel->setParameters(guess);
 
 		settings.pModel = std::move(pModel);
@@ -365,6 +434,16 @@ int main() {
 	
 	try {
 		slmp_cpu_adc_anal_specific(1, true);
+	}
+	catch (c10::Error e1) {
+		std::cout << e1.what() << std::endl;
+	}
+	catch (std::runtime_error e2) {
+		std::cout << e2.what() << std::endl;
+	}
+
+	try {
+		slmp_cpu_adc_anal_specific2(1, true);
 	}
 	catch (c10::Error e1) {
 		std::cout << e1.what() << std::endl;

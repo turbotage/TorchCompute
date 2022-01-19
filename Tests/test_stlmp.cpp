@@ -17,7 +17,7 @@ void stlmp_cpu_adc_anal_specific(int n, bool print) {
 		std::unique_ptr<optim::Model> pModel = std::make_unique<optim::Model>(models::adc_eval_and_diff);
 
 		torch::TensorOptions dops;
-		dops = dops.dtype(torch::kFloat64);
+		dops = dops.dtype(torch::kFloat32);
 
 		auto params = torch::rand({ n, 2 }, dops);
 		params.index_put_({ Slice(), 0 }, 1000.0f);
@@ -38,14 +38,13 @@ void stlmp_cpu_adc_anal_specific(int n, bool print) {
 		std::cout << "data:\n" << data << std::endl;
 
 		auto guess = torch::empty({ n, 2 }, dops);
-		guess.index_put_({ Slice(), 0 }, 200.0f);
-		guess.index_put_({ Slice(), 1 }, 0.05f);
+		guess.index_put_({ Slice(), 0 }, 1200.0f);
+		guess.index_put_({ Slice(), 1 }, 0.005f);
 		pModel->setParameters(guess);
 
 		settings.pModel = std::move(pModel);
 		settings.data = data;
-		settings.maxIter = 200;
-		settings.tolerance = 1e-5;
+		settings.maxIter = 100;
 
 		if (print) {
 			std::cout << "true params: " << params << std::endl;
@@ -124,7 +123,6 @@ void stlmp_cpu_vfa_anal_specific(int n, bool print) {
 		settings.pModel = std::move(pModel);
 		settings.data = data;
 		settings.maxIter = 200;
-		settings.tolerance = 1e-5;
 
 		if (print) {
 			std::cout << "true params: " << params << std::endl;
@@ -394,7 +392,8 @@ int main() {
 	catch (std::runtime_error e2) {
 		std::cout << e2.what() << std::endl;
 	}
-
+	
+	/*
 	try {
 		stlmp_cpu_adc_anal(1, true);
 	}
@@ -435,6 +434,7 @@ int main() {
 	catch (std::runtime_error e2) {
 		std::cout << e2.what() << std::endl;
 	}
+	*/
 
 }
 
