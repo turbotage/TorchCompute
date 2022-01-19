@@ -149,8 +149,46 @@ torch::Tensor tc::models::simple_vfa_model_linear(torch::Tensor flip_angles, tor
 }
 
 
+void tc::models::ir_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Tensor& per_problem_inputs, torch::Tensor& parameters,
+	tc::OutRef<torch::Tensor> values, tc::OptOutRef<torch::Tensor> jacobian, tc::OptOutRef<const torch::Tensor> data)
+{
+	using namespace torch::indexing;
 
-void tc::models::ir_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Tensor& per_problem_inputs, torch::Tensor& parameters, 
+	torch::Tensor& ppi = per_problem_inputs;
+	torch::Tensor& par = parameters;
+
+	tc::ui32 numProbs = par.size(0);
+	tc::ui32 numParams = par.size(1);
+	tc::ui32 numData;
+
+	torch::Tensor S0 = par.index({ Slice(), 0 }).view({ par.size(0), 1 });
+	torch::Tensor T1 = par.index({ Slice(), 1 }).view({ par.size(0), 1 });
+
+	torch::Tensor TR = constants[0];
+	torch::Tensor TI = constants[1];
+
+	torch::Tensor FA_term = (torch::cos(constants[2]) - 1);
+
+	torch::Tensor expterm1 = FA_term * torch::exp(-TI / T1);
+	torch::Tensor expterm2 = torch::exp(-TR / T1);
+
+	values = (1 + expterm1 + expterm2);
+
+
+	if (jacobian.has_value()) {
+		torch::Tensor& J = jacobian.value().get();
+		J.index_put_({ Slice(), Slice(), 0 }, values);
+		J.index_put_({ Slice(), Slice(), 1 }, S0 * (1 + (expterm1 * TI / torch::square(T1)) + (expterm2 * TR / torch::square(T1))));
+	}
+
+	values = S0 * values;
+
+	if (data.has_value()) {
+		values = values - data.value().get();
+	}
+}
+
+void tc::models::irmag_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Tensor& per_problem_inputs, torch::Tensor& parameters, 
 	tc::OutRef<torch::Tensor> values, tc::OptOutRef<torch::Tensor> jacobian, tc::OptOutRef<const torch::Tensor> data)
 {
 	using namespace torch::indexing;
@@ -173,14 +211,14 @@ void tc::models::ir_eval_and_diff(std::vector<torch::Tensor>& constants, torch::
 	torch::Tensor expterm1 = FA_term*torch::exp(-TI/T1);
 	torch::Tensor expterm2 = torch::exp(-TR/T1);
 
-	values = (1 + expterm1 - expterm2);
+	values = (1 + expterm1 + expterm2);
 
 	torch::Tensor derivsign = values / torch::abs(values);
 
 	if (jacobian.has_value()) {
 		torch::Tensor& J = jacobian.value().get();
 		J.index_put_({ Slice(), Slice(), 0 }, derivsign * values);
-		J.index_put_({ Slice(), Slice(), 1 }, derivsign * S0 * (1 + (expterm1 * TI / torch::square(T1)) - (expterm2 * TR / torch::square(T1))));
+		J.index_put_({ Slice(), Slice(), 1 }, derivsign * S0 * (1 + (expterm1 * TI / torch::square(T1)) + (expterm2 * TR / torch::square(T1))));
 	}
 
 	values = torch::abs(S0 * values);
@@ -215,18 +253,58 @@ void tc::models::ir_varfa_eval_and_diff(std::vector<torch::Tensor>& constants, t
 
 	torch::Tensor expterm2 = torch::exp(-TR / T1);
 
-	values = (1 + totexp - expterm2);
+	values = (1 + totexp + expterm2);
 
 	torch::Tensor derivsign = values / torch::abs(values);
 
 	if (jacobian.has_value()) {
 		torch::Tensor& J = jacobian.value().get();
 		J.index_put_({ Slice(), Slice(), 0 }, derivsign * values);
-		J.index_put_({ Slice(), Slice(), 1 }, derivsign * S0 * (1 + (totexp * TI / torch::square(T1)) - (expterm2 * TR / torch::square(T1))));
+		J.index_put_({ Slice(), Slice(), 1 }, derivsign * S0 * (1 + (totexp * TI / torch::square(T1)) + (expterm2 * TR / torch::square(T1))));
 		J.index_put_({ Slice(), Slice(), 2 }, derivsign * S0 * FA_term * expterm1);
 	}
 
 	values = torch::abs(S0 * values);
+
+	if (data.has_value()) {
+		values = values - data.value().get();
+	}
+}
+
+void tc::models::irmag_varfa_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Tensor& per_problem_inputs, torch::Tensor& parameters, tc::OutRef<torch::Tensor> values, tc::OptOutRef<torch::Tensor> jacobian, tc::OptOutRef<const torch::Tensor> data)
+{
+	using namespace torch::indexing;
+
+	torch::Tensor& ppi = per_problem_inputs;
+	torch::Tensor& par = parameters;
+
+	tc::ui32 numProbs = par.size(0);
+	tc::ui32 numParams = par.size(1);
+	tc::ui32 numData;
+
+	torch::Tensor S0 = par.index({ Slice(), 0 }).view({ par.size(0), 1 });
+	torch::Tensor T1 = par.index({ Slice(), 1 }).view({ par.size(0), 1 });
+	torch::Tensor FA = par.index({ Slice(), 2 }).view({ par.size(0), 1 });
+
+	torch::Tensor TR = constants[0];
+	torch::Tensor TI = constants[1];
+	torch::Tensor FA_term = torch::cos(FA);
+
+	torch::Tensor expterm1 = torch::exp(-TI / T1);
+	torch::Tensor totexp = (FA_term - 1) * expterm1;
+
+	torch::Tensor expterm2 = torch::exp(-TR / T1);
+
+	values = (1 + totexp + expterm2);
+
+	if (jacobian.has_value()) {
+		torch::Tensor& J = jacobian.value().get();
+		J.index_put_({ Slice(), Slice(), 0 }, values);
+		J.index_put_({ Slice(), Slice(), 1 }, S0 * (1 + (totexp * TI / torch::square(T1)) + (expterm2 * TR / torch::square(T1))));
+		J.index_put_({ Slice(), Slice(), 2 }, S0 * FA_term * expterm1);
+	}
+
+	values = S0 * values;
 
 	if (data.has_value()) {
 		values = values - data.value().get();

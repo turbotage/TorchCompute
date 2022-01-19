@@ -25,8 +25,18 @@ namespace tc {
 		void ir_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Tensor& per_problem_inputs, torch::Tensor& parameters,
 			tc::OutRef<torch::Tensor> values, tc::OptOutRef<torch::Tensor> jacobian, tc::OptOutRef<const torch::Tensor> data);
 
+		// S = |S_0 * (1 + (cos(FA) - 1)*exp(-TI/T1) + exp(-TR/T1))|
+		void irmag_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Tensor& per_problem_inputs, torch::Tensor& parameters,
+			tc::OutRef<torch::Tensor> values, tc::OptOutRef<torch::Tensor> jacobian, tc::OptOutRef<const torch::Tensor> data);
+
+		// S = S_0 * (1 + (cos(FA) - 1)*exp(-TI/T1) + exp(-TR/T1))
+		void irmag_varfa_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Tensor& per_problem_inputs, torch::Tensor& parameters,
+			tc::OutRef<torch::Tensor> values, tc::OptOutRef<torch::Tensor> jacobian, tc::OptOutRef<const torch::Tensor> data);
+
+		// S = |S_0 * (1 + (cos(FA) - 1)*exp(-TI/T1) + exp(-TR/T1))|
 		void ir_varfa_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Tensor& per_problem_inputs, torch::Tensor& parameters,
 			tc::OutRef<torch::Tensor> values, tc::OptOutRef<torch::Tensor> jacobian, tc::OptOutRef<const torch::Tensor> data);
+
 
 		// S = S_0 * exp(-TE/T2)
 		void t2_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Tensor& per_problem_inputs, torch::Tensor& parameters,
