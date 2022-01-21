@@ -118,7 +118,11 @@ void slmp_cpu_adc_anal_specific2(int n, bool print) {
 
 		optim::SLMP slmp(settings);
 		//optim::SLMPResult res = slmp.eval();
+		auto t1 = std::chrono::steady_clock::now();
 		auto res = slmp.base_eval();
+		auto t2 = std::chrono::steady_clock::now();
+		std::cout << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
+
 
 		auto par = slmp.getIterInfo();
 		std::cout << "iter: " << par.first << std::endl;
@@ -251,10 +255,14 @@ void slmp_cpu_adc_anal(int n, bool print) {
 		}
 
 		optim::SLMP slmp(settings);
-		optim::SLMPResult res = slmp.eval();
+
+		auto t1 = std::chrono::steady_clock::now();
+		auto res = slmp.eval();
+		auto t2 = std::chrono::steady_clock::now();
+		std::cout << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
+
 		auto par = slmp.getIterInfo();
 		std::cout << "iter: " << par.first << std::endl;
-
 
 		if (print) {
 			std::cout << "found params: " << res.finalParameters << std::endl;
@@ -431,7 +439,7 @@ void slmp_cuda_vfa_anal(int n, bool print) {
 
 int main() {
 
-	
+	/*
 	try {
 		slmp_cpu_adc_anal_specific(1, true);
 	}
@@ -461,8 +469,16 @@ int main() {
 	catch (std::runtime_error e2) {
 		std::cout << e2.what() << std::endl;
 	}
+	*/
 
-	/*
+	
+	try {
+		slmp_cpu_adc_anal(1, true);
+	}
+	catch (c10::Error e1) {
+		std::cout << e1.what() << std::endl;
+	}
+
 	try {
 		slmp_cpu_adc_anal(1, true);
 	}
@@ -471,6 +487,8 @@ int main() {
 	}
 
 	
+	int b = 10;
+
 	try {
 		slmp_cpu_adc_anal(40000, false);
 	}
@@ -478,6 +496,9 @@ int main() {
 		std::cout << e1.what() << std::endl;
 	}
 
+	int a = 10;
+
+	/*
 	try {
 		slmp_cuda_adc_anal(100000, false);
 	}
