@@ -174,7 +174,6 @@ void tc::models::ir_eval_and_diff(std::vector<torch::Tensor>& constants, torch::
 
 	values = (1 + expterm1 + expterm2);
 
-
 	if (jacobian.has_value()) {
 		torch::Tensor& J = jacobian.value().get();
 		J.index_put_({ Slice(), Slice(), 0 }, values);
@@ -307,7 +306,6 @@ void tc::models::irmag_varfa_eval_and_diff(std::vector<torch::Tensor>& constants
 		values = values - data.value().get();
 	}
 }
-
 
 void tc::models::t2_eval_and_diff(std::vector<torch::Tensor>& constants, torch::Tensor& per_problem_inputs, torch::Tensor& parameters, tc::OutRef<torch::Tensor> values, tc::OptOutRef<torch::Tensor> jacboian, tc::OptOutRef<const torch::Tensor> data)
 {
