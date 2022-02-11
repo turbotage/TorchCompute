@@ -67,6 +67,9 @@ void tc::optim::GN::step()
 	pD.index_put_({ chol_success, Slice() },
 		torch::cholesky_solve(-g.index({ chol_success, Slice() }), H_chol.index({ chol_success, Slice() })));
 
+	//pD.masked_scatter_(chol_success.unsqueeze(-1), 
+	//	torch::cholesky_solve(-g.masked_select(chol_success.unsqueeze(), H_chol.masked_select(chol_success.unsqueeze(-1)));
+
 	// For problems where cholesky failed we move in the steepest descent direction hoping we get back to a point where
 	// The hessian will be positive definite, we use a quite small damping parameter so we don't diverge as we move towards
 	// safe full Gauss-Newton regions

@@ -6,6 +6,7 @@ print(torch.get_num_threads())
 
 gpu = False
 n = 1000000
+m = 2
 epochs = 3
 
 dev_str = "cpu"
@@ -13,10 +14,10 @@ if gpu:
     dev_str = "cuda:0"
 
 
-A = torch.rand(2*n,5,5, device=dev_str)
+A = torch.rand(2*n,m,m, device=dev_str)
 #A[n:,:] = torch.bmm(A[n:,:].transpose(1,2), A[n:,:])
-A = torch.bmm(A.transpose(1,2), A) + 0.2*torch.eye(5, device=dev_str).repeat(2*n,1,1) # This should be PD
-b = torch.rand(2*n,5,1, device=dev_str)
+A = torch.bmm(A.transpose(1,2), A) + 0.2*torch.eye(m, device=dev_str).repeat(2*n,1,1) # This should be PD
+b = torch.rand(2*n,m,1, device=dev_str)
 
 
 
@@ -45,10 +46,10 @@ Chol_time = 0.0
 
 for i in range(0,epochs):
 
-    A = torch.rand(2*n,5,5, device=dev_str)
+    A = torch.rand(2*n,m,m, device=dev_str)
     #A[n:,:] = torch.bmm(A[n:,:].transpose(1,2), A[n:,:])
-    A = torch.bmm(A.transpose(1,2), A) + 0.2*torch.eye(5, device=dev_str).repeat(2*n,1,1) # This should be PD
-    b = torch.rand(2*n,5,1, device=dev_str)
+    A = torch.bmm(A.transpose(1,2), A) + 0.2*torch.eye(m, device=dev_str).repeat(2*n,1,1) # This should be PD
+    b = torch.rand(2*n,m,1, device=dev_str)
 
 
 
