@@ -15,6 +15,7 @@
 
 // Optim
 #include "Optim/model.hpp"
+#include "Optim/str.hpp"
 #include "Optim/slmp.hpp"
 #include "Optim/slma.hpp"
 #include "Optim/stlmp.hpp"

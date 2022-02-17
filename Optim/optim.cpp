@@ -3,6 +3,9 @@
 #include "optim.hpp"
 #include "optim.hpp"
 #include "optim.hpp"
+#include "optim.hpp"
+#include "optim.hpp"
+#include "optim.hpp"
 #include "../pch.hpp"
 
 #include "optim.hpp"
@@ -64,4 +67,35 @@ bool tc::optim::Optimizer::should_stop()
 void tc::optim::Optimizer::on_eval() {
 	assert(!m_HasRun && "Tried to evaluate optimizer twice");
 	m_HasRun = true;
+}
+
+torch::Tensor tc::optim::get_plane_converging_problems_combined(
+	torch::Tensor& lastJ, torch::Tensor& lastP, torch::Tensor& lastR, float tolerance)
+{
+	return torch::sqrt(torch::square(torch::bmm(lastJ, lastP)).sum(1)).squeeze() <
+		tolerance * (1 + torch::sqrt(torch::square(lastR).sum(1)).squeeze());
+}
+
+torch::Tensor tc::optim::get_plane_converging_problems( 
+	torch::Tensor& lastJ, torch::Tensor& lastP, torch::Tensor& lastR, float tolerance)
+{
+	return torch::sqrt(torch::square(torch::bmm(lastJ, lastP)).sum(1)).squeeze() <
+		tolerance * torch::sqrt(torch::square(lastR).sum(1)).squeeze();
+}
+
+torch::Tensor tc::optim::get_gradient_converging_problems_absolute(torch::Tensor& J, torch::Tensor& R, float tolerance)
+{
+	return torch::sqrt(torch::square(torch::bmm(J, R)).sum(1)).squeeze() < tolerance;
+}
+
+torch::Tensor tc::optim::get_gradient_converging_problems_relative(torch::Tensor& J, torch::Tensor& R, float tolerance)
+{
+	return torch::sqrt(torch::square(torch::bmm(J, R)).sum(1)).squeeze() <
+		tolerance * torch::sqrt(torch::square(R).sum(1)).squeeze();
+}
+
+torch::Tensor tc::optim::get_gradient_converging_problems_combined(torch::Tensor& J, torch::Tensor& R, float tolerance)
+{
+	return torch::sqrt(torch::square(torch::bmm(J, R)).sum(1)).squeeze() <
+		tolerance * (1 + torch::sqrt(torch::square(R).sum(1)).squeeze());
 }

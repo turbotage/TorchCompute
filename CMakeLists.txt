@@ -115,5 +115,8 @@ target_link_libraries(ComputeTestSLMP ComputeLib)
 add_executable(ComputeTestSTLMP "Tests/test_stlmp.cpp")
 target_link_libraries(ComputeTestSTLMP ComputeLib)
 
+add_executable(ComputeTestSTRP "Tests/test_strp.cpp")
+target_link_libraries(ComputeTestSTRP ComputeLib)
+
 add_executable(ComputeTestThreading "Tests/test_threading.cpp")
 target_link_libraries(ComputeTestThreading ComputeLib)
