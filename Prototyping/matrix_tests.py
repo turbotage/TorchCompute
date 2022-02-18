@@ -4,7 +4,7 @@ import time
 #torch.set_num_threads(6)
 print(torch.get_num_threads())
 
-gpu = False
+gpu = True
 n = 1000000
 m = 2
 epochs = 3
@@ -59,7 +59,7 @@ for i in range(0,epochs):
 
     #LU, pivots, LU_info = torch.lu(A, get_infos=True)
     #x = torch.lu_solve(b, LU, pivots)
-    #B = torch.bmm(A,A)
+    B = torch.bmm(A,A)
     #x = torch.solve(b,A)
 
     if gpu:

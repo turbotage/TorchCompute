@@ -18,7 +18,6 @@ namespace tc {
 
 			torch::Tensor scaling;
 
-
 			float mu = 0.25;
 			float eta = 0.75;
 		};
@@ -70,12 +69,18 @@ namespace tc {
 
 			void step();
 
+			void setup_solve();
+
 			void solve();
 
 		private:
 
 			float m_Mu;
 			float m_Eta;
+
+			int64_t numProbs;
+			int64_t numData;
+			int64_t numParam;
 
 		private:
 
@@ -92,15 +97,17 @@ namespace tc {
 			torch::Tensor deltalike2;
 			torch::Tensor deltalike3;
 			torch::Tensor deltalike4;
+			torch::Tensor deltalike5;
 
 			// (nProblems, nData, nParams)
 			torch::Tensor J;
 			torch::Tensor Jlike1;
 
 			// (nProblems, nParams)
-			torch::Tensor p;
 			torch::Tensor plike1;
 			torch::Tensor plike2;
+			torch::Tensor plike3;
+			torch::Tensor plike4;
 
 			// (nProblems, nParams, nParams)
 			torch::Tensor square1;
