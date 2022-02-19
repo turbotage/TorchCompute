@@ -148,10 +148,8 @@ void tc::optim::STRP::dogleg()
 	torch::Tensor decomp;
 	std::tie(decomp, pivots, luinfo) = at::_lu_with_info(Hs, true, false);
 
-	std::cout << "luinfo: " << luinfo << std::endl;
-
 	//torch::Tensor& pGN = p;
-	torch::Tensor pGN = torch::bmm(D, torch::lu_solve(gs.unsqueeze(-1), decomp, pivots)).squeeze(-1);
+	torch::Tensor pGN = torch::bmm(D, torch::lu_solve(-gs.unsqueeze(-1), decomp, pivots)).squeeze(-1);
 
 	// Scale gauss newton step
 	pGN = torch::bmm(scale_matrix, pGN.unsqueeze(-1)).squeeze(-1);
@@ -215,7 +213,7 @@ void tc::optim::STRP::dogleg()
 
 	// All problems not taking steepest descent steps or full gn steps should take an interpolated step
 	//torch::Tensor& ipstep = stepmask3;
-	torch::Tensor ipstep = torch::logical_or(torch::logical_not(gnstep), torch::logical_not(cpstep));
+	torch::Tensor ipstep = torch::logical_not(torch::logical_or(gnstep, cpstep));
 
 
 	// Calculate final step
@@ -281,6 +279,7 @@ void tc::optim::STRP::step()
 
 	// Step for all problems which have non poor gain-ratio
 	p = p * torch::logical_not(poor_gain);
+	p.nan_to_num_(0.0f, 0.0f, 0.0f);
 
 	// Update the model with our new parameters
 	m_pModel->setParameters(x_last + p);
