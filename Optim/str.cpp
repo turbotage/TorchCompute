@@ -153,6 +153,8 @@ void tc::optim::STRP::dogleg()
 		torch::bmm_out(Hs, Js.transpose(1, 2), Js);
 	}
 
+	//debug_print(false, false, true);
+
 	// occupied - square1, square2, square3, plike4
 
 	// CALCULATE NEWTON-STEP
@@ -173,10 +175,13 @@ void tc::optim::STRP::dogleg()
 		torch::logical_and_out(gnstep, scaled_gn_norm <= delta, luinfo == SUCCESSFULL_LU_DECOMP);
 	}
 
+	//debug_print(false, false, true);
+
 	// occupied - square1, square2, square3, plike4, plike1, deltalike1, stepmask1
 
 	// CALCULATE CAUCHY-STEP
 	torch::Tensor& pCP = plike2;
+	torch::Tensor& scaled_cp_norm = deltalike2;
 	torch::Tensor& cpstep = stepmask2;
 	{
 		torch::Tensor& g = gs; // shadow gs since it won't be used after statement below
@@ -185,11 +190,9 @@ void tc::optim::STRP::dogleg()
 		torch::Tensor& invDg = pCP; // shadow pCP since it won't be used yet
 		torch::bmm_out(invDg, invD, g);
 
-		torch::Tensor& scaled_cp_norm = deltalike2;
-
 		torch::Tensor& lambdaStar = scaled_cp_norm; // shadow scaled_cp_norm since we won't use it yet
 		{
-			torch::Tensor& lambdaStar1 = deltalike2;
+			torch::Tensor& lambdaStar1 = lambdaStar; // shadow lambdaStar since we won't use it yet
 			torch::Tensor& lambdaStar2 = deltalike3;
 
 			torch::Tensor& plike_temp = plike3;
@@ -223,7 +226,9 @@ void tc::optim::STRP::dogleg()
 		}
 	}
 
-	// occupied - plike1, deltalike1, stepmask1, plike2, stepmask2
+	//debug_print(false, false, true);
+
+	// occupied - plike1, deltalike1, stepmask1, plike2, deltalike2, stepmask2
 
 
 	torch::Tensor& pIP = plike3; // g isn't used anymore, reuse it's memory;
@@ -236,37 +241,32 @@ void tc::optim::STRP::dogleg()
 		torch::Tensor& GN_CP2 = plike4;
 		torch::square_out(GN_CP2, GN_CP);
 
-		torch::Tensor& A = deltalike2;
+		torch::Tensor& A = deltalike3;
 		torch::sum_out(A.unsqueeze_(-1), GN_CP2, 1).squeeze_(-1);
 
-		torch::Tensor& B = deltalike3;
+		torch::Tensor& B = deltalike4;
 		{
 			torch::Tensor& Bvec = GN_CP2; // shadow GN_CP2 since it isn't used anymore
 			torch::mul_out(Bvec, pCP, GN_CP).mul_(2.0f);
 			torch::sum_out(B.unsqueeze_(-1), Bvec, 1).squeeze_(-1);
 		}
 
-		torch::Tensor& C = deltalike4;
+		torch::Tensor& C = deltalike5;
 		{
-			torch::Tensor& C1 = C; // shadow C since it isn't used yet
-			torch::Tensor& C2 = deltalike5;
+			torch::Tensor& C1 = scaled_cp_norm; // shadow C since it isn't used yet shadow scaled_cp_norm since it won't be 
+			torch::Tensor& C2 = C; // shadow C since it isn't used yet
 			torch::sub_out(C, torch::square_out(C1, scaled_cp_norm), torch::square_out(C2, delta));
 		}
 
 
-		torch::Tensor& k = deltalike5;
+		torch::Tensor& k = scaled_cp_norm; // shadow scaled_cp_norm since it isn't used anymore
 		{
-			torch::Tensor& k1 = k; // shadow k since it isn't used yet
-			torch::square_out(k1, B); // k1 = B^2
-			torch::addcmul_out(k1, k1, A, C, -4.0f); // k1 = B^2 - 4.0f * A * C
-			k1.sqrt_(); // k1 = sqrt(B^2 - 4.0f * A * C)
-
-			torch::sub_out(k, k1, B); // k = -B + sqrt(B^2 - 4.0f * A * C)
-			torch::div_out(k, k, A); // k = -B + sqrt(B^2 - 4.0f * A * C) / A
-			k.mul_(0.5f); // 0.5*(-B + sqrt(B^2 - 4.0f * A * C) / A)
+			torch::square_out(k, B); // k1 = B^2
+			k.add_(C.mul_(A).mul_(-4.0f)).sqrt_(); //k1 = sqrt(B ^ 2 - 4.0f * A * C)
+			k.sub_(B).div_(A).mul_(0.5f);  // 0.5*(-B + sqrt(B^2 - 4.0f * A * C) / A)
 		}
 
-		torch::add_out(pIP, pCP, torch::mul_out(pCP, k.unsqueeze(-1), GN_CP));
+		torch::add_out(pIP, pCP, torch::mul_out(pIP, k.unsqueeze(-1), GN_CP));
 		
 		
 
@@ -274,13 +274,15 @@ void tc::optim::STRP::dogleg()
 		ipstep = torch::logical_not(torch::logical_or(gnstep, cpstep));
 	}
 
+	//debug_print(false, false, true);
+
 	// occupied - plike1, deltalike1, stepmask1, plike2, stepmask2, plike3, stepmask3
 
 	// Calculate final step
 	torch::Tensor& p = plike4;
-	pGN.mul_(gnstep);
-	pCP.mul_(cpstep);
-	pIP.mul_(ipstep);
+	pGN.mul_(gnstep).nan_to_num_(0.0, 0.0, 0.0);
+	pCP.mul_(cpstep).nan_to_num_(0.0, 0.0, 0.0);
+	pIP.mul_(ipstep).nan_to_num_(0.0, 0.0, 0.0);
 	torch::add_out(p, pGN, torch::add_out(p, pCP, pIP));
 	torch::bmm_out(p, inv_scale_matrix, p);
 
@@ -290,9 +292,7 @@ void tc::optim::STRP::step()
 {
 	torch::InferenceMode im_guard;
 
-	// Make sure everything is back to shape
-	
-
+	//debug_print(true, false);
 
 	m_pModel->res_diff(res, J, m_Data);
 
@@ -319,12 +319,15 @@ void tc::optim::STRP::step()
 	torch::Tensor& ipstep = stepmask3;
 	torch::Tensor& scaled_gn_norm = deltalike1;
 
-
-	torch::Tensor& x_last = plike1;
-	x_last = m_pModel->getParameters();
+	torch::Tensor x_last = m_pModel->getParameters();
 
 	torch::Tensor& ep = deltalike2;
-	ep = 0.5f * torch::square(res).sum(1);
+	{
+		torch::Tensor& eptemp = reslike1;
+		torch::square_out(eptemp, res);
+		torch::sum_out(ep, eptemp, 1).mul_(0.5f);
+	}
+
 
 	m_pModel->getParameters().add_(p.squeeze_(-1));
 
@@ -334,7 +337,11 @@ void tc::optim::STRP::step()
 	m_pModel->res(res_tp, m_Data);
 
 	torch::Tensor& et = deltalike3;
-	et = 0.5f * torch::square(res_tp).sum(1);
+	{
+		torch::Tensor& ettemp = res_tp; // shadow res_tp since it won't be used after step below
+		torch::square_out(ettemp, res_tp);
+		torch::sum_out(et, ettemp, 1).mul_(0.5f);
+	}
 
 	torch::Tensor& actual = ep.sub_(et); // shadow ep since it won't be used after step below
 
@@ -356,35 +363,32 @@ void tc::optim::STRP::step()
 	torch::Tensor& rho = actual.div_(predicted); // shadow predicted since it won't be used after step below
 
 	torch::Tensor& poor_gain = stepmask1;
-	poor_gain = rho <= m_Mu;
+	torch::le_out(poor_gain, rho, m_Mu);
 
 	torch::Tensor& good_gain = stepmask2;
-	good_gain = rho >= m_Eta;
+	torch::le_out(good_gain, rho, m_Eta);
 
-	delta *= 2.0f * good_gain + 0.5f * poor_gain + 1.0f * torch::logical_not(torch::logical_or(good_gain, poor_gain));
+
+	torch::Tensor& multiplier = rho; // shadow rho since it isn't used anymore
+	multiplier.zero_();
+	multiplier.add_(2.0f * good_gain);
+	multiplier.add_(0.5 * poor_gain);
+	multiplier.add_(good_gain.logical_or_(poor_gain).logical_not_());
+	delta.mul_(multiplier);
+
 
 	// Step for all problems which have non poor gain-ratio
 	p = p * torch::logical_not(poor_gain).unsqueeze(-1);
 	p.nan_to_num_(0.0, 0.0, 0.0);
 
 	// Update the model with our new parameters
-	torch::add_out(m_pModel->getParameters(), x_last, p);
+	m_pModel->getParameters() = x_last + p;
 
-	plike1.unsqueeze_(-1);
-	plike2.unsqueeze_(-1);
+	// make sure all vars are back to shape for next iteration
 	plike4.unsqueeze_(-1);
+	reslike1.squeeze_(-1);
 
-	std::cout << "plike1: " << plike1.sizes() << std::endl;
-	std::cout << "plike2: " << plike2.sizes() << std::endl;
-	std::cout << "plike3: " << plike3.sizes() << std::endl;
-	std::cout << "plike4: " << plike4.sizes() << std::endl;
-
-	std::cout << "deltalike1: " << deltalike1.sizes() << std::endl;
-	std::cout << "deltalike2: " << deltalike2.sizes() << std::endl;
-	std::cout << "deltalike3: " << deltalike3.sizes() << std::endl;
-	std::cout << "deltalike4: " << deltalike4.sizes() << std::endl;
-	std::cout << "deltalike5: " << deltalike5.sizes() << std::endl;
-
+	//debug_print(true, false);
 
 }
 
@@ -435,5 +439,120 @@ void tc::optim::STRP::solve()
 			break;
 		Optimizer::set_iter_info(iter, m_Data.size(0));
 	}
+}
+
+
+
+
+void tc::optim::STRP::debug_print(bool sizes, bool types, bool values) {
+
+	if (sizes) {
+		std::cout << "res: " << res.sizes() << std::endl;
+		std::cout << "reslike1: " << reslike1.sizes() << std::endl;
+
+		std::cout << "delta: " << delta.sizes() << std::endl;
+		std::cout << "deltalike1: " << deltalike1.sizes() << std::endl;
+		std::cout << "deltalike2: " << deltalike2.sizes() << std::endl;
+		std::cout << "deltalike3: " << deltalike3.sizes() << std::endl;
+		std::cout << "deltalike4: " << deltalike4.sizes() << std::endl;
+		std::cout << "deltalike5: " << deltalike5.sizes() << std::endl;
+
+		std::cout << "J: " << J.sizes() << std::endl;
+		std::cout << "Jlike1: " << Jlike1.sizes() << std::endl;
+
+		std::cout << "params: " << m_pModel->getParameters().sizes() << std::endl;
+		std::cout << "plike1: " << plike1.sizes() << std::endl;
+		std::cout << "plike2: " << plike2.sizes() << std::endl;
+		std::cout << "plike3: " << plike3.sizes() << std::endl;
+		std::cout << "plike4: " << plike4.sizes() << std::endl;
+
+		std::cout << "square1: " << square1.sizes() << std::endl;
+		std::cout << "square2: " << square2.sizes() << std::endl;
+		std::cout << "square3: " << square3.sizes() << std::endl;
+		std::cout << "square4: " << square4.sizes() << std::endl;
+
+		std::cout << "pivots: " << pivots.sizes() << std::endl;
+		std::cout << "luinfo: " << luinfo.sizes() << std::endl;
+
+		std::cout << "scale_matrix: " << scale_matrix.sizes() << std::endl;
+		std::cout << "inv_scale_matrix: " << inv_scale_matrix.sizes() << std::endl;
+
+		std::cout << "stepmask1: " << stepmask1.sizes() << std::endl;
+		std::cout << "stepmask2: " << stepmask2.sizes() << std::endl;
+		std::cout << "stepmask3: " << stepmask3.sizes() << std::endl;
+	}
+
+	if (types) {
+		std::cout << "res: " << res.dtype() << std::endl;
+		std::cout << "reslike1: " << reslike1.dtype() << std::endl;
+
+		std::cout << "delta: " << delta.sizes() << std::endl;
+		std::cout << "deltalike1: " << deltalike1.dtype() << std::endl;
+		std::cout << "deltalike2: " << deltalike2.dtype() << std::endl;
+		std::cout << "deltalike3: " << deltalike3.dtype() << std::endl;
+		std::cout << "deltalike4: " << deltalike4.dtype() << std::endl;
+		std::cout << "deltalike5: " << deltalike5.dtype() << std::endl;
+
+		std::cout << "J: " << J.dtype() << std::endl;
+		std::cout << "Jlike1: " << Jlike1.dtype() << std::endl;
+
+		std::cout << "params: " << m_pModel->getParameters().dtype() << std::endl;
+		std::cout << "plike1: " << plike1.dtype() << std::endl;
+		std::cout << "plike2: " << plike2.dtype() << std::endl;
+		std::cout << "plike3: " << plike3.dtype() << std::endl;
+		std::cout << "plike4: " << plike4.dtype() << std::endl;
+
+		std::cout << "square1: " << square1.dtype() << std::endl;
+		std::cout << "square2: " << square2.dtype() << std::endl;
+		std::cout << "square3: " << square3.dtype() << std::endl;
+		std::cout << "square4: " << square4.dtype() << std::endl;
+
+		std::cout << "pivots: " << pivots.dtype() << std::endl;
+		std::cout << "luinfo: " << luinfo.dtype() << std::endl;
+
+		std::cout << "scale_matrix: " << scale_matrix.dtype() << std::endl;
+		std::cout << "inv_scale_matrix: " << inv_scale_matrix.dtype() << std::endl;
+
+		std::cout << "stepmask1: " << stepmask1.dtype() << std::endl;
+		std::cout << "stepmask2: " << stepmask2.dtype() << std::endl;
+		std::cout << "stepmask3: " << stepmask3.dtype() << std::endl;
+	}
+
+	if (values) {
+		std::cout << "res: " << res << std::endl;
+		std::cout << "reslike1: " << reslike1 << std::endl;
+
+		std::cout << "delta: " << delta << std::endl;
+		std::cout << "deltalike1: " << deltalike1 << std::endl;
+		std::cout << "deltalike2: " << deltalike2 << std::endl;
+		std::cout << "deltalike3: " << deltalike3 << std::endl;
+		std::cout << "deltalike4: " << deltalike4 << std::endl;
+		std::cout << "deltalike5: " << deltalike5 << std::endl;
+
+		std::cout << "J: " << J << std::endl;
+		std::cout << "Jlike1: " << Jlike1 << std::endl;
+
+		std::cout << "params: " << m_pModel->getParameters() << std::endl;
+		std::cout << "plike1: " << plike1 << std::endl;
+		std::cout << "plike2: " << plike2 << std::endl;
+		std::cout << "plike3: " << plike3 << std::endl;
+		std::cout << "plike4: " << plike4 << std::endl;
+
+		std::cout << "square1: " << square1 << std::endl;
+		std::cout << "square2: " << square2 << std::endl;
+		std::cout << "square3: " << square3 << std::endl;
+		std::cout << "square4: " << square4 << std::endl;
+
+		std::cout << "pivots: " << pivots << std::endl;
+		std::cout << "luinfo: " << luinfo << std::endl;
+
+		std::cout << "scale_matrix: " << scale_matrix << std::endl;
+		std::cout << "inv_scale_matrix: " << inv_scale_matrix << std::endl;
+
+		std::cout << "stepmask1: " << stepmask1 << std::endl;
+		std::cout << "stepmask2: " << stepmask2 << std::endl;
+		std::cout << "stepmask3: " << stepmask3 << std::endl;
+	}
+
 }
 

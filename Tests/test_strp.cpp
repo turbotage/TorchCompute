@@ -70,6 +70,7 @@ void strp_cpu_adc_anal_specific(int n, bool print) {
 
 		if (print) {
 			std::cout << "found params: " << res.finalParameters << std::endl;
+			std::cout << "found params: " << res.finalDeltas << std::endl;
 		}
 
 		std::cout << "No crash, Success!" << std::endl;
@@ -240,6 +241,7 @@ void strp_cpu_ir_anal_specific(int n, bool print) {
 
 		if (print) {
 			std::cout << "found params: " << res.finalParameters << std::endl;
+			std::cout << "found deltas: " << res.finalDeltas << std::endl;
 		}
 
 		std::cout << "No crash, Success!" << std::endl;
@@ -305,7 +307,7 @@ void strp_cuda_ir_anal_specific(int n, bool print) {
 
 		settings.pModel = std::move(pModel);
 		settings.data = data;
-		settings.maxIter = 20;
+		settings.maxIter = 30;
 
 		auto resJ = tc::optim::STRP::default_res_J_setup(*settings.pModel, data);
 
@@ -424,7 +426,7 @@ int main() {
 
 	
 	try {
-		strp_cuda_ir_anal_specific(1, true);
+		strp_cpu_ir_anal_specific(1, true);
 	}
 	catch (c10::Error e1) {
 		std::cout << e1.what() << std::endl;

@@ -73,6 +73,8 @@ namespace tc {
 
 			void solve();
 
+			void debug_print(bool sizes = true, bool types = true, bool values = false);
+
 		private:
 
 			float m_Mu;
