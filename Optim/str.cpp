@@ -154,7 +154,7 @@ void tc::optim::STRP::dogleg()
 	// Scale gauss newton step
 	pGN = torch::bmm(scale_matrix, pGN.unsqueeze(-1)).squeeze(-1);
 
-	std::cout << "pGN: " << torch::bmm(inv_scale_matrix, pGN.unsqueeze(-1)) << std::endl;
+	//std::cout << "pGN: " << torch::bmm(inv_scale_matrix, pGN.unsqueeze(-1)) << std::endl;
 
 	//torch::Tensor& scaled_gn_norm = deltalike1;
 	torch::Tensor scaled_gn_norm = torch::sqrt(torch::square(pGN).sum(1)).squeeze(-1);
@@ -188,7 +188,7 @@ void tc::optim::STRP::dogleg()
 
 	pCP *= (cpstep * delta / scaled_cp_norm) + (1.0f * torch::logical_not(cpstep)); // cp steps should be scaled to trust region
 
-	std::cout << "pCP: " << torch::bmm(inv_scale_matrix, pCP.unsqueeze(-1)) << std::endl;
+	//std::cout << "pCP: " << torch::bmm(inv_scale_matrix, pCP.unsqueeze(-1)) << std::endl;
 
 	// CALCULATE INTERMEDIATE-STEP
 	//torch::Tensor& GN_CP = deltalike1;
@@ -209,7 +209,7 @@ void tc::optim::STRP::dogleg()
 	//torch::Tensor& pIP = plike1; // g isn't used anymore, reuse it's memory;
 	torch::Tensor pIP = pCP + k * GN_CP;
 
-	std::cout << "pIP: " << torch::bmm(inv_scale_matrix, pIP.unsqueeze(-1)) << std::endl;
+	//std::cout << "pIP: " << torch::bmm(inv_scale_matrix, pIP.unsqueeze(-1)) << std::endl;
 
 	// All problems not taking steepest descent steps or full gn steps should take an interpolated step
 	//torch::Tensor& ipstep = stepmask3;
@@ -219,7 +219,7 @@ void tc::optim::STRP::dogleg()
 	// Calculate final step
 	p = torch::bmm(inv_scale_matrix, ((gnstep * pGN) + (cpstep * pCP) + (ipstep * pIP)).unsqueeze(-1)).squeeze(-1);
 
-	std::cout << "p: " << p << std::endl;
+	//std::cout << "p: " << p << std::endl;
 
 }
 

@@ -34,6 +34,7 @@ void strp_cpu_adc_anal_specific(int n, bool print) {
 
 		torch::Tensor data = torch::empty({ n, 4 }, dops);
 		pModel->eval(data);
+
 		if (print) {
 			std::cout << "data:\n" << data << std::endl;
 		}
@@ -77,7 +78,6 @@ void strp_cpu_adc_anal_specific(int n, bool print) {
 	}
 
 }
-
 
 void strp_cuda_adc_anal_specific(int n, bool print) {
 
@@ -342,91 +342,9 @@ void strp_cuda_ir_anal_specific(int n, bool print) {
 
 int main() {
 
-	/*
-	try {
-		strp_cpu_adc_anal_specific(500000, false);
-	}
-	catch (c10::Error e1) {
-		std::cout << e1.what() << std::endl;
-	}
-	catch (std::runtime_error e2) {
-		std::cout << e2.what() << std::endl;
-	}
-	*/
-	/*
-	try {
-		strp_cpu_adc_anal_specific(500000, false);
-	}
-	catch (c10::Error e1) {
-		std::cout << e1.what() << std::endl;
-	}
-	catch (std::runtime_error e2) {
-		std::cout << e2.what() << std::endl;
-	}
-	*/
-	/*
-	try {
-		strp_cuda_adc_anal_specific(500000, false);
-	}
-	catch (c10::Error e1) {
-		std::cout << e1.what() << std::endl;
-	}
-	catch (std::runtime_error e2) {
-		std::cout << e2.what() << std::endl;
-	}
-	*/
-	
-	/*
-	try {
-		strp_cuda_adc_anal_specific(10000000, false);
-	}
-	catch (c10::Error e1) {
-		std::cout << e1.what() << std::endl;
-	}
-	catch (std::runtime_error e2) {
-		std::cout << e2.what() << std::endl;
-	}
-	*/
-	/*
-	try {
-		strp_cpu_ir_anal_specific(256*256*64, false);
-	}
-	catch (c10::Error e1) {
-		std::cout << e1.what() << std::endl;
-	}
-	catch (std::runtime_error e2) {
-		std::cout << e2.what() << std::endl;
-	}
-	*/
-
-	/*
-	try {
-		strp_cpu_ir_anal_specific(1000000, false);
-	}
-	catch (c10::Error e1) {
-		std::cout << e1.what() << std::endl;
-	}
-	catch (std::runtime_error e2) {
-		std::cout << e2.what() << std::endl;
-	}
-	*/
-
-	/*
-	try {
-		strp_cpu_ir_anal_specific(1000000, false);
-	}
-	catch (c10::Error e1) {
-		std::cout << e1.what() << std::endl;
-	}
-	catch (std::runtime_error e2) {
-		std::cout << e2.what() << std::endl;
-	}
-	*/
-	
-
 	
 	try {
-		strp_cpu_ir_anal_specific(1, true);
+		strp_cpu_adc_anal_specific(5000000, false);
 	}
 	catch (c10::Error e1) {
 		std::cout << e1.what() << std::endl;
