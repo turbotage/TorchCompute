@@ -186,7 +186,7 @@ void tc::optim::STRP::dogleg()
 	//torch::Tensor& cpstep = stepmask2;
 	torch::Tensor cpstep = torch::logical_or(torch::logical_and(scaled_cp_norm > delta, torch::logical_not(gnstep)), luinfo != SUCCESSFULL_LU_DECOMP);
 
-	pCP *= (cpstep * delta / scaled_cp_norm) + (1.0f * torch::logical_not(cpstep)); // cp steps should be scaled to trust region
+	pCP *= (cpstep * delta / scaled_cp_norm).unsqueeze(-1) + (1.0f * torch::logical_not(cpstep).unsqueeze(-1)); // cp steps should be scaled to trust region
 
 	//std::cout << "pCP: " << torch::bmm(inv_scale_matrix, pCP.unsqueeze(-1)) << std::endl;
 
@@ -207,7 +207,7 @@ void tc::optim::STRP::dogleg()
 	torch::Tensor k = 0.5f * (-B + torch::sqrt(torch::square(B) - 4.0f * A * C)) / A;
 
 	//torch::Tensor& pIP = plike1; // g isn't used anymore, reuse it's memory;
-	torch::Tensor pIP = pCP + k * GN_CP;
+	torch::Tensor pIP = pCP + k.unsqueeze(-1) * GN_CP;
 
 	//std::cout << "pIP: " << torch::bmm(inv_scale_matrix, pIP.unsqueeze(-1)) << std::endl;
 
@@ -217,7 +217,8 @@ void tc::optim::STRP::dogleg()
 
 
 	// Calculate final step
-	p = torch::bmm(inv_scale_matrix, ((gnstep * pGN) + (cpstep * pCP) + (ipstep * pIP)).unsqueeze(-1)).squeeze(-1);
+	p = torch::bmm(inv_scale_matrix, 
+		((gnstep.unsqueeze(-1) * pGN) + (cpstep.unsqueeze(-1) * pCP) + (ipstep.unsqueeze(-1) * pIP)).unsqueeze(-1)).squeeze(-1);
 
 	//std::cout << "p: " << p << std::endl;
 
@@ -278,7 +279,7 @@ void tc::optim::STRP::step()
 	delta *= 2.0f * good_gain + 0.5f * poor_gain + 1.0f*torch::logical_not(torch::logical_or(good_gain, poor_gain));
 
 	// Step for all problems which have non poor gain-ratio
-	p = p * torch::logical_not(poor_gain);
+	p = p * torch::logical_not(poor_gain).unsqueeze(-1);
 	p.nan_to_num_(0.0f, 0.0f, 0.0f);
 
 	// Update the model with our new parameters
