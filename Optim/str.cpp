@@ -136,12 +136,17 @@ void tc::optim::STRP::dogleg()
 	{
 		// Create scaling matrix and scaled hessian
 		torch::Tensor& Jn = gs; // shadow gs as it isn't yet used
-		torch::frobenius_norm_out(Jn.squeeze_(-1), J, 1);
+		{
+			torch::Tensor& Jntemp = Jlike1;
+			torch::square_out(Jntemp, J);
+			torch::sum_out(Jn.squeeze_(-1), J, 1);
+		}
 
 		// Scaling matrix
-		invD.set_(torch::diag_embed(Jn));
+		invD = torch::diag_embed(Jn);
 
-		D.set_(torch::diag_embed(Jn.reciprocal_()));
+		D = torch::diag_embed(Jn.reciprocal_());
+
 		// Scaled Jacobian
 		torch::Tensor& Js = Jlike1;
 		torch::bmm_out(Js, J, D);
@@ -151,6 +156,7 @@ void tc::optim::STRP::dogleg()
 
 		// Scaled Hessian
 		torch::bmm_out(Hs, Js.transpose(1, 2), Js);
+
 	}
 
 	//debug_print(false, false, true);
@@ -163,19 +169,26 @@ void tc::optim::STRP::dogleg()
 	torch::Tensor& gnstep = stepmask1;
 	{
 		torch::Tensor& decomp = square4;
+		// Make LU decomposition
 		std::tie(decomp, pivots, luinfo) = at::_lu_with_info(Hs, true, false);
-
-		torch::bmm_out(pGN, D, torch::lu_solve_out(pGN, gs.neg(), decomp, pivots));
-
+		// Solve conditioned gn normal equations
+		torch::lu_solve_out(pGN, gs.neg(), decomp, pivots);
+		// Unscale condition matrix
+		torch::bmm_out(plike2, D, pGN);
 		// Scale gauss newton step
-		torch::bmm_out(pGN, scale_matrix, pGN);
+		torch::bmm_out(pGN, scale_matrix, plike2);
 
 		torch::frobenius_norm_out(scaled_gn_norm.unsqueeze_(-1), pGN, 1).squeeze_(-1);
 
-		torch::logical_and_out(gnstep, scaled_gn_norm <= delta, luinfo == SUCCESSFULL_LU_DECOMP);
+		torch::le_out(stepmask2, scaled_gn_norm, delta);
+		torch::eq_out(stepmask3, luinfo, SUCCESSFULL_LU_DECOMP);
+		torch::logical_and_out(gnstep, stepmask2, stepmask3);
 	}
 
 	//debug_print(false, false, true);
+
+	/*std::cout << "pGN: " << pGN << std::endl;
+	std::cout << "gnstep: " << gnstep << std::endl;*/
 
 	// occupied - square1, square2, square3, plike4, plike1, deltalike1, stepmask1
 
@@ -184,49 +197,57 @@ void tc::optim::STRP::dogleg()
 	torch::Tensor& scaled_cp_norm = deltalike2;
 	torch::Tensor& cpstep = stepmask2;
 	{
-		torch::Tensor& g = gs; // shadow gs since it won't be used after statement below
+
+		torch::Tensor& g = pCP; // shadow pCP since it won't be used yet
 		torch::bmm_out(g, invD, gs);
 
-		torch::Tensor& invDg = pCP; // shadow pCP since it won't be used yet
+		torch::Tensor& invDg = gs; // shadow gs since it isn't used anymore
 		torch::bmm_out(invDg, invD, g);
 
 		torch::Tensor& lambdaStar = scaled_cp_norm; // shadow scaled_cp_norm since we won't use it yet
 		{
-			torch::Tensor& lambdaStar1 = lambdaStar; // shadow lambdaStar since we won't use it yet
-			torch::Tensor& lambdaStar2 = deltalike3;
+			torch::Tensor& lambdaStar1 = deltalike3;
+			torch::Tensor& lambdaStar2 = deltalike4;
 
-			torch::Tensor& plike_temp = plike3;
-			torch::sum_out(lambdaStar1.unsqueeze_(-1), torch::square_out(plike_temp, g), 1).squeeze_(-1);
-			torch::bmm_out(lambdaStar2.unsqueeze_(-1).unsqueeze_(-1), invDg.transpose(1, 2), torch::bmm_out(plike_temp, Hs, invDg)).squeeze_(-1).squeeze_(-1);
+			torch::square_out(plike3, g);
+			torch::sum_out(lambdaStar1.unsqueeze_(-1), plike3, 1).squeeze_(-1);
+			torch::bmm_out(plike3, Hs, invDg);
+			torch::bmm_out(lambdaStar2.unsqueeze_(-1).unsqueeze_(-1), invDg.transpose(1, 2), plike3).squeeze_(-1).squeeze_(-1);
 
 			torch::div_out(lambdaStar, lambdaStar1, lambdaStar2);
 		}
-
-		torch::neg_out(pCP, g).mul_(lambdaStar.unsqueeze(-1));
+		
+		torch::neg_out(plike3, g);
+		plike3.mul_(lambdaStar.unsqueeze(-1).unsqueeze(-1));
 
 		// Scale cauchy step
-		torch::bmm_out(pCP, scale_matrix, pCP);
+		torch::bmm_out(pCP, scale_matrix, plike3);
 
 		torch::frobenius_norm_out(scaled_cp_norm.unsqueeze_(-1), pCP, 1).squeeze_(-1);
 
 		// All problems with cauchy point outside trust region and problems with singular hessian should take a steepest descent step (sets cpstep)
-		{
-			torch::Tensor& cpstep_temp = stepmask3;
-			torch::logical_and_out(cpstep_temp, scaled_cp_norm > delta, torch::logical_not_out(cpstep_temp, gnstep));
-			torch::ne_out(cpstep, luinfo, SUCCESSFULL_LU_DECOMP);
-			torch::logical_or_out(cpstep, cpstep, cpstep_temp);
+		{ // cpstep = (!gnstep AND |pCP| > delta) OR luinfo != SUCCESSFULL
+			torch::logical_not_out(cpstep, gnstep);
+			torch::greater_out(stepmask3, scaled_cp_norm, delta);
+			torch::logical_and_out(stepmask4, stepmask3, cpstep);
+			torch::ne_out(stepmask3, luinfo, SUCCESSFULL_LU_DECOMP);
+			torch::logical_or_out(cpstep, stepmask3, stepmask4);
 		}
 
 		// All problems that should take a cpstep should be scaled to trust region
-		{
-			torch::Tensor& temp_multiplier = deltalike3;
-			torch::mul_out(temp_multiplier, delta, cpstep);
-			temp_multiplier.div_(scaled_cp_norm).add_(torch::logical_not(cpstep));
-			pCP.mul_(temp_multiplier);
+		{ // pCP *= cpstep * delta / |pCP| + !cpstep
+			torch::mul_out(deltalike3, delta, cpstep);
+			torch::logical_not_out(stepmask3, cpstep);
+			deltalike3.div_(scaled_cp_norm).add_(stepmask3);
+			pCP.mul_(deltalike3.unsqueeze(-1).unsqueeze(-1));
 		}
 	}
 
 	//debug_print(false, false, true);
+
+	/*std::cout << "pCP: " << pCP << std::endl;
+	std::cout << "cpstep: " << cpstep << std::endl;
+	std::cout << "pCP Norm: " << scaled_cp_norm << std::endl;*/
 
 	// occupied - plike1, deltalike1, stepmask1, plike2, deltalike2, stepmask2
 
@@ -238,35 +259,34 @@ void tc::optim::STRP::dogleg()
 		torch::Tensor& GN_CP = pIP; // shadow pIP since it isn't used yet
 		torch::sub_out(GN_CP, pGN, pCP);
 
-		torch::Tensor& GN_CP2 = plike4;
-		torch::square_out(GN_CP2, GN_CP);
-
-		torch::Tensor& A = deltalike3;
-		torch::sum_out(A.unsqueeze_(-1), GN_CP2, 1).squeeze_(-1);
+		torch::Tensor& C = deltalike3;
+		{
+			torch::square_out(deltalike4, scaled_cp_norm);
+			torch::square_out(deltalike5, delta);
+			torch::sub_out(C, deltalike4, deltalike5);
+		}
 
 		torch::Tensor& B = deltalike4;
 		{
-			torch::Tensor& Bvec = GN_CP2; // shadow GN_CP2 since it isn't used anymore
-			torch::mul_out(Bvec, pCP, GN_CP).mul_(2.0f);
-			torch::sum_out(B.unsqueeze_(-1), Bvec, 1).squeeze_(-1);
+			torch::mul_out(plike4, pCP, GN_CP);
+			plike4.mul_(2.0f);
+			torch::sum_out(B.unsqueeze_(-1), plike4, 1).squeeze_(-1);
 		}
 
-		torch::Tensor& C = deltalike5;
-		{
-			torch::Tensor& C1 = scaled_cp_norm; // shadow C since it isn't used yet shadow scaled_cp_norm since it won't be 
-			torch::Tensor& C2 = C; // shadow C since it isn't used yet
-			torch::sub_out(C, torch::square_out(C1, scaled_cp_norm), torch::square_out(C2, delta));
-		}
-
+		torch::Tensor& A = deltalike5;
+		torch::square_out(plike4, GN_CP);
+		torch::sum_out(A.unsqueeze_(-1), plike4, 1).squeeze_(-1);
 
 		torch::Tensor& k = scaled_cp_norm; // shadow scaled_cp_norm since it isn't used anymore
 		{
-			torch::square_out(k, B); // k1 = B^2
-			k.add_(C.mul_(A).mul_(-4.0f)).sqrt_(); //k1 = sqrt(B ^ 2 - 4.0f * A * C)
-			k.sub_(B).div_(A).mul_(0.5f);  // 0.5*(-B + sqrt(B^2 - 4.0f * A * C) / A)
+			torch::square_out(k, B); // k = B^2
+			C.mul_(A).mul_(-4.0f); // C = -4.0f * A * C
+			k.add_(C).sqrt_(); //k = sqrt(B ^ 2 - 4.0f * A * C)
+			k.sub_(B).div_(A).mul_(0.5f);  // k = 0.5*(-B + sqrt(B^2 - 4.0f * A * C)) / A
 		}
 
-		torch::add_out(pIP, pCP, torch::mul_out(pIP, k.unsqueeze(-1), GN_CP));
+		torch::mul_out(plike4, k.unsqueeze(-1).unsqueeze(-1), GN_CP);
+		torch::add_out(pIP, pCP, plike4);
 		
 		
 
@@ -276,22 +296,36 @@ void tc::optim::STRP::dogleg()
 
 	//debug_print(false, false, true);
 
+	/*std::cout << "pIP: " << pIP << std::endl;
+	std::cout << "ipstep: " << ipstep << std::endl;
+	std::cout << "delta: " << delta << std::endl;*/
+
 	// occupied - plike1, deltalike1, stepmask1, plike2, stepmask2, plike3, stepmask3
+
+	/*
+	std::cout << "pGN: " << pGN << std::endl;
+	std::cout << "gnstep: " << gnstep << std::endl;
+
+	std::cout << "pCP: " << pGN << std::endl;
+	std::cout << "cpstep: " << cpstep << std::endl;
+
+	std::cout << "pIP: " << pIP << std::endl;
+	std::cout << "ipstep: " << ipstep << std::endl;
+	*/
 
 	// Calculate final step
 	torch::Tensor& p = plike4;
-	pGN.mul_(gnstep).nan_to_num_(0.0, 0.0, 0.0);
-	pCP.mul_(cpstep).nan_to_num_(0.0, 0.0, 0.0);
-	pIP.mul_(ipstep).nan_to_num_(0.0, 0.0, 0.0);
-	torch::add_out(p, pGN, torch::add_out(p, pCP, pIP));
-	torch::bmm_out(p, inv_scale_matrix, p);
-
+	pGN.mul_(gnstep.unsqueeze(-1).unsqueeze(-1)).nan_to_num_(0.0, 0.0, 0.0);
+	pCP.mul_(cpstep.unsqueeze(-1).unsqueeze(-1)).nan_to_num_(0.0, 0.0, 0.0);
+	pIP.mul_(ipstep.unsqueeze(-1).unsqueeze(-1)).nan_to_num_(0.0, 0.0, 0.0);
+	torch::add_out(p, pCP, pIP);
+	torch::add_out(pCP, p, pGN);
+	torch::bmm_out(p, inv_scale_matrix, pCP);
 }
 
 void tc::optim::STRP::step()
 {
 	torch::InferenceMode im_guard;
-
 	//debug_print(true, false);
 
 	m_pModel->res_diff(res, J, m_Data);
@@ -310,26 +344,26 @@ void tc::optim::STRP::step()
 
 		scaled_cp_norm	= deltalike1
 	*/
-	torch::Tensor& pGN = plike1;
-	torch::Tensor& pCP = plike2;
-	torch::Tensor& pIP = plike3;
 	torch::Tensor& p = plike4;
 	torch::Tensor& gnstep = stepmask1;
 	torch::Tensor& cpstep = stepmask2;
 	torch::Tensor& ipstep = stepmask3;
 	torch::Tensor& scaled_gn_norm = deltalike1;
 
-	torch::Tensor x_last = m_pModel->getParameters();
+	//std::cout << "p: " << p << std::endl;
+
+	torch::Tensor& x_last = plike3;
+	x_last.copy_(m_pModel->getParameters().unsqueeze(-1));
 
 	torch::Tensor& ep = deltalike2;
 	{
-		torch::Tensor& eptemp = reslike1;
-		torch::square_out(eptemp, res);
-		torch::sum_out(ep, eptemp, 1).mul_(0.5f);
+		torch::square_out(reslike1, res);
+		torch::sum_out(ep, reslike1, 1).mul_(0.5f);
 	}
 
-
-	m_pModel->getParameters().add_(p.squeeze_(-1));
+	m_pModel->getParameters().add_(p.squeeze(-1));
+	
+	
 
 	// residuals at trailing point
 	torch::Tensor& res_tp = reslike1;
@@ -338,54 +372,86 @@ void tc::optim::STRP::step()
 
 	torch::Tensor& et = deltalike3;
 	{
-		torch::Tensor& ettemp = res_tp; // shadow res_tp since it won't be used after step below
-		torch::square_out(ettemp, res_tp);
-		torch::sum_out(et, ettemp, 1).mul_(0.5f);
+		res_tp.square_();
+		torch::sum_out(et, res_tp, 1).mul_(0.5f);
 	}
 
-	torch::Tensor& actual = ep.sub_(et); // shadow ep since it won't be used after step below
+	ep.sub_(et); // now holds actual
+	torch::Tensor& actual = ep; // shadow ep since it won't be used after step below
 
 	torch::Tensor& Jp = res_tp; // shadow res_tp isn't used anymore
 	//Jp = torch::bmm(J, p.unsqueeze(-1)).squeeze(-1);
-	torch::bmm_out(Jp.unsqueeze_(-1), J, p.unsqueeze(-1));
+	torch::bmm_out(Jp.unsqueeze_(-1), J, p);
 
 	torch::Tensor& predicted = et; // et isn't used anymore, reuse it's memory
 	{
-		torch::Tensor& pred1 = predicted;
-		torch::Tensor& pred2 = deltalike4; 
 		//predicted = -torch::bmm(res.unsqueeze(-1).transpose(1, 2), Jp).squeeze(-1).squeeze(-1) - 0.5f * torch::square(Jp).sum(1);
-		torch::bmm_out(pred1.unsqueeze_(-1).unsqueeze_(-1), res.unsqueeze(-1).transpose(1, 2), Jp).squeeze_(-1).squeeze_(-1);
-		torch::frobenius_norm_out(pred2.unsqueeze_(-1), Jp, 1).squeeze_(-1).mul_(0.5f);
-		torch::add_out(predicted, pred1, pred2).neg_();
+		torch::bmm_out(deltalike4.unsqueeze_(-1).unsqueeze_(-1), res.unsqueeze(-1).transpose(1, 2), Jp).squeeze_(-1).squeeze_(-1);
+		torch::frobenius_norm_out(deltalike5.unsqueeze_(-1), Jp, 1).squeeze_(-1).mul_(0.5f);
+		torch::add_out(predicted, deltalike4, deltalike5).neg_();
 	}
 
+	actual.div_(predicted);
+	torch::Tensor& rho = actual; // shadow predicted since it won't be used after step below
 
-	torch::Tensor& rho = actual.div_(predicted); // shadow predicted since it won't be used after step below
+	//std::cout << "rho: " << rho << std::endl;
 
 	torch::Tensor& poor_gain = stepmask1;
 	torch::le_out(poor_gain, rho, m_Mu);
 
-	torch::Tensor& good_gain = stepmask2;
-	torch::le_out(good_gain, rho, m_Eta);
+	//std::cout << "poor_gain: " << poor_gain << std::endl;
 
+	torch::Tensor& good_gain = stepmask2;
+	torch::ge_out(good_gain, rho, m_Eta);
+
+	//std::cout << "good_gain: " << good_gain << std::endl;
 
 	torch::Tensor& multiplier = rho; // shadow rho since it isn't used anymore
 	multiplier.zero_();
-	multiplier.add_(2.0f * good_gain);
-	multiplier.add_(0.5 * poor_gain);
-	multiplier.add_(good_gain.logical_or_(poor_gain).logical_not_());
-	delta.mul_(multiplier);
+	multiplier.add_(good_gain);
+	multiplier.mul_(2.0f); // multiplier holds good gain
 
+	deltalike4.zero_();
+	deltalike4.add_(poor_gain);
+	deltalike4.mul_(0.5f);
+	multiplier.add_(deltalike4); // adds poor gain
+	
+	good_gain.logical_or_(poor_gain); // all problems with good or poor gain
+	good_gain.logical_not_(); // all probelms with neutral gain
+
+	multiplier.add_(good_gain);
+	delta.mul_(multiplier); // multiply 
+
+	// If delta is bigger than norm of gauss newton step we should decrease it below GN step
+	torch::lt_out(stepmask3, scaled_gn_norm, delta);
+	torch::logical_and_out(stepmask4, stepmask3, poor_gain);
+	
+	torch::div_out(deltalike4, scaled_gn_norm, delta);
+	deltalike4.mul_(0.5f);
+	deltalike4.mul_(stepmask4); // multiplier for all problems with |pGN| < delta and poor gain, multiplier = 0.5 * |pGN|
+
+	// multiplier for all problems with |pGN| > delta or non poor gain ratio we should not decrease delta i.e multiplier = 1
+	torch::logical_not_out(stepmask3, stepmask4);
+	deltalike4.add_(stepmask3);
+
+	// Now we can multiply delta with multiplier
+	delta.mul_(deltalike4);
 
 	// Step for all problems which have non poor gain-ratio
-	p = p * torch::logical_not(poor_gain).unsqueeze(-1);
+	torch::logical_not_out(stepmask3, poor_gain);
+	p.mul_(stepmask3.unsqueeze(-1).unsqueeze(-1));
+	// We don't step for Inf, -Inf, NaN
 	p.nan_to_num_(0.0, 0.0, 0.0);
 
+	//std::cout << "p: " << p << std::endl;
+
 	// Update the model with our new parameters
-	m_pModel->getParameters() = x_last + p;
+	torch::add_out(m_pModel->getParameters(), x_last.squeeze(-1), p.squeeze(-1));
+
+	//std::cout << "param: " << m_pModel->getParameters() << std::endl;
 
 	// make sure all vars are back to shape for next iteration
-	plike4.unsqueeze_(-1);
+	//plike4.unsqueeze_(-1);
 	reslike1.squeeze_(-1);
 
 	//debug_print(true, false);
@@ -425,6 +491,7 @@ void tc::optim::STRP::setup_solve() {
 	stepmask1 = torch::empty({ numProbs }, dops.dtype(torch::ScalarType::Bool));
 	stepmask2 = torch::empty_like(stepmask1);
 	stepmask3 = torch::empty_like(stepmask1);
+	stepmask4 = torch::empty_like(stepmask1);
 
 }
 
@@ -445,6 +512,8 @@ void tc::optim::STRP::solve()
 
 
 void tc::optim::STRP::debug_print(bool sizes, bool types, bool values) {
+
+	std::cout << "<=================== BEGIN DEBUG-PRINT =====================>\n";
 
 	if (sizes) {
 		std::cout << "res: " << res.sizes() << std::endl;
@@ -553,6 +622,8 @@ void tc::optim::STRP::debug_print(bool sizes, bool types, bool values) {
 		std::cout << "stepmask2: " << stepmask2 << std::endl;
 		std::cout << "stepmask3: " << stepmask3 << std::endl;
 	}
+
+	std::cout << "<=================== END DEBUG-PRINT =====================>\n";
 
 }
 

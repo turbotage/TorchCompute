@@ -130,6 +130,7 @@ namespace tc {
 			torch::Tensor stepmask1;
 			torch::Tensor stepmask2;
 			torch::Tensor stepmask3;
+			torch::Tensor stepmask4;
 
 		};
 

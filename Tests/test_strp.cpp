@@ -78,7 +78,6 @@ void strp_cpu_adc_anal_specific(int n, bool print) {
 
 }
 
-
 void strp_cuda_adc_anal_specific(int n, bool print) {
 
 	using namespace tc;
@@ -216,7 +215,7 @@ void strp_cpu_ir_anal_specific(int n, bool print) {
 
 		settings.pModel = std::move(pModel);
 		settings.data = data;
-		settings.maxIter = 50;
+		settings.maxIter = 20;
 
 		auto resJ = tc::optim::STRP::default_res_J_setup(*settings.pModel, data);
 
@@ -426,7 +425,7 @@ int main() {
 
 	
 	try {
-		strp_cpu_ir_anal_specific(1, true);
+		strp_cpu_adc_anal_specific(5000000, false);
 	}
 	catch (c10::Error e1) {
 		std::cout << e1.what() << std::endl;
@@ -434,6 +433,7 @@ int main() {
 	catch (std::runtime_error e2) {
 		std::cout << e2.what() << std::endl;
 	}
+	
 
 	
 

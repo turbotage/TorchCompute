@@ -1,10 +1,18 @@
 
 import torch
 
-a = torch.rand(10,3)
-b = torch.rand(10,3)
-c = torch.rand(2,2,1)
+Hs = torch.tensor([[[0.9640, 0.9467],[0.9467, 0.9300]]])
+print(Hs)
+print(Hs.shape)
+decomp, pivot, info = torch.lu(Hs, pivot=True,get_infos=True)
 
-torch.divide(a,b,out=c)
+gs = torch.tensor([[[-306.4979],[-308.8952]]])
+print(gs)
+print(gs.shape)
 
-print(c)
+x = torch.lu_solve(-gs, decomp, pivot)
+print(x)
+
+torch.bmm(Hs, x, out=x)
+
+print(x)

@@ -88,6 +88,9 @@ set_target_properties(ComputeLib PROPERTIES PUBLIC_HEADER "compute.hpp")
 add_executable(ComputeTestDiffExpression "Tests/test_diff_expression.cpp")
 target_link_libraries(ComputeTestDiffExpression ComputeLib)
 
+add_executable(ComputeTestEnv "Tests/test_env.cpp")
+target_link_libraries(ComputeTestEnv ComputeLib)
+
 add_executable(ComputeTestExpMod "Tests/test_expression_model.cpp")
 target_link_libraries(ComputeTestExpMod ComputeLib)
 
