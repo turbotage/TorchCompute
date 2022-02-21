@@ -187,8 +187,9 @@ void tc::optim::STRP::dogleg()
 
 	//debug_print(false, false, true);
 
-	/*std::cout << "pGN: " << pGN << std::endl;
-	std::cout << "gnstep: " << gnstep << std::endl;*/
+	//std::cout << "pGN: " << pGN << std::endl;
+	//std::cout << "unscaled pGN: " << torch::bmm(inv_scale_matrix, pGN) << std::endl;
+	//std::cout << "gnstep: " << gnstep << std::endl;
 
 	// occupied - square1, square2, square3, plike4, plike1, deltalike1, stepmask1
 
@@ -291,7 +292,8 @@ void tc::optim::STRP::dogleg()
 		
 
 		// All problems not taking steepest descent steps or full gn steps should take an interpolated step
-		ipstep = torch::logical_not(torch::logical_or(gnstep, cpstep));
+		torch::logical_not_out(ipstep, torch::logical_or(gnstep, cpstep));
+
 	}
 
 	//debug_print(false, false, true);
@@ -321,6 +323,7 @@ void tc::optim::STRP::dogleg()
 	torch::add_out(p, pCP, pIP);
 	torch::add_out(pCP, p, pGN);
 	torch::bmm_out(p, inv_scale_matrix, pCP);
+
 }
 
 void tc::optim::STRP::step()

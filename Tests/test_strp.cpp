@@ -425,7 +425,7 @@ int main() {
 
 	
 	try {
-		strp_cpu_adc_anal_specific(5000000, false);
+		strp_cpu_adc_anal_specific(1000000, false);
 	}
 	catch (c10::Error e1) {
 		std::cout << e1.what() << std::endl;

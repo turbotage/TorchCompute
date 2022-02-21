@@ -36,6 +36,7 @@ add_library(ComputeLib
     "Optim/gn.cpp"
     "Optim/sgn.cpp"
     "Optim/str.cpp"
+    "Optim/tr.cpp"
     
     "Expression/expression_nodes.cpp"
     "Expression/expression.cpp"

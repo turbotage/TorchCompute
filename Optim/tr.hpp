@@ -8,9 +8,9 @@
 namespace tc {
 	namespace optim {
 
-		struct STRPSettings : public OptimizerSettings {
-		
-			STRPSettings();
+		struct TRPSettings : public OptimizerSettings {
+
+			TRPSettings();
 
 			torch::Tensor start_residuals;
 			torch::Tensor start_jacobian;
@@ -22,10 +22,10 @@ namespace tc {
 			float eta = 0.75;
 		};
 
-		struct STRPResult : public OptimResult {
+		struct TRPResult : public OptimResult {
 			torch::Tensor finalDeltas;
 			torch::Tensor gain;
-			
+
 			torch::Tensor lastP; // Last step
 			torch::Tensor lastJ; // What the residual Jacboian was before applying last step
 			torch::Tensor lastR; // What residuals was before applying last step
@@ -43,16 +43,16 @@ namespace tc {
 			CAUCHY, // (Steepest descent)
 		};
 
-		class STRP : public Optimizer {
+		class TRP : public Optimizer {
 		public:
 
-			STRP() = delete;
-			STRP(const STRP&) = delete;
-			STRP& operator=(const STRP&) = delete;
+			TRP() = delete;
+			TRP(const TRP&) = delete;
+			TRP& operator=(const TRP&) = delete;
 
-			STRP(STRPSettings& settings);
+			TRP(TRPSettings& settings);
 
-			STRPResult eval();
+			TRPResult eval();
 
 			std::unique_ptr<OptimResult> base_eval() override;
 
@@ -85,6 +85,9 @@ namespace tc {
 			int64_t numParam;
 
 		private:
+
+			// (nProblems, nData)
+			torch::Tensor data;
 
 			// (nProblems, nData)
 			torch::Tensor res;
@@ -130,8 +133,6 @@ namespace tc {
 			torch::Tensor stepmask4;
 
 		};
-
-
 
 	}
 }
