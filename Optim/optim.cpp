@@ -6,6 +6,8 @@
 #include "optim.hpp"
 #include "optim.hpp"
 #include "optim.hpp"
+#include "optim.hpp"
+#include "optim.hpp"
 #include "../pch.hpp"
 
 #include "optim.hpp"
@@ -14,14 +16,12 @@
 
 
 tc::optim::OptimizerSettings::OptimizerSettings()
-	: startDevice(torch::Device("cpu"))
 {
 
 }
 
 tc::optim::Optimizer::Optimizer(OptimizerSettings& settings) 
  : m_pModel(std::move(settings.pModel)), m_Data(settings.data),
-	m_StartDevice(settings.startDevice),
 	m_Tolerance(settings.tolerance), m_MaxIter(settings.maxIter)
 {
 	assert(m_Data.defined() && "Tried to create optimizer with no data");
@@ -30,7 +30,6 @@ tc::optim::Optimizer::Optimizer(OptimizerSettings& settings)
 	assert(m_pModel->getParameters().defined() && "Tried to create optimizer with no parameters");
 	assert(m_pModel->getParameters().numel() > 0 && "Tried to create optimizer with no parameters");
 
-	m_NonConvergingProblems = settings.data.size(0);
 }
 
 tc::optim::Optimizer::~Optimizer()
@@ -44,20 +43,21 @@ void tc::optim::Optimizer::abort()
 	on_abort();
 }
 
-std::pair<tc::ui32, tc::ui32> tc::optim::Optimizer::getIterInfo()
+tc::ui32 tc::optim::Optimizer::get_n_iter()
 {
-	return std::make_pair(m_Iter.load(), m_NonConvergingProblems.load());
+	return m_Iter;
 }
 
 void tc::optim::Optimizer::on_abort()
 {
 }
 
-void tc::optim::Optimizer::set_iter_info(tc::ui32 iter, tc::ui32 non_converging_probs)
+void tc::optim::Optimizer::set_n_iter(tc::ui32 iter)
 {
-	m_Iter = iter;
-	m_NonConvergingProblems = non_converging_probs;
+
 }
+
+
 
 bool tc::optim::Optimizer::should_stop()
 {
@@ -72,6 +72,8 @@ void tc::optim::Optimizer::on_eval() {
 torch::Tensor tc::optim::get_plane_converging_problems_combined(
 	torch::Tensor& lastJ, torch::Tensor& lastP, torch::Tensor& lastR, float tolerance)
 {
+	torch::InferenceMode im_guard;
+
 	return torch::sqrt(torch::square(torch::bmm(lastJ, lastP)).sum(1)).squeeze() <
 		tolerance * (1 + torch::sqrt(torch::square(lastR).sum(1)).squeeze());
 }
@@ -79,23 +81,31 @@ torch::Tensor tc::optim::get_plane_converging_problems_combined(
 torch::Tensor tc::optim::get_plane_converging_problems( 
 	torch::Tensor& lastJ, torch::Tensor& lastP, torch::Tensor& lastR, float tolerance)
 {
+	torch::InferenceMode im_guard;
+
 	return torch::sqrt(torch::square(torch::bmm(lastJ, lastP)).sum(1)).squeeze() <
 		tolerance * torch::sqrt(torch::square(lastR).sum(1)).squeeze();
 }
 
 torch::Tensor tc::optim::get_gradient_converging_problems_absolute(torch::Tensor& J, torch::Tensor& R, float tolerance)
 {
+	torch::InferenceMode im_guard;
+
 	return torch::sqrt(torch::square(torch::bmm(J, R)).sum(1)).squeeze() < tolerance;
 }
 
 torch::Tensor tc::optim::get_gradient_converging_problems_relative(torch::Tensor& J, torch::Tensor& R, float tolerance)
 {
+	torch::InferenceMode im_guard;
+
 	return torch::sqrt(torch::square(torch::bmm(J, R)).sum(1)).squeeze() <
 		tolerance * torch::sqrt(torch::square(R).sum(1)).squeeze();
 }
 
 torch::Tensor tc::optim::get_gradient_converging_problems_combined(torch::Tensor& J, torch::Tensor& R, float tolerance)
 {
+	torch::InferenceMode im_guard;
+
 	return torch::sqrt(torch::square(torch::bmm(J, R)).sum(1)).squeeze() <
 		tolerance * (1 + torch::sqrt(torch::square(R).sum(1)).squeeze());
 }

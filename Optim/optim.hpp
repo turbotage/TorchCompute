@@ -14,15 +14,12 @@ namespace tc {
 
 			std::unique_ptr<optim::Model>			pModel;
 			torch::Tensor							data;
-			torch::Device							startDevice; // Set to CPU by default constructor
 			float									tolerance = 1e-6;
 			tc::ui32								maxIter = 50;
 		};
 
 		struct OptimResult {
-			torch::Tensor finalParameters;
 			std::unique_ptr<optim::Model> pFinalModel;
-			torch::Tensor nonConvergingIndices;
 		};
 
 		class Optimizer {
@@ -35,13 +32,13 @@ namespace tc {
 
 			void abort();
 
-			std::pair<tc::ui32, tc::ui32> getIterInfo();
+			tc::ui32 get_n_iter();
 
 		protected:
 
 			virtual void on_abort();
 
-			void set_iter_info(tc::ui32 iter, tc::ui32 non_converging_probs);
+			void set_n_iter(tc::ui32 iter);
 
 			bool should_stop();
 
@@ -53,7 +50,6 @@ namespace tc {
 
 			std::unique_ptr<optim::Model>			m_pModel;
 			torch::Tensor							m_Data;
-			torch::Device							m_StartDevice;
 			float									m_Tolerance = 1e-4;
 			tc::ui32								m_MaxIter = 50;
 
@@ -62,11 +58,8 @@ namespace tc {
 
 		private:
 			// Thread access
-			std::atomic<tc::i32> m_NonConvergingProblems;
 			std::atomic<tc::ui32> m_Iter = 0;
 			std::atomic<bool> m_ShouldStop = false;
-
-
 		};
 
 		torch::Tensor get_plane_converging_problems_combined(torch::Tensor& lastJ, 
