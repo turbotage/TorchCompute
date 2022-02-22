@@ -6,6 +6,7 @@
 
 #include "../Expression/expression.hpp"
 
+
 namespace tc {
 	namespace optim {
 	
@@ -93,7 +94,7 @@ namespace tc {
 			/// </summary>
 			/// <param name="device"></param>
 			void to(torch::Device device);
-		
+			
 			/// <summary>
 			/// Sets the values of the static vars, these are used inplace of f.i constants
 			/// Slightly higher performance than stringed numbers if many function invokations shall be

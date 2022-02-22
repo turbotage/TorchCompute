@@ -30,8 +30,8 @@ add_library(ComputeLib
     
     "Optim/model.cpp"
     "Optim/optim.cpp"
-    "Optim/str.cpp"
-    "Optim/tr.cpp"
+    "Optim/strp.cpp"
+    
     
     "Expression/expression_nodes.cpp"
     "Expression/expression.cpp"
@@ -90,32 +90,11 @@ target_link_libraries(ComputeTestEnv ComputeLib)
 add_executable(ComputeTestExpMod "Tests/test_expression_model.cpp")
 target_link_libraries(ComputeTestExpMod ComputeLib)
 
-add_executable(ComputeTestExpOptim "Tests/test_expression_optim.cpp")
-target_link_libraries(ComputeTestExpOptim ComputeLib)
-
-add_executable(ComputeTestGN "Tests/test_gn.cpp")
-target_link_libraries(ComputeTestGN ComputeLib)
-
 add_executable(ComputeTestLinearFit "Tests/test_linear_fit.cpp")
 target_link_libraries(ComputeTestLinearFit ComputeLib)
 
 add_executable(ComputeTestLSTQ "Tests/test_lstq.cpp")
 target_link_libraries(ComputeTestLSTQ ComputeLib)
 
-add_executable(ComputeTestSGN )
-target_link_libraries(ComputeTestSGN ComputeLib)
-
-add_executable(ComputeTestSLMA "Tests/test_slma.cpp")
-target_link_libraries(ComputeTestSLMA ComputeLib)
-
-add_executable(ComputeTestSLMP "Tests/test_slmp.cpp")
-target_link_libraries(ComputeTestSLMP ComputeLib)
-
-add_executable(ComputeTestSTLMP "Tests/test_stlmp.cpp")
-target_link_libraries(ComputeTestSTLMP ComputeLib)
-
 add_executable(ComputeTestSTRP "Tests/test_strp.cpp")
 target_link_libraries(ComputeTestSTRP ComputeLib)
-
-add_executable(ComputeTestThreading "Tests/test_threading.cpp")
-target_link_libraries(ComputeTestThreading ComputeLib)

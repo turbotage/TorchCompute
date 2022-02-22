@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <stack>
 
+#include "../tc.hpp"
+
 
 namespace tc {
 	namespace expression {

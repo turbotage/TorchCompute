@@ -1,13 +1,3 @@
-#include "optim.hpp"
-#include "optim.hpp"
-#include "optim.hpp"
-#include "optim.hpp"
-#include "optim.hpp"
-#include "optim.hpp"
-#include "optim.hpp"
-#include "optim.hpp"
-#include "optim.hpp"
-#include "optim.hpp"
 #include "../pch.hpp"
 
 #include "optim.hpp"
@@ -15,26 +5,65 @@
 #include "../Compute/gradients.hpp"
 
 
-tc::optim::OptimizerSettings::OptimizerSettings()
+
+
+tc::optim::OptimizerSettings::OptimizerSettings(std::unique_ptr<optim::Model> pModel, 
+	const torch::Tensor& data, tc::ui32 maxiter)
+{
+	if (pModel->getParameters().size(0) != data.size(0))
+		throw std::runtime_error("Number sizes in parameter and data did not match");
+
+	if (!pModel->getParameters().is_contiguous())
+		throw std::runtime_error("Optimizer requires contigous parameters");
+
+	if (!data.is_contiguous())
+		throw std::runtime_error("Optimizer requires contigous data");
+
+	this->pModel = std::move(pModel);
+	this->data = data;
+	this->maxiter = maxiter;
+}
+
+/*
+tc::optim::OptimizerSettings::OptimizerSettings(OptimizerSettings&& other) noexcept
+	: pModel(std::move(other.pModel)),
+	data(std::move(other.data)),
+	maxiter(other.maxiter)
+{
+}
+*/
+
+tc::optim::OptimizerSettings::~OptimizerSettings()
+{
+}
+
+tc::optim::OptimResult::OptimResult(std::unique_ptr<optim::Model> pFinalModel)
+	: pFinalModel(std::move(pFinalModel))
 {
 
 }
 
-tc::optim::Optimizer::Optimizer(OptimizerSettings& settings) 
- : m_pModel(std::move(settings.pModel)), m_Data(settings.data),
-	m_Tolerance(settings.tolerance), m_MaxIter(settings.maxIter)
+
+
+tc::optim::Optimizer::Optimizer(OptimizerSettings&& settings) 
+ : pModel(std::move(settings.pModel)), data(settings.data),
+	maxiter(settings.maxiter)
 {
-	assert(m_Data.defined() && "Tried to create optimizer with no data");
-	assert(m_Data.numel() > 0 && "Tried to create optimizer with no data");
-	assert(m_pModel != nullptr && "Tried to create optimizer with pModel=nullptr");
-	assert(m_pModel->getParameters().defined() && "Tried to create optimizer with no parameters");
-	assert(m_pModel->getParameters().numel() > 0 && "Tried to create optimizer with no parameters");
 
 }
 
-tc::optim::Optimizer::~Optimizer()
+void tc::optim::Optimizer::run()
 {
-	assert(m_HasRun && "on_eval() was never run, incorrect implementation of Optimizer");
+	on_run();
+}
+
+tc::optim::OptimResult tc::optim::Optimizer::acquire_result()
+{
+	if (m_HasAcquiredResult)
+		throw std::runtime_error("Tried to acquire results from optimizer twice");
+
+	m_HasAcquiredResult = true;
+	return on_acquire_result();
 }
 
 void tc::optim::Optimizer::abort()
@@ -43,31 +72,28 @@ void tc::optim::Optimizer::abort()
 	on_abort();
 }
 
-tc::ui32 tc::optim::Optimizer::get_n_iter()
+tc::ui32 tc::optim::Optimizer::get_n_iter() const
 {
 	return m_Iter;
 }
 
-void tc::optim::Optimizer::on_abort()
-{
-}
-
 void tc::optim::Optimizer::set_n_iter(tc::ui32 iter)
 {
-
+	m_Iter = iter;
 }
 
-
-
-bool tc::optim::Optimizer::should_stop()
+bool tc::optim::Optimizer::should_stop() const
 {
 	return m_ShouldStop;
 }
 
-void tc::optim::Optimizer::on_eval() {
-	assert(!m_HasRun && "Tried to evaluate optimizer twice");
-	m_HasRun = true;
-}
+
+
+
+
+
+
+
 
 torch::Tensor tc::optim::get_plane_converging_problems_combined(
 	torch::Tensor& lastJ, torch::Tensor& lastP, torch::Tensor& lastR, float tolerance)

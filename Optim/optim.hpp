@@ -8,59 +8,91 @@
 namespace tc {
 	namespace optim {
 
-		struct OptimizerSettings {
+		class OptimizerSettings {
+		public:
+			OptimizerSettings() = delete;
+			OptimizerSettings(const OptimizerSettings&) = delete;
+			OptimizerSettings& operator=(const OptimizerSettings&) = delete;
 
-			OptimizerSettings();
+			OptimizerSettings(std::unique_ptr<optim::Model> pModel, const torch::Tensor& data, tc::ui32 maxiter = 50);
+
+			OptimizerSettings(OptimizerSettings&&) = default;
+
+			virtual ~OptimizerSettings();
 
 			std::unique_ptr<optim::Model>			pModel;
 			torch::Tensor							data;
-			float									tolerance = 1e-6;
-			tc::ui32								maxIter = 50;
+			tc::ui32								maxiter = 50;
 		};
 
-		struct OptimResult {
+		class OptimResult {
+		public:
+
+			OptimResult() = delete;
+			OptimResult(const OptimResult&) = delete;
+			OptimResult& operator=(const OptimResult&) = delete;
+
+			OptimResult(OptimResult&&) = default;
+
+			OptimResult(std::unique_ptr<optim::Model> pFinalModel);
+			
 			std::unique_ptr<optim::Model> pFinalModel;
+
+		protected:
+			friend class Optimizer;
+
+
 		};
 
 		class Optimizer {
 		public:
 
-			Optimizer(OptimizerSettings& settings);
-			virtual ~Optimizer();
+			Optimizer() = delete;
+			Optimizer(const Optimizer&) = delete;
+			Optimizer& operator=(const Optimizer&) = delete;
 
-			virtual std::unique_ptr<OptimResult> base_eval() = 0;
+			Optimizer(Optimizer&&) = default;
+
+			Optimizer(OptimizerSettings&& settings);
+
+			void run();
+
+			OptimResult acquire_result();
 
 			void abort();
 
-			tc::ui32 get_n_iter();
+			tc::ui32 get_n_iter() const;
 
 		protected:
 
-			virtual void on_abort();
+			virtual void on_run() = 0;
+
+			virtual OptimResult on_acquire_result() = 0;
+
+			virtual void on_abort() = 0;
 
 			void set_n_iter(tc::ui32 iter);
 
-			bool should_stop();
-
-			// This should always be called at begining of eval in other Optimizers deriving from this
-			void on_eval();
-
+			bool should_stop() const;
 
 		protected:
 
-			std::unique_ptr<optim::Model>			m_pModel;
-			torch::Tensor							m_Data;
-			float									m_Tolerance = 1e-4;
-			tc::ui32								m_MaxIter = 50;
+			std::unique_ptr<optim::Model>			pModel;
+			torch::Tensor							data;
+			tc::ui32								maxiter = 50;
 
 		private:
-			bool m_HasRun = false;
-
-		private:
+			bool m_HasAcquiredResult = false;
 			// Thread access
 			std::atomic<tc::ui32> m_Iter = 0;
 			std::atomic<bool> m_ShouldStop = false;
 		};
+
+
+
+
+
+
 
 		torch::Tensor get_plane_converging_problems_combined(torch::Tensor& lastJ, 
 			torch::Tensor& lastP, torch::Tensor& lastR, float tolerance = 1e-6);
