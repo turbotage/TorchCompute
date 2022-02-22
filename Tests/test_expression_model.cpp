@@ -5,6 +5,7 @@
 void compare_graph_vs_anal() {
 	using namespace tc;
 	using namespace torch::indexing;
+	torch::InferenceMode im_guard;
 
 	torch::TensorOptions dops;
 	dops = dops.dtype(torch::kFloat64).device(torch::Device("cuda:0"));

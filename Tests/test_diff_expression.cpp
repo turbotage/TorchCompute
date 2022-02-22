@@ -3,7 +3,7 @@
 
 void test_diff_adc(int n, bool print) {
 	using namespace tc;
-
+	torch::InferenceMode im_guard;
 
 	torch::TensorOptions dops;
 	dops = dops.dtype(torch::kFloat64).device(torch::Device("cuda:0"));
@@ -55,6 +55,7 @@ void test_diff_adc(int n, bool print) {
 
 void test_diff_vfa(int n, bool print) {
 	using namespace tc;
+	torch::InferenceMode im_guard;
 
 	torch::TensorOptions dops;
 	dops = dops.dtype(torch::kFloat64).device(torch::Device("cuda:0"));

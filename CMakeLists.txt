@@ -98,3 +98,6 @@ target_link_libraries(ComputeTestLSTQ ComputeLib)
 
 add_executable(ComputeTestSTRP "Tests/test_strp.cpp")
 target_link_libraries(ComputeTestSTRP ComputeLib)
+
+# Prototyping Environments
+add_executable(ComputeProtP1 "Prototyping/CPP/p1.cpp")

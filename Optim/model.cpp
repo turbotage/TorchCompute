@@ -69,11 +69,26 @@ tc::optim::Model::Model(const std::string& expression,
 		torch::Tensor& pa, torch::Tensor& e, tc::OptOutRef<torch::Tensor> j, tc::OptOutRef<const torch::Tensor> d)
 	{
 		if (j.has_value()) {
-			pa = pa.requires_grad_(true);
+
+			torch::Tensor temp_im_tensor = pa; // save a inference mode view of parameters
+			bool pa_is_inference = pa.is_inference();
+
+			torch::InferenceMode im_guard(false);
+			// If parameters are inference mode parameters temporarily clone them so we can build autograd graph
+			if (pa_is_inference) {
+				pa = pa.clone();
+			}
+			pa.requires_grad_(true);
+
 			e = eval_func();
 			j.value().get() = compute::jacobian(e, pa).detach_();
-			pa = pa.requires_grad_(false);
+			pa.requires_grad_(false);
 			e.detach_();
+
+			// Reset parameters to be in inference mode
+			if (pa_is_inference) {
+				pa = temp_im_tensor;
+			}
 		}
 		else {
 			e = eval_func();
