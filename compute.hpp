@@ -10,8 +10,8 @@
 // Expression
 #include "Expression/expression.hpp"
 #include "Expression/expression_nodes.hpp"
-#include "Expression/parsing.hpp"
-#include "Expression/shunter.hpp"
+#include "Expression/token.cpp"
+#include "Expression/lexer.cpp"
 
 // Optim
 #include "Optim/model.hpp"

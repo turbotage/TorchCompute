@@ -3,25 +3,38 @@
 namespace tc {
 	namespace expression {
 
-		enum eTokenType {
-			NO_TOKEN,
-			OPERATOR,
-			UNARY_OPERATOR,
-			BINARY_OPERATOR,
-			FUNCTION,
-			VARIABLE,
-			NUMBER,
-			ZERO,
-			UNITY,
-			LEFT_PAREN,
-			RIGHT_PAREN,
-			COMMA,
+		struct FixedTokens {
+			enum {
+				COMMA = (int)',',
+				RIGHT_PAREN = (int)')',
+				LEFT_PAREN = (int)'('
+			};
+		};
+
+		struct TokenType {
+			enum {
+				NO_TOKEN,
+				OPERATOR,
+				UNARY_OPERATOR,
+				BINARY_OPERATOR,
+				FUNCTION,
+				VARIABLE,
+				NUMBER,
+				ZERO,
+				UNITY,
+				LEFT_PAREN,
+				RIGHT_PAREN,
+				COMMA,
+			};
 		};
 
 		class Token {
 		public:
 
-			virtual const std::string& get_id() const = 0;
+			Token() = default;
+			Token(const Token&) = default;
+
+			virtual std::string get_id() const = 0;
 
 			virtual std::int32_t get_token_type() const = 0;
 
@@ -29,7 +42,7 @@ namespace tc {
 
 		class NoToken : public Token {
 		public:
-			const std::string& get_id() const override;
+			std::string get_id() const override;
 
 			std::int32_t get_token_type() const override;
 		};
@@ -37,13 +50,16 @@ namespace tc {
 		class Operator : public Token {
 		public:
 
+			Operator(const Operator& other);
+			Operator(Operator&&) = default;
+
 			Operator(const std::string& id, std::int32_t precedence, bool is_left_associative);
 
 			const std::string id;
 			const std::int32_t precedence;
 			const bool is_left_associative;
 
-			const std::string& get_id() const override;
+			std::string get_id() const override;
 
 			std::int32_t get_token_type() const override;
 
@@ -54,10 +70,13 @@ namespace tc {
 		class UnaryOperator : public Operator {
 		public:
 
-			UnaryOperator(const std::string& id, std::int32_t precedence, bool is_left_associative,
-				const std::vector<const tc::refw<expression::Token>>& allowed_left_tokens);
+			UnaryOperator(const UnaryOperator& other);
+			UnaryOperator(UnaryOperator&&) = default;
 
-			const std::vector<const tc::refw<expression::Token>> allowed_left_tokens;
+			UnaryOperator(const std::string& id, std::int32_t precedence, bool is_left_associative,
+				const std::vector<tc::refw<expression::Token>>& allowed_left_tokens);
+
+			const std::vector<tc::refw<expression::Token>> allowed_left_tokens;
 
 			std::int32_t get_operator_type() const override;
 
@@ -65,6 +84,9 @@ namespace tc {
 
 		class BinaryOperator : public Operator {
 		public:
+
+			BinaryOperator(const BinaryOperator& other);
+			BinaryOperator(BinaryOperator&&) = default;
 
 			BinaryOperator(const std::string& id, std::int32_t precedence, bool is_left_associative,
 				bool commutative = false, bool anti_commutative = false);
@@ -77,13 +99,23 @@ namespace tc {
 
 		class Function : public Token {
 		public:
+
+			Function(const Function& other);
+			Function& operator=(const Function&) = default;
+
+			Function(const std::string& id, std::int32_t n_inputs, bool commutative = false);
+
+			Function(const std::string& id, std::int32_t n_inputs, bool commutative,
+				const std::vector<std::vector<int>>& commutative_inputs,
+				const std::vector<std::pair<int, int>>& anti_commutative_inputs);
+
 			const std::string id;
 			const std::int32_t n_inputs;
 			const bool commutative = false;
-			std::vector<std::vector<int>> commutative_inputs;
-			std::vector<std::pair<int, int>> anti_commutative_inputs;
+			const std::vector<std::vector<int>> commutative_inputs;
+			const std::vector<std::pair<int, int>> anti_commutative_inputs;
 
-			const std::string& get_id() const override;
+			std::string get_id() const override;
 
 			std::int32_t get_token_type() const override;
 
@@ -91,9 +123,14 @@ namespace tc {
 
 		class Variable : public Token {
 		public:
+
+			Variable(const Variable&) = default;
+
+			Variable(const std::string& id);
+
 			const std::string id;
 
-			const std::string& get_id() const override;
+			std::string get_id() const override;
 
 			std::int32_t get_token_type() const override;
 
@@ -101,9 +138,17 @@ namespace tc {
 
 		class Number : public Token {
 		public:
-			const std::string id;
 
-			const std::string& get_id() const override;
+			Number(const Number&) = default;
+
+			Number(const std::string& numberstr, bool is_imaginary);
+
+			const std::string id;
+			const bool is_imaginary;
+			const c10::complex<float> num;
+
+
+			std::string get_id() const override;
 
 			std::int32_t get_token_type() const override;
 
@@ -112,7 +157,11 @@ namespace tc {
 		class Zero : public Token {
 		public:
 
-			const std::string& get_id() const override;
+			Zero() = default;
+
+			Zero(const Zero&) = default;
+
+			std::string get_id() const override;
 
 			std::int32_t get_token_type() const override;
 
@@ -121,27 +170,47 @@ namespace tc {
 		class Unity : public Token {
 		public:
 
-			const std::string& get_id() const override;
+			Unity() = default;
+
+			Unity(const Unity&) = default;
+
+			std::string get_id() const override;
 
 			std::int32_t get_token_type() const override;
 		};
 
 		class LeftParen : public Token {
 		public:
-			const std::string& get_id() const override;
+
+			LeftParen() = default;
+
+			LeftParen(const LeftParen&) = default;
+
+			std::string get_id() const override;
 
 			std::int32_t get_token_type() const override;
 		};
 
 		class RightParen : public Token {
 		public:
-			const std::string& get_id() const override;
+
+			RightParen() = default;
+
+			RightParen(const RightParen&) = default;
+
+			std::string get_id() const override;
 
 			std::int32_t get_token_type() const override;
 		};
 
 		class Comma : public Token {
-			const std::string& get_id() const override;
+		public:
+
+			Comma() = default;
+ 
+			Comma(const Comma&) = default;
+
+			std::string get_id() const override;
 
 			std::int32_t get_token_type() const override;
 		};

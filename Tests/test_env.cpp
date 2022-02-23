@@ -56,11 +56,4 @@ int main() {
 	torch::Tensor x2 = 3.0f * torch::ones({ n,2,1 });
 	torch::Tensor x3 = torch::rand({ n,2,1 });
 
-	torch::Tensor& x3ref = torch::sub_out(x3, x2, x1);
-	std::cout << x3 << std::endl;
-	std::cout << x3ref << std::endl;
-
-	std::cout << torch::frobenius_norm(x1, 1) << std::endl;
-	std::cout << torch::sqrt(torch::square(x1).sum(1)) << std::endl;
-
 }

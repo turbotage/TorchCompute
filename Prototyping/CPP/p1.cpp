@@ -3,37 +3,6 @@
 
 static std::regex regex("^([\\d]+(.\\d+)?(?:e-?\\d+)?)?(i?)", std::regex_constants::ECMAScript | std::regex_constants::icase);
 
-enum eTokenType {
-	NO_TOKEN,
-	UNARY_OPERATOR,
-};
-
-class Token {
-public:
-
-	virtual const std::string& get_id() const = 0;
-
-	virtual std::int32_t get_token_type() const = 0;
-
-};
-
-class UnaryOperator : Token {
-public:
-	const std::string id;
-	const std::int32_t precedence;
-	const bool is_left_associative;
-	const std::vector<const Token> allowed_left_tokens;
-
-	const std::string& get_id() const override {
-		return id;
-	}
-
-	std::int32_t get_token_type() const override {
-		return eTokenType::UNARY_OPERATOR;
-	}
-
-};
-
 
 
 int main() {

@@ -22,25 +22,26 @@ message("BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 add_library(ComputeLib
-    "Compute/gradients.cpp"
-    "Compute/kmeans.cpp"
-    "Compute/random.cpp"
-    "Compute/lstq.cpp"
-    "Compute/linalg_utils.cpp"
+    #"Compute/gradients.cpp"
+    #"Compute/kmeans.cpp"
+    #"Compute/random.cpp"
+    #"Compute/lstq.cpp"
+    #"Compute/linalg_utils.cpp"
     
-    "Optim/model.cpp"
-    "Optim/optim.cpp"
-    "Optim/strp.cpp"
+    #"Optim/model.cpp"
+    #"Optim/optim.cpp"
+    #"Optim/strp.cpp"
     
     
-    "Expression/expression_nodes.cpp"
-    "Expression/expression.cpp"
+    #"Expression/expression_nodes.cpp"
+    #"Expression/expression.cpp"
     "Expression/lexer.cpp"
+    "Expression/lexer_default.cpp"
     "Expression/token.cpp"
     
     
     
-    "Models/models.cpp"
+    #"Models/models.cpp"
 )
 set_target_properties(ComputeLib PROPERTIES COMPILE_PDB_NAME "ComputeLib")
 #set_property(TARGET Compute PROPERTY CXX_STANDARD_REQUIRED 17)
@@ -90,6 +91,9 @@ target_link_libraries(ComputeTestEnv ComputeLib)
 
 add_executable(ComputeTestExpMod "Tests/test_expression_model.cpp")
 target_link_libraries(ComputeTestExpMod ComputeLib)
+
+add_executable(ComputeTestLexer "Tests/test_lexer.cpp")
+target_link_libraries(ComputeTestLexer ComputeLib)
 
 add_executable(ComputeTestLinearFit "Tests/test_linear_fit.cpp")
 target_link_libraries(ComputeTestLinearFit ComputeLib)
