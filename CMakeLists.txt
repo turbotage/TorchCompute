@@ -35,9 +35,10 @@ add_library(ComputeLib
     
     "Expression/expression_nodes.cpp"
     "Expression/expression.cpp"
-    "Expression/shunter.cpp" 
-    "Expression/parsing.cpp"
     "Expression/lexer.cpp"
+    "Expression/token.cpp"
+    
+    
     
     "Models/models.cpp"
 )

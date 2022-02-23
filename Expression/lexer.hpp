@@ -1,29 +1,44 @@
 #pragma once
 
-#include "../pch.hpp"
-
-#include <tuple>
-#include <map>
-#include <functional>
+#include "token.hpp"
 
 namespace tc {
 	namespace expression {
 
-		struct LexResult {
-			//			NumberName		// Number
-			std::map<	std::string, torch::Tensor> numberMap;
-			//			Newname					Original		Negate
-			std::map<	std::string, std::string> variableNegateMaps;
+		struct LexContext {
+
+			LexContext() = default;
+
+			LexContext(LexContext&) = delete;
+			LexContext& operator=(LexContext&) = delete;
+
+			LexContext(LexContext&&) = default;
+
+			std::vector<UnaryOperator>	unary_operators;
+			std::vector<BinaryOperator> binary_operators;
+			std::vector<Function>		functions;
+			std::vector<std::string>	variables;
+
 		};
 
 		class Lexer {
 		public:
 
-			Lexer() = default;
+			Lexer(LexContext&& lex_context);
 
-			std::tuple<std::map<std::string, torch::Tensor>, std::string> operator()(const std::string& expression);
+		private:
 
-			static std::map<std::string, std::string> lexfix(std::string& expression);
+			std::pair<std::string_view, tc::OptRef<UnaryOperator>> begins_with_unary_operator(std::string_view expr);
+
+			std::pair<std::string_view, tc::OptRef<BinaryOperator>> begins_with_binary_operator(std::string_view expr);
+
+			std::pair<std::string_view, tc::OptRef<Function>> begins_with_function(std::string_view expr);
+
+		private:
+
+			LexContext m_LexContext;
+
+			std::vector<tc::refw<Token>> m_LexedTokens;
 
 		};
 

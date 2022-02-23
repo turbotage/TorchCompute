@@ -23,6 +23,9 @@ namespace tc {
 	using OptOutRef = std::optional<std::reference_wrapper<T>>;
 
 	template<typename T>
+	using OptRef = std::optional<std::reference_wrapper<T>>;
+
+	template<typename T>
 	using refw = std::reference_wrapper<T>;
 
 	enum eBuildMode {

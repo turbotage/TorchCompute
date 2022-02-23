@@ -2,108 +2,46 @@
 
 #include "lexer.hpp"
 
-#include <regex>
-
-
-
-
-
-std::tuple<std::map<std::string, torch::Tensor>, std::string> tc::expression::Lexer::operator()(const std::string& expression)
+tc::expression::Lexer::Lexer(LexContext&& lex_context)
+	: m_LexContext(std::move(lex_context))
 {
-	std::string exp = expression;
-	std::map<std::string, std::string> numberstringmap = lexfix(exp);
-	std::map<std::string, torch::Tensor> numbermap;
 
-	for (auto& num : numberstringmap) {
-		if (num.second.back() == 'i') { // This was a imaginary number
-			std::string str = num.second;
-			str.pop_back();
-			numbermap.insert({ num.first, torch::complex(torch::full({}, 0), torch::full({}, std::stof(str))) });
-		}
-		else {
-			numbermap.insert({ num.first, torch::full({}, std::stof(num.second)) });
-		}
-	}
-	
-	return std::make_tuple(std::move(numbermap), exp);
 }
 
-namespace {
-	bool is_negative(std::string& expression, int i) {
-		if (i > 0) {
-			if (expression[i - 1] == '-') {
-				if (i > 1) {
-					char c = expression[i - 2];
-					if (c == ',' || c == '(') {
-						return true;
-					}
-				}
-				else {
-					return true;
+std::pair<std::string_view, tc::OptRef<tc::expression::UnaryOperator>> tc::expression::Lexer::begins_with_unary_operator(std::string_view expr)
+{
+	for (auto& uop : m_LexContext.unary_operators) {
+		if (expr.rfind(uop.get_id(), 0) == 0) {
+			const std::string& previous_token_id = m_LexedTokens.back().get().get_id();
+			for (auto& allowed_op : uop.allowed_left_tokens) {
+				if (allowed_op.get().get_id() == previous_token_id) {
+					return std::make_pair(expr.substr(uop.get_id().length()), std::ref(uop));
 				}
 			}
+			// The tokens id matched but previous token did not match any left allowed token, might for instance be another unary operator
+			return std::make_pair(expr, std::nullopt);
 		}
-		return false;
 	}
+	// No match
+	return std::make_pair(expr, std::nullopt);
 }
 
-
-std::map<std::string, std::string> tc::expression::Lexer::lexfix(std::string& expression)
+std::pair<std::string_view, tc::OptRef<tc::expression::BinaryOperator>> tc::expression::Lexer::begins_with_binary_operator(std::string_view expr)
 {
-	std::string regstr = "^\\d+(([.]\\d+))?([eE][+-]?\\d+)?([i]?)";
-	std::regex r(regstr);
-	std::smatch m;
-
-	std::map<std::string, std::string> numbermap;
-
-	int numbers = 0;
-	for (int i = 0; i < expression.length(); ++i) {
-
-		// This is a variable, read until it terminates
-		if (expression[i] == '$') {
-			bool is_neg = is_negative(expression, i);
-
-			std::string varname;
-			do {
-				varname += expression[i];
-				++i;
-			} while (i < expression.length() && std::isalnum(expression[i]));
-
-			if (is_neg) {
-				expression.erase(i - varname.length() - 1, 1);
-				expression.insert(i - varname.length(), "NEG_");
-				i += 3;
-			}
-		}
-
-		std::string substr = expression.substr(i);
-
-		std::regex_search(substr, m, r);
-
-		if (m[0].matched) {
-			std::string match_str = m[0].str();
-
-			std::string variable_name = "$NUMVAR" + std::to_string(numbers);
-
-			bool is_neg = is_negative(expression, i);
-
-			if (is_neg) {
-				match_str = "-" + match_str;
-				--i;
-			}
-
-			expression.erase(i, match_str.length());
-			expression.insert(i, variable_name);
-
-			numbermap.insert({ variable_name, match_str });
-
-			i += variable_name.length();
-			++numbers;
+	for (auto& bop : m_LexContext.binary_operators) {
+		if (expr.rfind(bop.get_id(), 0) == 0) {
+			return std::make_pair(expr.substr(bop.get_id().length()), std::ref(bop));
 		}
 	}
-
-	return numbermap;
+	// No match
+	return std::make_pair(expr, std::nullopt);
 }
 
+std::pair<std::string_view, tc::OptRef<tc::expression::Function>> tc::expression::Lexer::begins_with_function(std::string_view expr)
+{
+	for (auto& func : m_LexContext.functions) {
+		if (expr.rfind(func.get_id(), 0) == 0) {
 
-
+		}
+	}
+}
