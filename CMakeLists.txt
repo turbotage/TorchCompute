@@ -32,14 +32,12 @@ add_library(ComputeLib
     #"Optim/optim.cpp"
     #"Optim/strp.cpp"
     
-    
     #"Expression/expression_nodes.cpp"
     #"Expression/expression.cpp"
     "Expression/lexer.cpp"
     "Expression/lexer_default.cpp"
     "Expression/token.cpp"
-    
-    
+    "Expression/shunter.cpp"
     
     #"Models/models.cpp"
 )
