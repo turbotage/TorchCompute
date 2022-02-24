@@ -121,11 +121,12 @@ std::pair<std::string_view, std::optional<tc::expression::UnaryOperator>> tc::ex
 	const std::vector<std::unique_ptr<Token>>& lexed_tokens) const
 {
 	for (auto& uop : m_LexContext.unary_operators) {
-		if (expr.rfind(uop.get_id(), 0) == 0) {
-			const std::string& previous_token_id = lexed_tokens.back()->get_id();
+		std::string opstr = m_LexContext.operator_id_name_map.at(uop.get_id());
+		if (expr.rfind(opstr, 0) == 0) {
+			int32_t previous_token_id = lexed_tokens.back()->get_id();
 			for (auto& allowed_op : uop.allowed_left_tokens) {
 				if (allowed_op.get().get_id() == previous_token_id) {
-					return std::make_pair(expr.substr(uop.get_id().length()), uop);
+					return std::make_pair(expr.substr(opstr.length()), uop);
 				}
 			}
 			// The tokens id matched but previous token did not match any left allowed token, might for instance be another unary operator
@@ -139,8 +140,9 @@ std::pair<std::string_view, std::optional<tc::expression::UnaryOperator>> tc::ex
 std::pair<std::string_view, std::optional<tc::expression::BinaryOperator>> tc::expression::Lexer::begins_with_binary_operator(std::string_view expr) const
 {
 	for (auto& bop : m_LexContext.binary_operators) {
-		if (expr.rfind(bop.get_id(), 0) == 0) {
-			return std::make_pair(expr.substr(bop.get_id().length()), bop);
+		std::string opstr = m_LexContext.operator_id_name_map.at(bop.get_id());
+		if (expr.rfind(opstr, 0) == 0) {
+			return std::make_pair(expr.substr(opstr.length()), bop);
 		}
 	}
 	// No match
@@ -150,8 +152,9 @@ std::pair<std::string_view, std::optional<tc::expression::BinaryOperator>> tc::e
 std::pair<std::string_view, std::optional<tc::expression::Function>> tc::expression::Lexer::begins_with_function(std::string_view expr) const
 {
 	for (auto& func : m_LexContext.functions) {
-		if (expr.rfind(func.get_id(), 0) == 0) {
-			int name_length = func.get_id().length();
+		std::string funcstr = m_LexContext.function_id_name_map.at(func.get_id());
+		if (expr.rfind(funcstr, 0) == 0) {
+			int name_length = funcstr.length();
 			if (expr.at(name_length) != '(')
 				throw std::runtime_error("A function must always be followed by a left parenthasis '('");
 
@@ -171,10 +174,10 @@ std::pair<std::string_view, std::optional<tc::expression::Function>> tc::express
 			}
 
 			if (parenthasis_diff != 0)
-				throw std::runtime_error("Parenthasis after function: " + func.get_id() + ", did not match");
+				throw std::runtime_error("Parenthasis after function: " + funcstr + ", did not match");
 
 			if (number_of_commas != (func.n_inputs - 1))
-				throw std::runtime_error("Number of commas used in function: " + func.get_id() + ", was not consistent with expected number of inputs");
+				throw std::runtime_error("Number of commas used in function: " + funcstr + ", was not consistent with expected number of inputs");
 
 			return std::make_pair(expr.substr(name_length), func);
 		}
@@ -185,8 +188,8 @@ std::pair<std::string_view, std::optional<tc::expression::Function>> tc::express
 std::pair<std::string_view, std::optional<tc::expression::Variable>> tc::expression::Lexer::begins_with_variable(std::string_view expr) const
 {
 	for (auto& var : m_LexContext.variables) {
-		if (expr.rfind(var.get_id(), 0) == 0) {
-			return std::make_pair(expr.substr(var.get_id().length()), var);
+		if (expr.rfind(var.name, 0) == 0) {
+			return std::make_pair(expr.substr(var.name.length()), var);
 		}
 	}
 	return std::make_pair(expr, std::nullopt);
@@ -204,7 +207,7 @@ std::pair<std::string_view, std::optional<tc::expression::Number>> tc::expressio
 	std::string exprstr(expr);
 	if (std::regex_search(exprstr.c_str(), m, scientific_regex, std::regex_constants::match_not_null)) {
 		bool is_imaginary = m[3].str().length();
-		return std::make_pair(expr.substr(m[0].str().length()), Number(m[0].str(), is_imaginary));
+		return std::make_pair(expr.substr(m[0].str().length()), Number(m[1].str(), is_imaginary));
 	}
 	return std::make_pair(expr, std::nullopt);
 }

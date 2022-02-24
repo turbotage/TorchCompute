@@ -1,10 +1,14 @@
+#include "token.hpp"
+#include "token.hpp"
+#include "token.hpp"
 #include "../pch.hpp"
 
 #include "token.hpp"
+#include "lexer.hpp"
 
-std::string tc::expression::NoToken::get_id() const
+std::int32_t tc::expression::NoToken::get_id() const
 {
-	return "no_token";
+	return FixedIDs::NO_TOKEN;
 }
 
 std::int32_t tc::expression::NoToken::get_token_type() const
@@ -18,12 +22,12 @@ tc::expression::Operator::Operator(const Operator& other)
 {
 }
 
-tc::expression::Operator::Operator(const std::string& id, std::int32_t precedence, bool is_left_associative)
+tc::expression::Operator::Operator(std::int32_t id, std::int32_t precedence, bool is_left_associative)
 	: id(id), precedence(precedence), is_left_associative(is_left_associative)
 {
 }
 
-std::string tc::expression::Operator::get_id() const {
+std::int32_t tc::expression::Operator::get_id() const {
 	return id;
 }
 
@@ -36,7 +40,7 @@ tc::expression::UnaryOperator::UnaryOperator(const UnaryOperator& other)
 {
 }
 
-tc::expression::UnaryOperator::UnaryOperator(const std::string& id, std::int32_t precedence, bool is_left_associative,
+tc::expression::UnaryOperator::UnaryOperator(std::int32_t id, std::int32_t precedence, bool is_left_associative,
 	const std::vector<tc::refw<expression::Token>>& allowed_left_tokens)
 	: Operator(id, precedence, is_left_associative), allowed_left_tokens(allowed_left_tokens)
 {
@@ -52,7 +56,7 @@ tc::expression::BinaryOperator::BinaryOperator(const BinaryOperator& other)
 {
 }
 
-tc::expression::BinaryOperator::BinaryOperator(const std::string& id, std::int32_t precedence, bool is_left_associative, bool commutative, bool anti_commutative)
+tc::expression::BinaryOperator::BinaryOperator(std::int32_t id, std::int32_t precedence, bool is_left_associative, bool commutative, bool anti_commutative)
 	: Operator(id, precedence, is_left_associative), commutative(commutative), anti_commutative(anti_commutative)
 {
 }
@@ -68,13 +72,13 @@ tc::expression::Function::Function(const Function& other)
 {
 }
 
-tc::expression::Function::Function(const std::string& id, std::int32_t n_inputs, bool commutative)
+tc::expression::Function::Function(std::int32_t id, std::int32_t n_inputs, bool commutative)
 	: id(id), n_inputs(n_inputs), commutative(commutative)
 {
 
 }
 
-tc::expression::Function::Function(const std::string& id, std::int32_t n_inputs, bool commutative,
+tc::expression::Function::Function(std::int32_t id, std::int32_t n_inputs, bool commutative,
 	const std::vector<std::vector<int>>& commutative_inputs,
 	const std::vector<std::pair<int, int>>& anti_commutative_inputs)
 	: id(id), n_inputs(n_inputs), commutative(commutative),
@@ -83,7 +87,7 @@ tc::expression::Function::Function(const std::string& id, std::int32_t n_inputs,
 
 }
 
-std::string tc::expression::Function::get_id() const
+std::int32_t tc::expression::Function::get_id() const
 {
 	return id;
 }
@@ -93,14 +97,19 @@ std::int32_t tc::expression::Function::get_token_type() const
 	return TokenType::FUNCTION;
 }
 
-tc::expression::Variable::Variable(const std::string& id) 
-	: id(id) 
+tc::expression::Variable::Variable()
+	: name("DEFAULT_VARIABLE")
 {
 }
 
-std::string tc::expression::Variable::get_id() const
+tc::expression::Variable::Variable(const std::string& name)
+	: name(name)
 {
-	return id;
+}
+
+std::int32_t tc::expression::Variable::get_id() const
+{
+	return FixedIDs::VARIABLE;
 }
 
 std::int32_t tc::expression::Variable::get_token_type() const
@@ -108,15 +117,20 @@ std::int32_t tc::expression::Variable::get_token_type() const
 	return TokenType::VARIABLE;
 }
 
-tc::expression::Number::Number(const std::string& numberstr, bool is_imaginary)
-	: id(numberstr), is_imaginary(is_imaginary), 
-	num(is_imaginary ? c10::complex<float>(0.0f, std::atof(id.c_str())) : c10::complex<float>(std::atof(id.c_str()), 0.0f))
+tc::expression::Number::Number()
+	: name("DEFAULT_NUMBER"), is_imaginary(false), num(0.0f, 0.0f)
 {
 }
 
-std::string tc::expression::Number::get_id() const
+tc::expression::Number::Number(const std::string& numberstr, bool is_imaginary)
+	: name(numberstr), is_imaginary(is_imaginary), 
+	num(is_imaginary ? c10::complex<float>(0.0f, std::atof(name.c_str())) : c10::complex<float>(std::atof(name.c_str()), 0.0f))
 {
-	return id;
+}
+
+std::int32_t tc::expression::Number::get_id() const
+{
+	return FixedIDs::NUMBER;
 }
 
 std::int32_t tc::expression::Number::get_token_type() const
@@ -124,9 +138,14 @@ std::int32_t tc::expression::Number::get_token_type() const
 	return TokenType::NUMBER;
 }
 
-std::string tc::expression::Zero::get_id() const
+std::string tc::expression::Number::get_full_name() const
 {
-	return "ZERO";
+	return name + ((is_imaginary) ? "i" : "");
+}
+
+std::int32_t tc::expression::Zero::get_id() const
+{
+	return FixedIDs::ZERO;
 }
 
 std::int32_t tc::expression::Zero::get_token_type() const
@@ -134,9 +153,9 @@ std::int32_t tc::expression::Zero::get_token_type() const
 	return TokenType::ZERO;
 }
 
-std::string tc::expression::Unity::get_id() const
+std::int32_t tc::expression::Unity::get_id() const
 {
-	return "UNITY";
+	return FixedIDs::UNITY;
 }
 
 std::int32_t tc::expression::Unity::get_token_type() const
@@ -144,9 +163,9 @@ std::int32_t tc::expression::Unity::get_token_type() const
 	return TokenType::UNITY;
 }
 
-std::string tc::expression::LeftParen::get_id() const
+std::int32_t tc::expression::LeftParen::get_id() const
 {
-	return "(";
+	return FixedIDs::LEFT_PAREN;
 }
 
 std::int32_t tc::expression::LeftParen::get_token_type() const
@@ -154,9 +173,9 @@ std::int32_t tc::expression::LeftParen::get_token_type() const
 	return TokenType::LEFT_PAREN;
 }
 
-std::string tc::expression::RightParen::get_id() const
+std::int32_t tc::expression::RightParen::get_id() const
 {
-	return ")";
+	return FixedIDs::RIGHT_PAREN;
 }
 
 std::int32_t tc::expression::RightParen::get_token_type() const
@@ -164,9 +183,9 @@ std::int32_t tc::expression::RightParen::get_token_type() const
 	return TokenType::RIGHT_PAREN;
 }
 
-std::string tc::expression::Comma::get_id() const
+std::int32_t tc::expression::Comma::get_id() const
 {
-	return ",";
+	return FixedIDs::COMMA;
 }
 
 std::int32_t tc::expression::Comma::get_token_type() const

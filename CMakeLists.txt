@@ -99,6 +99,9 @@ target_link_libraries(ComputeTestLinearFit ComputeLib)
 add_executable(ComputeTestLSTQ "Tests/test_lstq.cpp")
 target_link_libraries(ComputeTestLSTQ ComputeLib)
 
+add_executable(ComputeTestShunter "Tests/test_shunter.cpp")
+target_link_libraries(ComputeTestShunter ComputeLib)
+
 add_executable(ComputeTestSTRP "Tests/test_strp.cpp")
 target_link_libraries(ComputeTestSTRP ComputeLib)
 

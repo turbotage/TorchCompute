@@ -9,9 +9,20 @@ namespace tc {
 		class Shunter {
 		public:
 
-			std::deque<Token> shunt(std::vector<std::unique_ptr<Token>>&& tokens);
+			std::deque<std::unique_ptr<Token>> shunt(std::vector<std::unique_ptr<Token>>&& tokens);
 
+		private:
 
+			void handle_operator(const Operator& op);
+
+			void handle_rparen();
+
+			bool shift_until(const Token& stop);
+
+		private:
+
+			std::deque<std::unique_ptr<Token>> m_Output;
+			std::deque<std::unique_ptr<Token>> m_OperatorStack;
 
 		};
 

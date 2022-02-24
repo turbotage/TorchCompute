@@ -9,19 +9,31 @@ namespace tc {
 
 			LexContext();
 
-			LexContext(LexContext&) = delete;
-			LexContext& operator=(LexContext&) = delete;
+			LexContext(LexContext&) = default;
+			LexContext& operator=(LexContext&) = default;
 
 			LexContext(LexContext&&) = default;
 
+			// Fixed tokens
 			NoToken						no_token;
 			LeftParen					left_paren;
 			RightParen					right_paren;
+			Comma						comma;
+			Unity						unity;
+			Zero						zero;
+			Number						number;
+			Variable					variable;
+
 
 			std::vector<UnaryOperator>	unary_operators;
 			std::vector<BinaryOperator> binary_operators;
 			std::vector<Function>		functions;
 			std::vector<Variable>		variables;
+
+			std::unordered_map<int32_t, std::string> operator_id_name_map;
+			std::unordered_map<int32_t, std::string> function_id_name_map;
+
+
 
 		};
 
@@ -89,16 +101,75 @@ namespace tc {
 				SUB = (int)'-',
 			};
 		};
-
-		struct eDefaultFunctions {
+		
+		struct FixedIDs {
 			enum {
-				// Trigonometric
-				SIN,
-				COS,
-				//
-				EXP,
-				LOG
+				// Fixed Tokens
+				NO_TOKEN,
+				LEFT_PAREN,
+				RIGHT_PAREN,
+				COMMA,
+				UNITY,
+				ZERO,
+				NUMBER,
+				VARIABLE
 			};
+		};
+
+		static std::unordered_map<int32_t, std::string> FIXED_ID_MAPS = {
+			// Fixed Tokens
+			{FixedIDs::NO_TOKEN, "NO_TOKEN"},
+			{FixedIDs::LEFT_PAREN, "("},
+			{FixedIDs::RIGHT_PAREN, ")"},
+			{FixedIDs::COMMA, ","},
+			{FixedIDs::UNITY, "UNITY"},
+			{FixedIDs::ZERO, "ZERO"},
+			{FixedIDs::NUMBER, "NUMBER"},
+			{FixedIDs::VARIABLE, "VARIABLE"},
+		};
+
+		struct DefaultOperatorIDs {
+			enum {
+				// Operators
+				NEG = FixedIDs::VARIABLE + 1,
+				POW,
+				MUL,
+				DIV,
+				ADD,
+				SUB,
+			};
+		};
+
+		static std::unordered_map<int32_t, std::string> DEFAULT_OPERATOR_MAPS = {
+			// Operators
+			{DefaultOperatorIDs::NEG, "-"},
+			{DefaultOperatorIDs::POW, "^"},
+			{DefaultOperatorIDs::MUL, "*"},
+			{DefaultOperatorIDs::DIV, "/"},
+			{DefaultOperatorIDs::ADD, "+"},
+			{DefaultOperatorIDs::SUB, "-"},
+		};
+
+		struct DefaultFunctionIDs {
+			enum {
+				// Functions
+				SIN = DefaultOperatorIDs::SUB + 1,
+				COS,
+				TAN,
+				EXP,
+				LOG,
+				POW,
+			};
+		};
+
+		static std::unordered_map<int32_t, std::string> DEFAULT_FUNCTION_MAPS = {
+			// Functions
+			{DefaultFunctionIDs::SIN, "sin"},
+			{DefaultFunctionIDs::COS, "cos"},
+			{DefaultFunctionIDs::TAN, "tan"},
+			{DefaultFunctionIDs::EXP, "exp"},
+			{DefaultFunctionIDs::LOG, "log"},
+			{DefaultFunctionIDs::POW, "pow"},
 		};
 
 	}

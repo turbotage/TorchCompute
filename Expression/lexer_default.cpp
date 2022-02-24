@@ -6,7 +6,7 @@ tc::expression::LexContext::LexContext()
 {
 	// 0
 	unary_operators.emplace_back(
-		std::string(1, DefaultOperatorChars::NEG),
+		DefaultOperatorIDs::NEG,
 		DefaultOperatorPrecedence::NEG,
 		false,
 		std::vector<tc::refw<Token>>{no_token, left_paren});
@@ -15,35 +15,35 @@ tc::expression::LexContext::LexContext()
 
 	// 0
 	binary_operators.emplace_back(
-		std::string(1, DefaultOperatorChars::POW),
+		DefaultOperatorIDs::POW,
 		DefaultOperatorPrecedence::POW,
 		false,
 		false,
 		false);
 	// 1
 	binary_operators.emplace_back(
-		std::string(1, DefaultOperatorChars::MUL),
+		DefaultOperatorIDs::MUL,
 		DefaultOperatorPrecedence::MUL,
 		true,
 		true,
 		false);
 	// 2
 	binary_operators.emplace_back(
-		std::string(1, DefaultOperatorChars::DIV),
+		DefaultOperatorIDs::DIV,
 		DefaultOperatorPrecedence::DIV,
 		true,
 		false,
 		false);
 	// 3
 	binary_operators.emplace_back(
-		std::string(1, DefaultOperatorChars::ADD),
+		DefaultOperatorIDs::ADD,
 		DefaultOperatorPrecedence::ADD,
 		true,
 		true,
 		false);
 	// 4
 	binary_operators.emplace_back(
-		std::string(1, DefaultOperatorChars::SUB),
+		DefaultOperatorIDs::SUB,
 		DefaultOperatorPrecedence::SUB,
 		true,
 		false,
@@ -51,14 +51,19 @@ tc::expression::LexContext::LexContext()
 
 
 	// 0
-	functions.emplace_back("sin", 1);
+	functions.emplace_back(DefaultFunctionIDs::SIN, 1);
 	// 1
-	functions.emplace_back("cos", 1);
+	functions.emplace_back(DefaultFunctionIDs::COS, 1);
 	// 2
-	functions.emplace_back("tan", 1);
+	functions.emplace_back(DefaultFunctionIDs::TAN, 1);
 	// 3
-	functions.emplace_back("exp", 1);
+	functions.emplace_back(DefaultFunctionIDs::EXP, 1);
 	// 4
-	functions.emplace_back("log", 1);
+	functions.emplace_back(DefaultFunctionIDs::LOG, 1);
+	// 5
+	functions.emplace_back(DefaultFunctionIDs::POW, 2);
+
+	operator_id_name_map = DEFAULT_OPERATOR_MAPS;
+	function_id_name_map = DEFAULT_FUNCTION_MAPS;
 
 }
