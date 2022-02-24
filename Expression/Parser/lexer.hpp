@@ -16,19 +16,20 @@ namespace tc {
 
 			// Fixed tokens
 			NoToken						no_token;
-			LeftParen					left_paren;
-			RightParen					right_paren;
-			Comma						comma;
-			Unity						unity;
-			Zero						zero;
-			Number						number;
-			Variable					variable;
+			LeftParenToken				left_paren;
+			RightParenToken				right_paren;
+			CommaToken					comma;
+			UnityToken					unity;
+			NegUnityToken				neg_unity_token;
+			ZeroToken					zero;
+			NumberToken					number;
+			VariableToken				variable;
 
 
-			std::vector<UnaryOperator>	unary_operators;
-			std::vector<BinaryOperator> binary_operators;
-			std::vector<Function>		functions;
-			std::vector<Variable>		variables;
+			std::vector<UnaryOperatorToken>	unary_operators;
+			std::vector<BinaryOperatorToken> binary_operators;
+			std::vector<FunctionToken>		functions;
+			std::vector<VariableToken>		variables;
 
 			std::unordered_map<int32_t, std::string> operator_id_name_map;
 			std::unordered_map<int32_t, std::string> function_id_name_map;
@@ -53,26 +54,27 @@ namespace tc {
 			
 
 
-			std::pair<std::string_view, std::optional<LeftParen>> begins_with_left_paren(std::string_view expr) const;
+			std::pair<std::string_view, std::optional<LeftParenToken>> begins_with_left_paren(std::string_view expr) const;
 
-			std::pair<std::string_view, std::optional<RightParen>> begins_with_right_paren(std::string_view expr) const;
+			std::pair<std::string_view, std::optional<RightParenToken>> begins_with_right_paren(std::string_view expr) const;
 
-			std::pair<std::string_view, std::optional<Comma>> begins_with_comma(std::string_view expr) const;
+			std::pair<std::string_view, std::optional<CommaToken>> begins_with_comma(std::string_view expr) const;
 
-			std::pair<std::string_view, std::optional<UnaryOperator>> begins_with_unary_operator(std::string_view expr, 
+			std::pair<std::string_view, std::optional<UnaryOperatorToken>> begins_with_unary_operator(std::string_view expr, 
 				const std::vector<std::unique_ptr<Token>>& lexed_tokens) const;
 
-			std::pair<std::string_view, std::optional<BinaryOperator>> begins_with_binary_operator(std::string_view expr) const;
+			std::pair<std::string_view, std::optional<BinaryOperatorToken>> begins_with_binary_operator(std::string_view expr,
+				const std::vector<std::unique_ptr<Token>>& lexed_tokens) const;
 
-			std::pair<std::string_view, std::optional<Function>> begins_with_function(std::string_view expr) const;
+			std::pair<std::string_view, std::optional<FunctionToken>> begins_with_function(std::string_view expr) const;
 
-			std::pair<std::string_view, std::optional<Variable>> begins_with_variable(std::string_view expr) const;
+			std::pair<std::string_view, std::optional<VariableToken>> begins_with_variable(std::string_view expr) const;
 
-			std::pair<std::string_view, std::optional<Number>> begins_with_numberstr(std::string_view expr) const;
+			std::pair<std::string_view, std::optional<NumberToken>> begins_with_numberstr(std::string_view expr) const;
 
-			std::optional<Zero> begins_with_zero(const Number& num) const;
+			std::optional<ZeroToken> begins_with_zero(const NumberToken& num) const;
 
-			std::optional<Unity> begins_with_unity(const Number& num) const;
+			std::optional<UnityToken> begins_with_unity(const NumberToken& num) const;
 
 		private:
 
@@ -110,6 +112,7 @@ namespace tc {
 				RIGHT_PAREN,
 				COMMA,
 				UNITY,
+				NEG_UNITY,
 				ZERO,
 				NUMBER,
 				VARIABLE
@@ -123,6 +126,7 @@ namespace tc {
 			{FixedIDs::RIGHT_PAREN, ")"},
 			{FixedIDs::COMMA, ","},
 			{FixedIDs::UNITY, "UNITY"},
+			{FixedIDs::NEG_UNITY, "NEG_UNITY"},
 			{FixedIDs::ZERO, "ZERO"},
 			{FixedIDs::NUMBER, "NUMBER"},
 			{FixedIDs::VARIABLE, "VARIABLE"},
@@ -152,7 +156,7 @@ namespace tc {
 
 		struct DefaultFunctionIDs {
 			enum {
-				// Functions
+				// FunctionTokens
 				SIN = DefaultOperatorIDs::SUB + 1,
 				COS,
 				TAN,
@@ -163,7 +167,7 @@ namespace tc {
 		};
 
 		static std::unordered_map<int32_t, std::string> DEFAULT_FUNCTION_MAPS = {
-			// Functions
+			// FunctionTokens
 			{DefaultFunctionIDs::SIN, "sin"},
 			{DefaultFunctionIDs::COS, "cos"},
 			{DefaultFunctionIDs::TAN, "tan"},

@@ -1,4 +1,4 @@
-#include "../pch.hpp"
+#include "../../pch.hpp"
 
 #include "shunter.hpp"
 
@@ -19,7 +19,7 @@ std::deque<std::unique_ptr<tc::expression::Token>> tc::expression::Shunter::shun
 			m_OperatorStack.emplace_back(std::move(tok));
 			break;
 		case TokenType::OPERATOR:
-			handle_operator(dynamic_cast<Operator&>(*tok));
+			handle_operator(dynamic_cast<OperatorToken&>(*tok));
 			m_OperatorStack.emplace_back(std::move(tok));
 			break;
 		case TokenType::LEFT_PAREN:
@@ -36,7 +36,7 @@ std::deque<std::unique_ptr<tc::expression::Token>> tc::expression::Shunter::shun
 		}
 	}
 
-	if (shift_until(LeftParen()))
+	if (shift_until(LeftParenToken()))
 		throw std::runtime_error("missmatched parenthesis");
 
 	if (!m_OperatorStack.empty())
@@ -49,7 +49,7 @@ std::deque<std::unique_ptr<tc::expression::Token>> tc::expression::Shunter::shun
 	return ret;
 }
 
-void tc::expression::Shunter::handle_operator(const Operator& op)
+void tc::expression::Shunter::handle_operator(const OperatorToken& op)
 {
 	while (!m_OperatorStack.empty()) {
 		auto& ptok_back = m_OperatorStack.back();
@@ -59,7 +59,7 @@ void tc::expression::Shunter::handle_operator(const Operator& op)
 			break;
 		case TokenType::OPERATOR:
 			{
-				Operator& top_op = dynamic_cast<Operator&>(*ptok_back);
+				OperatorToken& top_op = dynamic_cast<OperatorToken&>(*ptok_back);
 				auto p = top_op.precedence;
 				auto q = op.precedence;
 				if ((p > q) || (p == q && op.is_left_associative)) {
@@ -78,7 +78,7 @@ void tc::expression::Shunter::handle_operator(const Operator& op)
 
 void tc::expression::Shunter::handle_rparen()
 {
-	if (!shift_until(LeftParen())) {
+	if (!shift_until(LeftParenToken())) {
 		throw std::runtime_error("missmatched parenthesis");
 	}
 

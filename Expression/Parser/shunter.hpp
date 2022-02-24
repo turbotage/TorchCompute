@@ -13,7 +13,7 @@ namespace tc {
 
 		private:
 
-			void handle_operator(const Operator& op);
+			void handle_operator(const OperatorToken& op);
 
 			void handle_rparen();
 

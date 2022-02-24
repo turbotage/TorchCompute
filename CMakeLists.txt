@@ -34,10 +34,11 @@ add_library(ComputeLib
     
     #"Expression/expression_nodes.cpp"
     #"Expression/expression.cpp"
-    "Expression/lexer.cpp"
-    "Expression/lexer_default.cpp"
-    "Expression/token.cpp"
-    "Expression/shunter.cpp"
+    "Expression/Parser/lexer.cpp"
+    "Expression/Parser/lexer_default.cpp"
+    "Expression/Parser/token.cpp"
+    "Expression/Parser/shunter.cpp"
+    "Expression/nodes.cpp"
     
     #"Models/models.cpp"
 )
@@ -81,29 +82,29 @@ target_precompile_headers(ComputeLib PUBLIC "pch.hpp")
 set_target_properties(ComputeLib PROPERTIES PUBLIC_HEADER "compute.hpp")
 
 # Tests
-add_executable(ComputeTestDiffExpression "Tests/test_diff_expression.cpp")
-target_link_libraries(ComputeTestDiffExpression ComputeLib)
+#add_executable(ComputeTestDiffExpression "Tests/test_diff_expression.cpp")
+#target_link_libraries(ComputeTestDiffExpression ComputeLib)
 
 add_executable(ComputeTestEnv "Tests/test_env.cpp")
 target_link_libraries(ComputeTestEnv ComputeLib)
 
-add_executable(ComputeTestExpMod "Tests/test_expression_model.cpp")
-target_link_libraries(ComputeTestExpMod ComputeLib)
+#add_executable(ComputeTestExpMod "Tests/test_expression_model.cpp")
+#target_link_libraries(ComputeTestExpMod ComputeLib)
 
 add_executable(ComputeTestLexer "Tests/test_lexer.cpp")
 target_link_libraries(ComputeTestLexer ComputeLib)
 
-add_executable(ComputeTestLinearFit "Tests/test_linear_fit.cpp")
-target_link_libraries(ComputeTestLinearFit ComputeLib)
+#add_executable(ComputeTestLinearFit "Tests/test_linear_fit.cpp")
+#target_link_libraries(ComputeTestLinearFit ComputeLib)
 
-add_executable(ComputeTestLSTQ "Tests/test_lstq.cpp")
-target_link_libraries(ComputeTestLSTQ ComputeLib)
+#add_executable(ComputeTestLSTQ "Tests/test_lstq.cpp")
+#target_link_libraries(ComputeTestLSTQ ComputeLib)
 
 add_executable(ComputeTestShunter "Tests/test_shunter.cpp")
 target_link_libraries(ComputeTestShunter ComputeLib)
 
-add_executable(ComputeTestSTRP "Tests/test_strp.cpp")
-target_link_libraries(ComputeTestSTRP ComputeLib)
+#add_executable(ComputeTestSTRP "Tests/test_strp.cpp")
+#target_link_libraries(ComputeTestSTRP ComputeLib)
 
 # Prototyping Environments
 add_executable(ComputeProtP1 "Prototyping/CPP/p1.cpp")

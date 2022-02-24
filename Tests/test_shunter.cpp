@@ -1,8 +1,7 @@
 #include "../compute.hpp"
 
 #include <iterator>
-
-#include <iterator>
+#include <iostream>
 
 
 
@@ -11,14 +10,14 @@ int main() {
 	using namespace tc::expression;
 
 	LexContext context;
-	context.variables.push_back(Variable("X"));
-	context.variables.push_back(Variable("Y"));
+	context.variables.push_back(VariableToken("X"));
+	context.variables.push_back(VariableToken("Y"));
 
 	LexContext context_copy = context;
 
 	Lexer lexer(std::move(context));
 
-	std::string expr = "-log(2.24e-15i+X)-sin(X)^cos(Y)^2";
+	std::string expr = "-log(2.24e-15i-24*X)-sin(X)^cos(Y)^2*pow(X,+Y)";
 
 	std::vector<std::unique_ptr<Token>> toks;
 	try {
@@ -26,6 +25,7 @@ int main() {
 	}
 	catch (std::runtime_error e) {
 		std::cout << e.what() << std::endl;
+		return EXIT_FAILURE;
 	}
 
 	std::cout << "lexed tokens:\n";
@@ -36,7 +36,13 @@ int main() {
 
 	Shunter shunter;
 
-	auto shunted_toks = shunter.shunt(std::move(toks));
+	std::deque<std::unique_ptr<Token>> shunted_toks;
+	try {
+		shunted_toks = shunter.shunt(std::move(toks));
+	}
+	catch (std::runtime_error e) {
+		std::cout << e.what() << std::endl;
+	}
 
 	std::cout << "shunted tokens:\n";
 
@@ -49,11 +55,11 @@ int main() {
 	for (auto& tok : shunted_toks) {
 		std::string str = allmighty_map.at(tok->get_id());
 		if (tok->get_token_type() == TokenType::NUMBER) {
-			Number& num = dynamic_cast<Number&>(*tok);
-			std::cout << "token: " << num.name << " token-type: " << tok->get_token_type() << " token-id: " << tok->get_id() << std::endl;
+			NumberToken& num = dynamic_cast<NumberToken&>(*tok);
+			std::cout << "token: " << num.get_full_name() << " token-type: " << tok->get_token_type() << " token-id: " << tok->get_id() << std::endl;
 		}
 		else if (tok->get_token_type() == TokenType::VARIABLE) {
-			Variable& var = dynamic_cast<Variable&>(*tok);
+			VariableToken& var = dynamic_cast<VariableToken&>(*tok);
 			std::cout << "token: " << var.name << " token-type: " << tok->get_token_type() << " token-id: " << tok->get_id() << std::endl;
 		}
 		else {

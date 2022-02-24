@@ -1,28 +1,62 @@
 #include <regex>
 #include <iostream>
+#include <algorithm>
+#include <iterator>
 
-static std::regex regex("^([\\d]+(.\\d+)?(?:e-?\\d+)?)?(i?)", std::regex_constants::ECMAScript | std::regex_constants::icase);
+std::vector<int64_t> broadcast_shapes(std::vector<int64_t>& shape1, std::vector<int64_t>& shape2) {
 
+	if (shape1.size() == 0 || shape2.size() == 0)
+		throw std::runtime_error("shapes must have atleast one dimension to be broadcastable");
 
+	auto& small = (shape1.size() > shape2.size()) ? shape2 : shape1;
+	auto& big = (shape1.size() > shape2.size()) ? shape1 : shape2;
 
-int main() {
-	//std::string regexp = "^(?=[iI.\\d+-])([+-]?(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?(?![iI.\\d]))?([+-]?(?:(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:[eE][+-]?\\d+)?)?[iI])?$";
-	//std::string regexp = "^([\\d]+(.\\d+)?(?:e-?\\d+)?)?(i?)";
+	std::vector<int64_t> ret(big.size());
 
-	std::string expression = "2.0e+3i";
+	auto retit = ret.rbegin();
+	auto smallit = small.rbegin();
+	for (auto bigit = big.rbegin(); bigit != big.rend(); ) {
+		if (smallit != small.rend()) {
+			if (*smallit == *bigit) {
+				*retit = *bigit;
+			}
+			else if (*smallit > *bigit && *bigit == 1) {
+				*retit = *smallit;
+			}
+			else if (*bigit > *smallit && *smallit == 1) {
+				*retit = *bigit;
+			}
+			else {
+				throw std::runtime_error("shapes where not broadcastable");
+			}
+			++smallit;
+		}
+		else {
+			*retit = *bigit;
+		}
 
-	std::cmatch m;
-	
-	if (std::regex_search(expression.c_str(), m, regex, std::regex_constants::match_not_null)) {
-		std::cout << "m is empty: " << m.empty() << std::endl;
-		std::cout << "m[0]: " << m[0].str() << std::endl;
-		std::cout << "m[1]: " << m[1].str() << std::endl;
-		std::cout << "m[2]: " << m[2].str() << std::endl;
-		std::cout << "m[3]: " << m[3].str() << std::endl;
-		float value = std::atof(m[1].str().c_str());
-		std::cout << "value: " << value << std::endl;
+		++bigit;
+		++retit;
 	}
 
-	
+	return ret;
+}
+
+int main() {
+	// Initializing vector with values
+	std::vector<int64_t> vect1{ 1, 2, 3, 4 };
+
+	// Declaring new vector
+	std::vector<int64_t> vect2{ 2,5,2,1,4 };
+
+	auto out = broadcast_shapes(vect1, vect2);
+
+	std::cout << "{";
+	for (auto& o : out) {
+		std::cout << "," << o;
+	}
+	std::cout << "}";
+
+
 	return 0;
 }
