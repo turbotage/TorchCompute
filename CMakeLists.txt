@@ -37,10 +37,13 @@ add_library(ComputeLib
     "Expression/Parser/lexer.cpp"
     "Expression/Parser/lexer_default.cpp"
     "Expression/Parser/token.cpp"
+    "Expression/Parser/token_algebra.cpp"
     "Expression/Parser/shunter.cpp"
     "Expression/nodes.cpp"
     
     #"Models/models.cpp"
+
+    "tc.cpp"
 )
 set_target_properties(ComputeLib PROPERTIES COMPILE_PDB_NAME "ComputeLib")
 #set_property(TARGET Compute PROPERTY CXX_STANDARD_REQUIRED 17)

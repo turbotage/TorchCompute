@@ -12,7 +12,7 @@ std::int32_t tc::expression::NoToken::get_id() const
 
 std::int32_t tc::expression::NoToken::get_token_type() const
 {
-	return TokenType::NO_TOKEN;
+	return TokenType::NO_TOKEN_TYPE;
 }
 
 // <=========================== LEFT_PAREN ============================>
@@ -24,7 +24,7 @@ std::int32_t tc::expression::LeftParenToken::get_id() const
 
 std::int32_t tc::expression::LeftParenToken::get_token_type() const
 {
-	return TokenType::LEFT_PAREN;
+	return TokenType::LEFT_PAREN_TYPE;
 }
 
 // <=========================== RIGHT_PAREN ============================>
@@ -36,7 +36,7 @@ std::int32_t tc::expression::RightParenToken::get_id() const
 
 std::int32_t tc::expression::RightParenToken::get_token_type() const
 {
-	return TokenType::RIGHT_PAREN;
+	return TokenType::RIGHT_PAREN_TYPE;
 }
 
 // <=========================== COMMA ============================>
@@ -48,7 +48,7 @@ std::int32_t tc::expression::CommaToken::get_id() const
 
 std::int32_t tc::expression::CommaToken::get_token_type() const
 {
-	return TokenType::COMMA;
+	return TokenType::COMMA_TYPE;
 }
 
 // <=========================== NUMBER ============================>
@@ -58,14 +58,19 @@ tc::expression::NumberToken::NumberToken()
 {
 }
 
-tc::expression::NumberToken::NumberToken(const std::string& numberstr, bool is_imaginary)
-	: name(numberstr), is_imaginary(is_imaginary),
+tc::expression::NumberToken::NumberToken(const NumberToken& other)
+	: name(other.name), is_imaginary(other.is_imaginary), num(other.num), sizes(other.sizes)
+{
+}
+
+tc::expression::NumberToken::NumberToken(const std::string& realnumberstr, bool is_imaginary)
+	: name(realnumberstr), is_imaginary(is_imaginary),
 	num(is_imaginary ? std::complex<float>(0.0f, std::atof(name.c_str())) : std::complex<float>(std::atof(name.c_str()), 0.0f)), sizes({ 1 })
 {
 }
 
-tc::expression::NumberToken::NumberToken(const std::string& numberstr, bool is_imaginary, const std::vector<int64_t>& sizes)
-	: name(numberstr), is_imaginary(is_imaginary),
+tc::expression::NumberToken::NumberToken(const std::string& realnumberstr, bool is_imaginary, const std::vector<int64_t>& sizes)
+	: name(realnumberstr), is_imaginary(is_imaginary),
 	num(is_imaginary ? std::complex<float>(0.0f, std::atof(name.c_str())) : std::complex<float>(std::atof(name.c_str()), 0.0f)), sizes(sizes)
 {
 }
@@ -83,12 +88,22 @@ tc::expression::NumberToken::NumberToken(float number, bool is_imaginary, const 
 }
 
 tc::expression::NumberToken::NumberToken(std::complex<float> num, bool is_imaginary)
-	: name(is_imaginary ? std::to_string(num.imag()) + "i" : std::to_string(num.real())), is_imaginary(is_imaginary), num(num), sizes({ 1 })
+	: name(is_imaginary ? (std::to_string(num.real()) + "+" + std::to_string(num.imag()) + "i") : std::to_string(num.real())), is_imaginary(is_imaginary), num(num), sizes({ 1 })
 {
 }
 
 tc::expression::NumberToken::NumberToken(std::complex<float> num, bool is_imaginary, const std::vector<int64_t>& sizes)
-	: name(is_imaginary ? std::to_string(num.imag()) + "i" : std::to_string(num.real())), is_imaginary(is_imaginary), num(num), sizes(sizes)
+	: name(is_imaginary ? (std::to_string(num.real()) + "+" + std::to_string(num.imag()) + "i") : std::to_string(num.real())), is_imaginary(is_imaginary), num(num), sizes(sizes)
+{
+}
+
+tc::expression::NumberToken::NumberToken(const std::string& numberstr, std::complex<float> num, bool is_imaginary)
+	: name(numberstr), num(num), is_imaginary(is_imaginary), sizes({1})
+{
+}
+
+tc::expression::NumberToken::NumberToken(const std::string& numberstr, std::complex<float> num, bool is_imaginary, const std::vector<int64_t>& sizes)
+	: name(numberstr), num(num), is_imaginary(is_imaginary), sizes(sizes)
 {
 }
 
@@ -99,7 +114,7 @@ std::int32_t tc::expression::NumberToken::get_id() const
 
 std::int32_t tc::expression::NumberToken::get_token_type() const
 {
-	return TokenType::NUMBER;
+	return TokenType::NUMBER_TYPE;
 }
 
 std::string tc::expression::NumberToken::get_full_name() const
@@ -126,7 +141,7 @@ std::int32_t tc::expression::VariableToken::get_id() const
 
 std::int32_t tc::expression::VariableToken::get_token_type() const
 {
-	return TokenType::VARIABLE;
+	return TokenType::VARIABLE_TYPE;
 }
 
 // <=========================== ZERO ============================>
@@ -148,7 +163,7 @@ std::int32_t tc::expression::ZeroToken::get_id() const
 
 std::int32_t tc::expression::ZeroToken::get_token_type() const
 {
-	return TokenType::ZERO;
+	return TokenType::ZERO_TYPE;
 }
 
 // <=========================== UNITY ============================>
@@ -170,7 +185,7 @@ std::int32_t tc::expression::UnityToken::get_id() const
 
 std::int32_t tc::expression::UnityToken::get_token_type() const
 {
-	return TokenType::UNITY;
+	return TokenType::UNITY_TYPE;
 }
 
 // <=========================== NEG_UNITY ============================>
@@ -192,7 +207,29 @@ std::int32_t tc::expression::NegUnityToken::get_id() const
 
 std::int32_t tc::expression::NegUnityToken::get_token_type() const
 {
-	return TokenType::NEG_UNITY;
+	return TokenType::NEG_UNITY_TYPE;
+}
+
+// <=========================== NAN ============================>
+
+tc::expression::NanToken::NanToken()
+	: sizes({ 1 })
+{
+}
+
+tc::expression::NanToken::NanToken(const std::vector<int64_t>& sizes)
+	: sizes(sizes)
+{
+}
+
+std::int32_t tc::expression::NanToken::get_id() const
+{
+	return FixedIDs::NEG_UNITY;
+}
+
+std::int32_t tc::expression::NanToken::get_token_type() const
+{
+	return TokenType::NEG_UNITY_TYPE;
 }
 
 // <=========================== OPERATOR ============================>
@@ -212,7 +249,7 @@ std::int32_t tc::expression::OperatorToken::get_id() const {
 }
 
 std::int32_t tc::expression::OperatorToken::get_token_type() const {
-	return TokenType::OPERATOR;
+	return TokenType::OPERATOR_TYPE;
 }
 
 // <=========================== UNARY_OPERATOR ============================>
@@ -230,7 +267,7 @@ tc::expression::UnaryOperatorToken::UnaryOperatorToken(std::int32_t id, std::int
 
 std::int32_t tc::expression::UnaryOperatorToken::get_operator_type() const
 {
-	return TokenType::UNARY_OPERATOR;
+	return TokenType::UNARY_OPERATOR_TYPE;
 }
 
 // <=========================== UNARY_OPERATOR ============================>
@@ -252,7 +289,7 @@ tc::expression::BinaryOperatorToken::BinaryOperatorToken(std::int32_t id, std::i
 
 std::int32_t tc::expression::BinaryOperatorToken::get_operator_type() const
 {
-	return TokenType::BINARY_OPERATOR;
+	return TokenType::BINARY_OPERATOR_TYPE;
 }
 
 // <=========================== FUNCTION ============================>
@@ -285,5 +322,5 @@ std::int32_t tc::expression::FunctionToken::get_id() const
 
 std::int32_t tc::expression::FunctionToken::get_token_type() const
 {
-	return TokenType::FUNCTION;
+	return TokenType::FUNCTION_TYPE;
 }

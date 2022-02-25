@@ -1,10 +1,7 @@
-#include <regex>
-#include <iostream>
-#include <algorithm>
-#include <iterator>
+#include "pch.hpp"
 
-std::vector<int64_t> test_tc_broadcast_shapes(std::vector<int64_t>& shape1, std::vector<int64_t>& shape2) {
-
+std::vector<int64_t> tc::tc_broadcast_shapes(const std::vector<int64_t>& shape1, const std::vector<int64_t>& shape2)
+{
 	if (shape1.size() == 0 || shape2.size() == 0)
 		throw std::runtime_error("shapes must have atleast one dimension to be broadcastable");
 
@@ -40,23 +37,4 @@ std::vector<int64_t> test_tc_broadcast_shapes(std::vector<int64_t>& shape1, std:
 	}
 
 	return ret;
-}
-
-int main() {
-	// Initializing vector with values
-	std::vector<int64_t> vect1{ 1, 2, 3, 4 };
-
-	// Declaring new vector
-	std::vector<int64_t> vect2{ 2,5,2,1,4 };
-
-	auto out = test_tc_broadcast_shapes(vect1, vect2);
-
-	std::cout << "{";
-	for (auto& o : out) {
-		std::cout << "," << o;
-	}
-	std::cout << "}";
-
-
-	return 0;
 }

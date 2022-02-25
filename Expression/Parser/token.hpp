@@ -7,27 +7,28 @@ namespace tc {
 
 		struct FixedTokens {
 			enum {
-				COMMA = (int)',',
-				RIGHT_PAREN = (int)')',
-				LEFT_PAREN = (int)'('
+				COMMA_CHAR = (int)',',
+				RIGHT_PAREN_CHAR = (int)')',
+				LEFT_PAREN_CHAR = (int)'('
 			};
 		};
 
 		struct TokenType {
 			enum {
-				NO_TOKEN,
-				OPERATOR,
-				UNARY_OPERATOR,
-				BINARY_OPERATOR,
-				FUNCTION,
-				VARIABLE,
-				NUMBER,
-				ZERO,
-				UNITY,
-				NEG_UNITY,
-				LEFT_PAREN,
-				RIGHT_PAREN,
-				COMMA,
+				NO_TOKEN_TYPE,
+				OPERATOR_TYPE,
+				UNARY_OPERATOR_TYPE,
+				BINARY_OPERATOR_TYPE,
+				FUNCTION_TYPE,
+				VARIABLE_TYPE,
+				NUMBER_TYPE,
+				ZERO_TYPE,
+				UNITY_TYPE,
+				NEG_UNITY_TYPE,
+				NAN_TYPE,
+				LEFT_PAREN_TYPE,
+				RIGHT_PAREN_TYPE,
+				COMMA_TYPE,
 			};
 		};
 
@@ -93,11 +94,11 @@ namespace tc {
 
 			NumberToken();
 
-			NumberToken(const NumberToken&) = default;
+			NumberToken(const NumberToken& other);
 
-			NumberToken(const std::string& numberstr, bool is_imaginary);
+			NumberToken(const std::string& realnumberstr, bool is_imaginary);
 
-			NumberToken(const std::string& numberstr, bool is_imaginary, const std::vector<int64_t>& sizes);
+			NumberToken(const std::string& realnumberstr, bool is_imaginary, const std::vector<int64_t>& sizes);
 
 			NumberToken(float number, bool is_imaginary);
 
@@ -106,6 +107,10 @@ namespace tc {
 			NumberToken(std::complex<float> num, bool is_imaginary);
 
 			NumberToken(std::complex<float> num, bool is_imaginary, const std::vector<int64_t>& sizes);
+
+			NumberToken(const std::string& numberstr, std::complex<float> num, bool is_imaginary);
+
+			NumberToken(const std::string& numberstr, std::complex<float> num, bool is_imaginary, const std::vector<int64_t>& sizes);
 
 			std::string name;
 			bool is_imaginary;
@@ -183,6 +188,23 @@ namespace tc {
 			std::int32_t get_token_type() const override;
 
 			std::vector<int64_t> sizes;
+		};
+
+		class NanToken : public Token {
+		public:
+
+			NanToken();
+
+			NanToken(const std::vector<int64_t>& sizes);
+
+			NanToken(const NanToken&) = default;
+
+			std::int32_t get_id() const override;
+
+			std::int32_t get_token_type() const override;
+
+			std::vector<int64_t> sizes;
+
 		};
 
 		class OperatorToken : public Token {

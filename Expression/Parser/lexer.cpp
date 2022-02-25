@@ -103,21 +103,21 @@ std::pair<std::string_view, std::unique_ptr<tc::expression::Token>> tc::expressi
 
 std::pair<std::string_view, std::optional<tc::expression::LeftParenToken>> tc::expression::Lexer::begins_with_left_paren(std::string_view expr) const
 {
-	if (expr.at(0) == FixedTokens::LEFT_PAREN)
+	if (expr.at(0) == FixedTokens::LEFT_PAREN_CHAR)
 		return std::make_pair(expr.substr(1), LeftParenToken());
 	return std::make_pair(expr, std::nullopt);
 }
 
 std::pair<std::string_view, std::optional<tc::expression::RightParenToken>> tc::expression::Lexer::begins_with_right_paren(std::string_view expr) const
 {
-	if (expr.at(0) == FixedTokens::RIGHT_PAREN)
+	if (expr.at(0) == FixedTokens::RIGHT_PAREN_CHAR)
 		return std::make_pair(expr.substr(1), RightParenToken());
 	return std::make_pair(expr, std::nullopt);
 }
 
 std::pair<std::string_view, std::optional<tc::expression::CommaToken>> tc::expression::Lexer::begins_with_comma(std::string_view expr) const
 {
-	if (expr.at(0) == FixedTokens::COMMA)
+	if (expr.at(0) == FixedTokens::COMMA_CHAR)
 		return std::make_pair(expr.substr(1), CommaToken());
 	return std::make_pair(expr, std::nullopt);
 }
@@ -175,13 +175,13 @@ std::pair<std::string_view, std::optional<tc::expression::FunctionToken>> tc::ex
 			int32_t parenthasis_diff = 1;
 			int32_t number_of_commas = 0;
 			for (int i = name_length + 1; parenthasis_diff != 0 && i < expr.length(); ++i) {
-				if (expr.at(i) == FixedTokens::LEFT_PAREN) {
+				if (expr.at(i) == FixedTokens::LEFT_PAREN_CHAR) {
 					parenthasis_diff += 1;
 				}
-				else if (expr.at(i) == FixedTokens::RIGHT_PAREN) {
+				else if (expr.at(i) == FixedTokens::RIGHT_PAREN_CHAR) {
 					parenthasis_diff -= 1;
 				}
-				else if (expr.at(i) == FixedTokens::COMMA) {
+				else if (expr.at(i) == FixedTokens::COMMA_CHAR) {
 					number_of_commas += 1;
 				}
 			}

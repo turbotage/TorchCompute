@@ -6,7 +6,7 @@ int main() {
 	using namespace tc::expression;
 
 	LexContext context;
-	context.variables.push_back(Variable("X"));
+	context.variables.push_back(VariableToken("X"));
 
 	Lexer lexer(std::move(context));
 

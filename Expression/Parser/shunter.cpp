@@ -9,26 +9,26 @@ std::deque<std::unique_ptr<tc::expression::Token>> tc::expression::Shunter::shun
 	for (auto& tok : toks) {
 
 		switch (tok->get_token_type()) {
-		case TokenType::NUMBER:
+		case TokenType::NUMBER_TYPE:
 			m_Output.emplace_back(std::move(tok));
 			break;
-		case TokenType::VARIABLE:
+		case TokenType::VARIABLE_TYPE:
 			m_Output.emplace_back(std::move(tok));
 			break;
-		case TokenType::FUNCTION:
+		case TokenType::FUNCTION_TYPE:
 			m_OperatorStack.emplace_back(std::move(tok));
 			break;
-		case TokenType::OPERATOR:
+		case TokenType::OPERATOR_TYPE:
 			handle_operator(dynamic_cast<OperatorToken&>(*tok));
 			m_OperatorStack.emplace_back(std::move(tok));
 			break;
-		case TokenType::LEFT_PAREN:
+		case TokenType::LEFT_PAREN_TYPE:
 			m_OperatorStack.emplace_back(std::move(tok));
 			break;
-		case TokenType::RIGHT_PAREN:
+		case TokenType::RIGHT_PAREN_TYPE:
 			handle_rparen();
 			break;
-		case TokenType::COMMA:
+		case TokenType::COMMA_TYPE:
 			break;
 		default:
 			throw std::runtime_error("This token type should not be in list of lexed tokens to be shunted, type: " + 
@@ -54,10 +54,10 @@ void tc::expression::Shunter::handle_operator(const OperatorToken& op)
 	while (!m_OperatorStack.empty()) {
 		auto& ptok_back = m_OperatorStack.back();
 		switch (ptok_back->get_token_type()) {
-		case TokenType::LEFT_PAREN:
+		case TokenType::LEFT_PAREN_TYPE:
 			return;
 			break;
-		case TokenType::OPERATOR:
+		case TokenType::OPERATOR_TYPE:
 			{
 				OperatorToken& top_op = dynamic_cast<OperatorToken&>(*ptok_back);
 				auto p = top_op.precedence;
@@ -84,7 +84,7 @@ void tc::expression::Shunter::handle_rparen()
 
 	if (!m_OperatorStack.empty()) {
 		auto& ptok_back = m_OperatorStack.back();
-		if (ptok_back->get_token_type() == TokenType::FUNCTION) {
+		if (ptok_back->get_token_type() == TokenType::FUNCTION_TYPE) {
 			m_Output.emplace_back(std::move(ptok_back));
 			m_OperatorStack.pop_back();
 		}

@@ -54,6 +54,15 @@ namespace tc {
 
 		};
 
+		class MulNode : public Node {
+		public:
+
+			std::pair<std::optional<torch::Tensor>, tc::OptRef<const Token>> eval() override;
+
+			std::pair<std::optional<torch::Tensor>, tc::OptRef<const Token>> diff(const VariableToken& var) override;
+
+		};
+
 		class PowNode : public Node {
 		public:
 

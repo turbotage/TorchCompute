@@ -54,11 +54,11 @@ int main() {
 
 	for (auto& tok : shunted_toks) {
 		std::string str = allmighty_map.at(tok->get_id());
-		if (tok->get_token_type() == TokenType::NUMBER) {
+		if (tok->get_token_type() == TokenType::NUMBER_TYPE) {
 			NumberToken& num = dynamic_cast<NumberToken&>(*tok);
 			std::cout << "token: " << num.get_full_name() << " token-type: " << tok->get_token_type() << " token-id: " << tok->get_id() << std::endl;
 		}
-		else if (tok->get_token_type() == TokenType::VARIABLE) {
+		else if (tok->get_token_type() == TokenType::VARIABLE_TYPE) {
 			VariableToken& var = dynamic_cast<VariableToken&>(*tok);
 			std::cout << "token: " << var.name << " token-type: " << tok->get_token_type() << " token-id: " << tok->get_id() << std::endl;
 		}
