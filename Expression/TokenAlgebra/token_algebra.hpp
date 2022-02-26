@@ -2,6 +2,16 @@
 
 #include "../token.hpp"
 
+#include "Unary/unary.hpp"
+#include "Unary/trig.hpp"
+#include "Unary/neg.hpp"
+
+#include "Binary/sub.hpp"
+#include "Binary/pow.hpp"
+#include "Binary/mul.hpp"
+#include "Binary/div.hpp"
+#include "Binary/add.hpp"
+
 namespace tc {
 	namespace expression {
 
@@ -10,7 +20,6 @@ namespace tc {
 		std::unique_ptr<Token> to_ptr(const NegUnityToken& tok);
 		std::unique_ptr<Token> to_ptr(const NanToken& tok);
 		std::unique_ptr<Token> to_ptr(const NumberToken& tok);
-
 
 		NumberToken to_num(const Token& tok);
 		NumberToken to_num(const ZeroToken& tok);

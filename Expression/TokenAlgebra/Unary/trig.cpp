@@ -8,6 +8,39 @@ namespace expression {
 
 // <====================================== SIN ============================================>
 
+std::unique_ptr<Token> sin(const Token& in)
+{
+	switch (in.get_token_type()) {
+	case TokenType::ZERO_TYPE:
+	{
+		const ZeroToken& atok = static_cast<const ZeroToken&>(in);
+		return std::make_unique<ZeroToken>(sin(atok));
+	}
+	case TokenType::UNITY_TYPE:
+	{
+		const UnityToken& atok = static_cast<const UnityToken&>(in);
+		return std::make_unique<NumberToken>(sin(atok));
+	}
+	case TokenType::NEG_UNITY_TYPE:
+	{
+		const NegUnityToken& atok = static_cast<const NegUnityToken&>(in);
+		return std::make_unique<NumberToken>(sin(atok));
+	}
+	case TokenType::NAN_TYPE:
+	{
+		const NanToken& atok = static_cast<const NanToken&>(in);
+		return std::make_unique<NanToken>(sin(atok));
+	}
+	case TokenType::NUMBER_TYPE:
+	{
+		const NumberToken& atok = static_cast<const NumberToken&>(in);
+		return std::make_unique<NumberToken>(sin(atok));
+	}
+	default:
+		throw std::runtime_error("Token was not Zero, Unity, NegUnity, Nan and Number");
+	}
+}
+
 ZeroToken sin(const ZeroToken& in)
 {
 	return in;
@@ -34,6 +67,39 @@ NumberToken sin(const NumberToken& in)
 }
 
 // <====================================== COS ============================================>
+
+std::unique_ptr<Token> cos(const Token& in)
+{
+	switch (in.get_token_type()) {
+	case TokenType::ZERO_TYPE:
+	{
+		const ZeroToken& atok = static_cast<const ZeroToken&>(in);
+		return std::make_unique<UnityToken>(cos(atok));
+	}
+	case TokenType::UNITY_TYPE:
+	{
+		const UnityToken& atok = static_cast<const UnityToken&>(in);
+		return std::make_unique<NumberToken>(cos(atok));
+	}
+	case TokenType::NEG_UNITY_TYPE:
+	{
+		const NegUnityToken& atok = static_cast<const NegUnityToken&>(in);
+		return std::make_unique<NumberToken>(cos(atok));
+	}
+	case TokenType::NAN_TYPE:
+	{
+		const NanToken& atok = static_cast<const NanToken&>(in);
+		return std::make_unique<NanToken>(cos(atok));
+	}
+	case TokenType::NUMBER_TYPE:
+	{
+		const NumberToken& atok = static_cast<const NumberToken&>(in);
+		return std::make_unique<NumberToken>(cos(atok));
+	}
+	default:
+		throw std::runtime_error("Token was not Zero, Unity, NegUnity, Nan and Number");
+	}
+}
 
 UnityToken cos(const ZeroToken& in)
 {
@@ -62,6 +128,39 @@ NumberToken cos(const NumberToken& in)
 
 // <====================================== TAN ============================================>
 
+std::unique_ptr<Token> tan(const Token& in)
+{
+	switch (in.get_token_type()) {
+	case TokenType::ZERO_TYPE:
+	{
+		const ZeroToken& atok = static_cast<const ZeroToken&>(in);
+		return std::make_unique<UnityToken>(tan(atok));
+	}
+	case TokenType::UNITY_TYPE:
+	{
+		const UnityToken& atok = static_cast<const UnityToken&>(in);
+		return std::make_unique<NumberToken>(tan(atok));
+	}
+	case TokenType::NEG_UNITY_TYPE:
+	{
+		const NegUnityToken& atok = static_cast<const NegUnityToken&>(in);
+		return std::make_unique<NumberToken>(tan(atok));
+	}
+	case TokenType::NAN_TYPE:
+	{
+		const NanToken& atok = static_cast<const NanToken&>(in);
+		return std::make_unique<NanToken>(tan(atok));
+	}
+	case TokenType::NUMBER_TYPE:
+	{
+		const NumberToken& atok = static_cast<const NumberToken&>(in);
+		return std::make_unique<NumberToken>(tan(atok));
+	}
+	default:
+		throw std::runtime_error("Token was not Zero, Unity, NegUnity, Nan and Number");
+	}
+}
+
 UnityToken tan(const ZeroToken& in)
 {
 	return UnityToken(in.sizes);
@@ -88,6 +187,39 @@ NumberToken tan(const NumberToken& in)
 }
 
 // <====================================== ASIN ============================================>
+
+std::unique_ptr<Token> asin(const Token& in)
+{
+	switch (in.get_token_type()) {
+	case TokenType::ZERO_TYPE:
+	{
+		const ZeroToken& atok = static_cast<const ZeroToken&>(in);
+		return std::make_unique<UnityToken>(asin(atok));
+	}
+	case TokenType::UNITY_TYPE:
+	{
+		const UnityToken& atok = static_cast<const UnityToken&>(in);
+		return std::make_unique<NumberToken>(asin(atok));
+	}
+	case TokenType::NEG_UNITY_TYPE:
+	{
+		const NegUnityToken& atok = static_cast<const NegUnityToken&>(in);
+		return std::make_unique<NumberToken>(asin(atok));
+	}
+	case TokenType::NAN_TYPE:
+	{
+		const NanToken& atok = static_cast<const NanToken&>(in);
+		return std::make_unique<NanToken>(asin(atok));
+	}
+	case TokenType::NUMBER_TYPE:
+	{
+		const NumberToken& atok = static_cast<const NumberToken&>(in);
+		return std::make_unique<NumberToken>(asin(atok));
+	}
+	default:
+		throw std::runtime_error("Token was not Zero, Unity, NegUnity, Nan and Number");
+	}
+}
 
 UnityToken asin(const ZeroToken& in)
 {
@@ -116,6 +248,39 @@ NumberToken asin(const NumberToken& in)
 
 // <====================================== ACOS ============================================>
 
+std::unique_ptr<Token> acos(const Token& in)
+{
+	switch (in.get_token_type()) {
+	case TokenType::ZERO_TYPE:
+	{
+		const ZeroToken& atok = static_cast<const ZeroToken&>(in);
+		return std::make_unique<NumberToken>(acos(atok));
+	}
+	case TokenType::UNITY_TYPE:
+	{
+		const UnityToken& atok = static_cast<const UnityToken&>(in);
+		return std::make_unique<ZeroToken>(acos(atok));
+	}
+	case TokenType::NEG_UNITY_TYPE:
+	{
+		const NegUnityToken& atok = static_cast<const NegUnityToken&>(in);
+		return std::make_unique<NumberToken>(acos(atok));
+	}
+	case TokenType::NAN_TYPE:
+	{
+		const NanToken& atok = static_cast<const NanToken&>(in);
+		return std::make_unique<NanToken>(acos(atok));
+	}
+	case TokenType::NUMBER_TYPE:
+	{
+		const NumberToken& atok = static_cast<const NumberToken&>(in);
+		return std::make_unique<NumberToken>(acos(atok));
+	}
+	default:
+		throw std::runtime_error("Token was not Zero, Unity, NegUnity, Nan and Number");
+	}
+}
+
 NumberToken acos(const ZeroToken& in)
 {
 	return NumberToken(std::acos(0.0), false, in.sizes);
@@ -142,6 +307,39 @@ NumberToken acos(const NumberToken& in)
 }
 
 // <====================================== ATAN ============================================>
+
+std::unique_ptr<Token> atan(const Token& in)
+{
+	switch (in.get_token_type()) {
+	case TokenType::ZERO_TYPE:
+	{
+		const ZeroToken& atok = static_cast<const ZeroToken&>(in);
+		return std::make_unique<ZeroToken>(atan(atok));
+	}
+	case TokenType::UNITY_TYPE:
+	{
+		const UnityToken& atok = static_cast<const UnityToken&>(in);
+		return std::make_unique<NumberToken>(atan(atok));
+	}
+	case TokenType::NEG_UNITY_TYPE:
+	{
+		const NegUnityToken& atok = static_cast<const NegUnityToken&>(in);
+		return std::make_unique<NumberToken>(atan(atok));
+	}
+	case TokenType::NAN_TYPE:
+	{
+		const NanToken& atok = static_cast<const NanToken&>(in);
+		return std::make_unique<NanToken>(atan(atok));
+	}
+	case TokenType::NUMBER_TYPE:
+	{
+		const NumberToken& atok = static_cast<const NumberToken&>(in);
+		return std::make_unique<NumberToken>(atan(atok));
+	}
+	default:
+		throw std::runtime_error("Token was not Zero, Unity, NegUnity, Nan and Number");
+	}
+}
 
 ZeroToken atan(const ZeroToken& in)
 {
@@ -170,6 +368,39 @@ NumberToken atan(const NumberToken& in)
 
 // <====================================== SINH ============================================>
 
+std::unique_ptr<Token> sinh(const Token& in)
+{
+	switch (in.get_token_type()) {
+	case TokenType::ZERO_TYPE:
+	{
+		const ZeroToken& atok = static_cast<const ZeroToken&>(in);
+		return std::make_unique<ZeroToken>(sinh(atok));
+	}
+	case TokenType::UNITY_TYPE:
+	{
+		const UnityToken& atok = static_cast<const UnityToken&>(in);
+		return std::make_unique<NumberToken>(sinh(atok));
+	}
+	case TokenType::NEG_UNITY_TYPE:
+	{
+		const NegUnityToken& atok = static_cast<const NegUnityToken&>(in);
+		return std::make_unique<NumberToken>(sinh(atok));
+	}
+	case TokenType::NAN_TYPE:
+	{
+		const NanToken& atok = static_cast<const NanToken&>(in);
+		return std::make_unique<NanToken>(sinh(atok));
+	}
+	case TokenType::NUMBER_TYPE:
+	{
+		const NumberToken& atok = static_cast<const NumberToken&>(in);
+		return std::make_unique<NumberToken>(sinh(atok));
+	}
+	default:
+		throw std::runtime_error("Token was not Zero, Unity, NegUnity, Nan and Number");
+	}
+}
+
 ZeroToken sinh(const ZeroToken& in)
 {
 	return in;
@@ -196,6 +427,39 @@ NumberToken sinh(const NumberToken& in)
 }
 
 // <====================================== COSH ============================================>
+
+std::unique_ptr<Token> cosh(const Token& in)
+{
+	switch (in.get_token_type()) {
+	case TokenType::ZERO_TYPE:
+	{
+		const ZeroToken& atok = static_cast<const ZeroToken&>(in);
+		return std::make_unique<UnityToken>(cosh(atok));
+	}
+	case TokenType::UNITY_TYPE:
+	{
+		const UnityToken& atok = static_cast<const UnityToken&>(in);
+		return std::make_unique<NumberToken>(cosh(atok));
+	}
+	case TokenType::NEG_UNITY_TYPE:
+	{
+		const NegUnityToken& atok = static_cast<const NegUnityToken&>(in);
+		return std::make_unique<NumberToken>(cosh(atok));
+	}
+	case TokenType::NAN_TYPE:
+	{
+		const NanToken& atok = static_cast<const NanToken&>(in);
+		return std::make_unique<NanToken>(cosh(atok));
+	}
+	case TokenType::NUMBER_TYPE:
+	{
+		const NumberToken& atok = static_cast<const NumberToken&>(in);
+		return std::make_unique<NumberToken>(cosh(atok));
+	}
+	default:
+		throw std::runtime_error("Token was not Zero, Unity, NegUnity, Nan and Number");
+	}
+}
 
 UnityToken cosh(const ZeroToken& in)
 {
@@ -224,6 +488,39 @@ NumberToken cosh(const NumberToken& in)
 
 // <====================================== TANH ============================================>
 
+std::unique_ptr<Token> tanh(const Token& in)
+{
+	switch (in.get_token_type()) {
+	case TokenType::ZERO_TYPE:
+	{
+		const ZeroToken& atok = static_cast<const ZeroToken&>(in);
+		return std::make_unique<ZeroToken>(tanh(atok));
+	}
+	case TokenType::UNITY_TYPE:
+	{
+		const UnityToken& atok = static_cast<const UnityToken&>(in);
+		return std::make_unique<NumberToken>(tanh(atok));
+	}
+	case TokenType::NEG_UNITY_TYPE:
+	{
+		const NegUnityToken& atok = static_cast<const NegUnityToken&>(in);
+		return std::make_unique<NumberToken>(tanh(atok));
+	}
+	case TokenType::NAN_TYPE:
+	{
+		const NanToken& atok = static_cast<const NanToken&>(in);
+		return std::make_unique<NanToken>(tanh(atok));
+	}
+	case TokenType::NUMBER_TYPE:
+	{
+		const NumberToken& atok = static_cast<const NumberToken&>(in);
+		return std::make_unique<NumberToken>(tanh(atok));
+	}
+	default:
+		throw std::runtime_error("Token was not Zero, Unity, NegUnity, Nan and Number");
+	}
+}
+
 ZeroToken tanh(const ZeroToken& in)
 {
 	return in;
@@ -250,6 +547,39 @@ NumberToken tanh(const NumberToken& in)
 }
 
 // <====================================== ASINH ============================================>
+
+std::unique_ptr<Token> asinh(const Token& in)
+{
+	switch (in.get_token_type()) {
+	case TokenType::ZERO_TYPE:
+	{
+		const ZeroToken& atok = static_cast<const ZeroToken&>(in);
+		return std::make_unique<ZeroToken>(asinh(atok));
+	}
+	case TokenType::UNITY_TYPE:
+	{
+		const UnityToken& atok = static_cast<const UnityToken&>(in);
+		return std::make_unique<NumberToken>(asinh(atok));
+	}
+	case TokenType::NEG_UNITY_TYPE:
+	{
+		const NegUnityToken& atok = static_cast<const NegUnityToken&>(in);
+		return std::make_unique<NumberToken>(asinh(atok));
+	}
+	case TokenType::NAN_TYPE:
+	{
+		const NanToken& atok = static_cast<const NanToken&>(in);
+		return std::make_unique<NanToken>(asinh(atok));
+	}
+	case TokenType::NUMBER_TYPE:
+	{
+		const NumberToken& atok = static_cast<const NumberToken&>(in);
+		return std::make_unique<NumberToken>(asinh(atok));
+	}
+	default:
+		throw std::runtime_error("Token was not Zero, Unity, NegUnity, Nan and Number");
+	}
+}
 
 ZeroToken asinh(const ZeroToken& in)
 {
@@ -278,6 +608,39 @@ NumberToken asinh(const NumberToken& in)
 
 // <====================================== ACOSH ============================================>
 
+std::unique_ptr<Token> acosh(const Token& in)
+{
+	switch (in.get_token_type()) {
+	case TokenType::ZERO_TYPE:
+	{
+		const ZeroToken& atok = static_cast<const ZeroToken&>(in);
+		return std::make_unique<NanToken>(acosh(atok));
+	}
+	case TokenType::UNITY_TYPE:
+	{
+		const UnityToken& atok = static_cast<const UnityToken&>(in);
+		return std::make_unique<ZeroToken>(acosh(atok));
+	}
+	case TokenType::NEG_UNITY_TYPE:
+	{
+		const NegUnityToken& atok = static_cast<const NegUnityToken&>(in);
+		return std::make_unique<NanToken>(acosh(atok));
+	}
+	case TokenType::NAN_TYPE:
+	{
+		const NanToken& atok = static_cast<const NanToken&>(in);
+		return std::make_unique<NanToken>(acosh(atok));
+	}
+	case TokenType::NUMBER_TYPE:
+	{
+		const NumberToken& atok = static_cast<const NumberToken&>(in);
+		return std::make_unique<NumberToken>(acosh(atok));
+	}
+	default:
+		throw std::runtime_error("Token was not Zero, Unity, NegUnity, Nan and Number");
+	}
+}
+
 NanToken acosh(const ZeroToken& in)
 {
 	return NanToken(in.sizes);
@@ -304,6 +667,39 @@ NumberToken acosh(const NumberToken& in)
 }
 
 // <====================================== ATANH ============================================>
+
+std::unique_ptr<Token> atanh(const Token& in)
+{
+	switch (in.get_token_type()) {
+	case TokenType::ZERO_TYPE:
+	{
+		const ZeroToken& atok = static_cast<const ZeroToken&>(in);
+		return std::make_unique<ZeroToken>(atanh(atok));
+	}
+	case TokenType::UNITY_TYPE:
+	{
+		const UnityToken& atok = static_cast<const UnityToken&>(in);
+		return std::make_unique<NanToken>(atanh(atok));
+	}
+	case TokenType::NEG_UNITY_TYPE:
+	{
+		const NegUnityToken& atok = static_cast<const NegUnityToken&>(in);
+		return std::make_unique<NanToken>(atanh(atok));
+	}
+	case TokenType::NAN_TYPE:
+	{
+		const NanToken& atok = static_cast<const NanToken&>(in);
+		return std::make_unique<NanToken>(atanh(atok));
+	}
+	case TokenType::NUMBER_TYPE:
+	{
+		const NumberToken& atok = static_cast<const NumberToken&>(in);
+		return std::make_unique<NumberToken>(atanh(atok));
+	}
+	default:
+		throw std::runtime_error("Token was not Zero, Unity, NegUnity, Nan and Number");
+	}
+}
 
 ZeroToken atanh(const ZeroToken& in)
 {

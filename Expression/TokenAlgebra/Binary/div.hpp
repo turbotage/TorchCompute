@@ -7,8 +7,8 @@ namespace tc {
 
 		// Div
 
-		torch::Tensor operator*(const torch::Tensor& a, const Token& b);
-		torch::Tensor operator*(const Token& a, const torch::Tensor& b);
+		torch::Tensor operator/(const torch::Tensor& a, const Token& b);
+		torch::Tensor operator/(const Token& a, const torch::Tensor& b);
 
 		std::unique_ptr<Token> operator/(const Token& a, const Token& b);
 
