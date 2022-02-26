@@ -32,13 +32,20 @@ add_library(ComputeLib
     #"Optim/optim.cpp"
     #"Optim/strp.cpp"
     
-    #"Expression/expression_nodes.cpp"
-    #"Expression/expression.cpp"
+    "Expression/TokenAlgebra/Unary/neg.cpp"
+    "Expression/TokenAlgebra/Unary/trig.cpp"
+    "Expression/TokenAlgebra/Unary/unary.cpp"
+
+    "Expression/TokenAlgebra/Binary/add.cpp"
+    "Expression/TokenAlgebra/Binary/sub.cpp"
+    "Expression/TokenAlgebra/Binary/mul.cpp"
+    "Expression/TokenAlgebra/Binary/div.cpp"
+    "Expression/TokenAlgebra/Binary/pow.cpp"
+
     "Expression/Parser/lexer.cpp"
     "Expression/Parser/lexer_default.cpp"
-    "Expression/Parser/token.cpp"
-    "Expression/Parser/token_algebra.cpp"
     "Expression/Parser/shunter.cpp"
+    "Expression/token.cpp"
     "Expression/nodes.cpp"
     
     #"Models/models.cpp"
@@ -108,6 +115,9 @@ target_link_libraries(ComputeTestShunter ComputeLib)
 
 #add_executable(ComputeTestSTRP "Tests/test_strp.cpp")
 #target_link_libraries(ComputeTestSTRP ComputeLib)
+
+add_executable(ComputeTestTokenAlgebra "Tests/test_token_algebra.cpp")
+target_link_libraries(ComputeTestTokenAlgebra ComputeLib)
 
 # Prototyping Environments
 add_executable(ComputeProtP1 "Prototyping/CPP/p1.cpp")

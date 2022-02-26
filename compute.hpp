@@ -11,6 +11,7 @@
 //#include "Expression/expression.hpp"
 //#include "Expression/expression_nodes.hpp"
 #include "Expression/Parser/token.hpp"
+#include "Expression/Parser/token_algebra.hpp"
 #include "Expression/Parser/lexer.hpp"
 #include "Expression/Parser/shunter.hpp"
 #include "Expression/nodes.hpp"

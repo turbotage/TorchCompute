@@ -1,6 +1,6 @@
 #pragma once
 
-#include "token.hpp"
+#include "../token.hpp"
 
 namespace tc {
 	namespace expression {
@@ -22,6 +22,7 @@ namespace tc {
 			UnityToken					unity;
 			NegUnityToken				neg_unity_token;
 			ZeroToken					zero;
+			NanToken					nan_token;
 			NumberToken					number;
 			VariableToken				variable;
 
@@ -93,6 +94,7 @@ namespace tc {
 			};
 		};
 
+		/*
 		struct DefaultOperatorChars {
 			enum {
 				NEG = (int)'-',
@@ -103,77 +105,80 @@ namespace tc {
 				SUB = (int)'-',
 			};
 		};
+		*/
 		
 		struct FixedIDs {
 			enum {
 				// Fixed Tokens
-				NO_TOKEN,
-				LEFT_PAREN,
-				RIGHT_PAREN,
-				COMMA,
-				UNITY,
-				NEG_UNITY,
-				ZERO,
-				NUMBER,
-				VARIABLE
+				NO_TOKEN_ID,
+				LEFT_PAREN_ID,
+				RIGHT_PAREN_ID,
+				COMMA_ID,
+				UNITY_ID,
+				NEG_UNITY_ID,
+				ZERO_ID,
+				NAN_ID,
+				NUMBER_ID,
+				VARIABLE_ID
 			};
 		};
 
 		static std::unordered_map<int32_t, std::string> FIXED_ID_MAPS = {
 			// Fixed Tokens
-			{FixedIDs::NO_TOKEN, "NO_TOKEN"},
-			{FixedIDs::LEFT_PAREN, "("},
-			{FixedIDs::RIGHT_PAREN, ")"},
-			{FixedIDs::COMMA, ","},
-			{FixedIDs::UNITY, "UNITY"},
-			{FixedIDs::NEG_UNITY, "NEG_UNITY"},
-			{FixedIDs::ZERO, "ZERO"},
-			{FixedIDs::NUMBER, "NUMBER"},
-			{FixedIDs::VARIABLE, "VARIABLE"},
+			{FixedIDs::NO_TOKEN_ID, "NO_TOKEN"},
+			{FixedIDs::LEFT_PAREN_ID, "("},
+			{FixedIDs::RIGHT_PAREN_ID, ")"},
+			{FixedIDs::COMMA_ID, ","},
+			{FixedIDs::UNITY_ID, "UNITY"},
+			{FixedIDs::NEG_UNITY_ID, "NEG_UNITY"},
+			{FixedIDs::ZERO_ID, "ZERO"},
+			{FixedIDs::NAN_ID, "NAN"},
+			{FixedIDs::NUMBER_ID, "NUMBER"},
+			{FixedIDs::VARIABLE_ID, "VARIABLE"},
 		};
 
 		struct DefaultOperatorIDs {
 			enum {
 				// Operators
-				NEG = FixedIDs::VARIABLE + 1,
-				POW,
-				MUL,
-				DIV,
-				ADD,
-				SUB,
+				NEG_ID = FixedIDs::VARIABLE_ID + 1,
+				POW_ID,
+				MUL_ID,
+				DIV_ID,
+				ADD_ID,
+				SUB_ID,
 			};
 		};
 
 		static std::unordered_map<int32_t, std::string> DEFAULT_OPERATOR_MAPS = {
 			// Operators
-			{DefaultOperatorIDs::NEG, "-"},
-			{DefaultOperatorIDs::POW, "^"},
-			{DefaultOperatorIDs::MUL, "*"},
-			{DefaultOperatorIDs::DIV, "/"},
-			{DefaultOperatorIDs::ADD, "+"},
-			{DefaultOperatorIDs::SUB, "-"},
+			{DefaultOperatorIDs::NEG_ID, "-"},
+			{DefaultOperatorIDs::POW_ID, "^"},
+			{DefaultOperatorIDs::MUL_ID, "*"},
+			{DefaultOperatorIDs::DIV_ID, "/"},
+			{DefaultOperatorIDs::ADD_ID, "+"},
+			{DefaultOperatorIDs::SUB_ID, "-"},
 		};
 
 		struct DefaultFunctionIDs {
 			enum {
 				// FunctionTokens
-				SIN = DefaultOperatorIDs::SUB + 1,
-				COS,
-				TAN,
-				EXP,
-				LOG,
-				POW,
+				SIN_ID = DefaultOperatorIDs::SUB_ID + 1,
+				COS_ID,
+				TAN_ID,
+				EXP_ID,
+				LOG_ID,
+				POW_ID,
 			};
 		};
 
 		static std::unordered_map<int32_t, std::string> DEFAULT_FUNCTION_MAPS = {
 			// FunctionTokens
-			{DefaultFunctionIDs::SIN, "sin"},
-			{DefaultFunctionIDs::COS, "cos"},
-			{DefaultFunctionIDs::TAN, "tan"},
-			{DefaultFunctionIDs::EXP, "exp"},
-			{DefaultFunctionIDs::LOG, "log"},
-			{DefaultFunctionIDs::POW, "pow"},
+			{DefaultFunctionIDs::SIN_ID, "sin"},
+			{DefaultFunctionIDs::COS_ID, "cos"},
+			{DefaultFunctionIDs::TAN_ID, "tan"},
+			{DefaultFunctionIDs::EXP_ID, "exp"},
+			{DefaultFunctionIDs::LOG_ID, "log"},
+			{DefaultFunctionIDs::POW_ID, "pow"},
 		};
 
 	}

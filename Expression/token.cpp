@@ -1,7 +1,7 @@
-#include "../../pch.hpp"
+#include "../pch.hpp"
 
 #include "token.hpp"
-#include "lexer.hpp"
+#include "Parser/lexer.hpp"
 
 // <=========================== NO_TOKEN ============================>
 

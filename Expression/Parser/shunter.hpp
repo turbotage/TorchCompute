@@ -1,7 +1,7 @@
 #pragma once
 
 #include <deque>
-#include "token.hpp"
+#include "../token.hpp"
 
 namespace tc {
 	namespace expression {

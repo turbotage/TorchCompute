@@ -1,6 +1,9 @@
 #pragma once
 
+#include <cmath>
+
 namespace tc {
+
 
 	typedef ::std::uint_fast64_t ui64;
 	typedef ::std::uint_fast32_t ui32;
@@ -55,5 +58,7 @@ namespace tc {
 	reversion_wrapper<T> reverse(T&& iterable) { return { iterable }; }
 
 	std::vector<int64_t> tc_broadcast_shapes(const std::vector<int64_t>& shape1, const std::vector<int64_t>& shape2);
+
+	c10::IntArrayRef tc_broadcast_shapes(const c10::IntArrayRef& shape1, const c10::IntArrayRef& shape2);
 
 }
