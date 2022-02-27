@@ -20,16 +20,22 @@ namespace tc {
 	template<typename T>
 	using OutRef = T&;
 
+	template<typename T>
+	using refw = std::reference_wrapper<T>;
+
 	// Used to signal output, functions with these parameters will fill the variable which the
 	// reference points to if tc::OptOutRef isn't std::nullopt
 	template<typename T>
-	using OptOutRef = std::optional<std::reference_wrapper<T>>;
+	using OptOutRef = std::optional<refw<T>>;
 
 	template<typename T>
-	using OptRef = std::optional<std::reference_wrapper<T>>;
+	using OptRef = std::optional<refw<T>>;
 
 	template<typename T>
-	using refw = std::reference_wrapper<T>;
+	using OptUPtr = std::optional<std::unique_ptr<T>>;
+
+	template<typename T>
+	using OptSPtr = std::optional<std::shared_ptr<T>>;
 
 	enum eBuildMode {
 		Release,
