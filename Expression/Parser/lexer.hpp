@@ -85,12 +85,12 @@ namespace tc {
 		
 		struct DefaultOperatorPrecedence {
 			enum {
-				NEG = 10,
-				POW = 10,
-				MUL = 5,
-				DIV = 5,
-				ADD = 3,
-				SUB = 3,
+				NEG_PRECEDENCE = 10,
+				POW_PRECEDENCE = 10,
+				MUL_PRECEDENCE = 5,
+				DIV_PRECEDENCE = 5,
+				ADD_PRECEDENCE = 3,
+				SUB_PRECEDENCE = 3,
 			};
 		};
 
@@ -162,23 +162,54 @@ namespace tc {
 		struct DefaultFunctionIDs {
 			enum {
 				// FunctionTokens
-				SIN_ID = DefaultOperatorIDs::SUB_ID + 1,
-				COS_ID,
-				TAN_ID,
+				// Binary
+				POW_ID = DefaultOperatorIDs::SUB_ID + 1,
+
+				// Unary
+				ABS_ID,
+				SQRT_ID,
+				SQUARE_ID,
 				EXP_ID,
 				LOG_ID,
-				POW_ID,
+				
+				// Trig
+				SIN_ID,
+				COS_ID,
+				TAN_ID,
+				ASIN_ID,
+				ACOS_ID,
+				ATAN_ID,
+				SINH_ID,
+				COSH_ID,
+				TANH_ID,
+				ASINH_ID,
+				ACOSH_ID,
+				ATANH_ID
 			};
 		};
 
 		static std::unordered_map<int32_t, std::string> DEFAULT_FUNCTION_MAPS = {
 			// FunctionTokens
+			{DefaultFunctionIDs::POW_ID, "pow"},
+
+			{DefaultFunctionIDs::ABS_ID, "abs"},
+			{DefaultFunctionIDs::SQRT_ID, "sqrt"},
+			{DefaultFunctionIDs::SQUARE_ID, "square"},
+			{DefaultFunctionIDs::EXP_ID, "exp"},
+			{DefaultFunctionIDs::LOG_ID, "log"},
+
 			{DefaultFunctionIDs::SIN_ID, "sin"},
 			{DefaultFunctionIDs::COS_ID, "cos"},
 			{DefaultFunctionIDs::TAN_ID, "tan"},
-			{DefaultFunctionIDs::EXP_ID, "exp"},
-			{DefaultFunctionIDs::LOG_ID, "log"},
-			{DefaultFunctionIDs::POW_ID, "pow"},
+			{DefaultFunctionIDs::ASIN_ID, "asin"},
+			{DefaultFunctionIDs::ACOS_ID, "acos"},
+			{DefaultFunctionIDs::ATAN_ID, "atan"},
+			{DefaultFunctionIDs::SINH_ID, "sinh"},
+			{DefaultFunctionIDs::COSH_ID, "cosh"},
+			{DefaultFunctionIDs::TANH_ID, "tanh"},
+			{DefaultFunctionIDs::ASINH_ID, "asinh"},
+			{DefaultFunctionIDs::ACOSH_ID, "acosh"},
+			{DefaultFunctionIDs::ATANH_ID, "atanh"},
 		};
 
 	}

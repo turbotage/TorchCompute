@@ -65,6 +65,6 @@ namespace tc {
 
 	std::vector<int64_t> tc_broadcast_shapes(const std::vector<int64_t>& shape1, const std::vector<int64_t>& shape2);
 
-	c10::IntArrayRef tc_broadcast_shapes(const c10::IntArrayRef& shape1, const c10::IntArrayRef& shape2);
+	std::vector<int64_t> tc_broadcast_shapes(const c10::IntArrayRef& shape1, const c10::IntArrayRef& shape2);
 
 }

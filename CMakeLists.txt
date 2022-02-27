@@ -42,11 +42,14 @@ add_library(ComputeLib
     "Expression/TokenAlgebra/Binary/div.cpp"
     "Expression/TokenAlgebra/Binary/pow.cpp"
 
+    "Expression/TokenAlgebra/token_algebra.cpp"
+
     "Expression/Parser/lexer.cpp"
     "Expression/Parser/lexer_default.cpp"
     "Expression/Parser/shunter.cpp"
     "Expression/token.cpp"
     "Expression/nodes.cpp"
+    "Expression/expression.cpp"
     
     #"Models/models.cpp"
 
@@ -97,6 +100,9 @@ set_target_properties(ComputeLib PROPERTIES PUBLIC_HEADER "compute.hpp")
 
 add_executable(ComputeTestEnv "Tests/test_env.cpp")
 target_link_libraries(ComputeTestEnv ComputeLib)
+
+add_executable(ComputeTestExp "Tests/test_expression.cpp")
+target_link_libraries(ComputeTestExp ComputeLib)
 
 #add_executable(ComputeTestExpMod "Tests/test_expression_model.cpp")
 #target_link_libraries(ComputeTestExpMod ComputeLib)

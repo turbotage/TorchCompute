@@ -34,22 +34,32 @@ NumberToken to_num(const Token& tok)
 {
 	switch (tok.get_token_type()) {
 	case TokenType::ZERO_TYPE:
+	{
 		const ZeroToken& ttok = static_cast<const ZeroToken&>(tok);
 		return NumberToken(0.0f, false, ttok.sizes);
+	}
 	case TokenType::UNITY_TYPE:
+	{
 		const UnityToken& ttok = static_cast<const UnityToken&>(tok);
 		return NumberToken(1.0f, false, ttok.sizes);
+	}
 	case TokenType::NEG_UNITY_TYPE:
+	{
 		const NegUnityToken& ttok = static_cast<const NegUnityToken&>(tok);
 		return NumberToken(-1.0f, false, ttok.sizes);
+	}
 	case TokenType::NAN_TYPE:
+	{
 		const NanToken& ttok = static_cast<const NanToken&>(tok);
 		return NumberToken(std::numeric_limits<float>::quiet_NaN(), false, ttok.sizes);
+	}
 	case TokenType::NUMBER_TYPE:
+	{
 		const NumberToken& ttok = static_cast<const NumberToken&>(tok);
 		return ttok;
+	}
 	default:
-		throw std::runtime_error("Negation can only be applied to tokens Zero, Unity, NegUnity, Nan and Number");
+		throw std::runtime_error("Expected Zero, Unity, NegUnity, Nan and Number");
 	}
 }
 

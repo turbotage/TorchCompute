@@ -2,9 +2,67 @@
 
 #include "nodes.hpp"
 
-tc::expression::tentok tc::expression::from_number(float a)
+std::string tc::expression::tentok_to_string(const tentok& in)
+{
+	if (in.first.has_value()) {
+		std::stringstream stream;
+		stream << in.first.value();
+		return stream.str();
+	}
+	else if (in.second.has_value()) {
+		auto& tok = *in.second.value();
+		
+		switch (tok.get_token_type()) {
+		case TokenType::ZERO_TYPE:
+		{
+			const ZeroToken& ttok = static_cast<const ZeroToken&>(tok);
+			return "ZERO";
+		}
+		case TokenType::UNITY_TYPE:
+		{
+			const UnityToken& ttok = static_cast<const UnityToken&>(tok);
+			return "UNITY";
+		}
+		case TokenType::NEG_UNITY_TYPE:
+		{
+			const NegUnityToken& ttok = static_cast<const NegUnityToken&>(tok);
+			return "NEG_UNITY";
+		}
+		case TokenType::NAN_TYPE:
+		{
+			const NanToken& ttok = static_cast<const NanToken&>(tok);
+			return "NAN";
+		}
+		case TokenType::NUMBER_TYPE:
+		{
+			const NumberToken& ttok = static_cast<const NumberToken&>(tok);
+			return "NUM: " + std::to_string(ttok.num.real()) + "+" + std::to_string(ttok.num.imag()) + "i";
+		}
+		default:
+			throw std::runtime_error("Expected Zero, Unity, NegUnity, Nan and Number");
+		}
+	}
+	return "tentok had no value";
+}
+
+tc::expression::tentok tc::expression::tentok_from_number(float a)
 {
 	return std::make_pair(std::nullopt, std::make_unique<NumberToken>(a, false));
+}
+
+tc::expression::tentok tc::expression::tentok_from_zero()
+{
+	return std::make_pair(std::nullopt, std::make_unique<ZeroToken>());
+}
+
+tc::expression::tentok tc::expression::tentok_from_unity()
+{
+	return std::make_pair(std::nullopt, std::make_unique<UnityToken>());
+}
+
+tc::expression::tentok tc::expression::tentok_from_negunity()
+{
+	return std::make_pair(std::nullopt, std::make_unique<NegUnityToken>());
 }
 
 std::unique_ptr<tc::expression::Token> tc::expression::copy_token(const Token& tok)
@@ -47,6 +105,13 @@ std::unique_ptr<tc::expression::Token> tc::expression::copy_token(const Token& t
 	}
 }
 
+
+std::unique_ptr<tc::expression::Node> tc::expression::node_from_token(const Token& tok)
+{
+	return std::make_unique<TokenNode>(tok);
+}
+
+
 std::unique_ptr<tc::expression::Node> tc::expression::node_from_pair(const tentok& pair)
 {
 	if (pair.first.has_value()) {
@@ -76,7 +141,7 @@ tc::expression::tentok tc::expression::TokenNode::diff(const VariableToken& var)
 	return std::make_pair(std::nullopt, std::make_unique<ZeroToken>(m_Sizes)); // derivative of number is always zero
 }
 
-// <================================== TOKEN ===================================>
+// <================================== TENSOR-NODE ===================================>
 
 tc::expression::TensorNode::TensorNode(const torch::Tensor& tensor)
 	: m_Tensor(tensor)
@@ -240,7 +305,7 @@ tc::expression::tentok tc::expression::DivNode::diff(const VariableToken& var)
 	auto r = m_Children[1]->eval();
 	auto dr = m_Children[1]->diff(var);
 
-	return (dl * r + l * dr) / square(r);
+	return (dl * r - l * dr) / square(r);
 }
 
 // <================================== ADD ===================================>
@@ -444,7 +509,7 @@ tc::expression::tentok tc::expression::SqrtNode::diff(const VariableToken& var)
 	auto in = m_Children[0]->eval();
 	auto din = m_Children[0]->diff(var);
 
-	return from_number(0.5f) * din / sqrt(in);
+	return tentok_from_number(0.5f) * din / sqrt(in);
 }
 
 // <================================== SQUARE ===================================>
@@ -475,7 +540,7 @@ tc::expression::tentok tc::expression::SquareNode::eval()
 
 tc::expression::tentok tc::expression::SquareNode::diff(const VariableToken& var)
 {
-	return from_number(2.0f) * m_Children[0]->eval() * m_Children[0]->diff(var);
+	return tentok_from_number(2.0f) * m_Children[0]->eval() * m_Children[0]->diff(var);
 }
 
 // <================================== EXP ===================================>
@@ -598,4 +663,333 @@ tc::expression::tentok tc::expression::CosNode::diff(const VariableToken& var)
 	return -m_Children[0]->diff(var) * sin(m_Children[0]->eval());
 }
 
+// <================================== TAN ===================================>
+
+tc::expression::tentok tc::expression::tan(const tentok& a)
+{
+	if (a.first.has_value()) {
+		return std::make_pair(torch::tan(a.first.value()), std::nullopt);
+	}
+	else if (a.second.has_value()) {
+		return std::make_pair(std::nullopt, tan(*a.second.value()));
+	}
+	else {
+		throw std::runtime_error("more than two eval() optionals was nullopt");
+	}
+}
+
+tc::expression::TanNode::TanNode(std::unique_ptr<Node> child)
+{
+	m_Children.push_back(std::move(child));
+}
+
+tc::expression::tentok tc::expression::TanNode::eval()
+{
+	return tan(m_Children[0]->eval());
+}
+
+tc::expression::tentok tc::expression::TanNode::diff(const VariableToken& var)
+{
+	auto in = m_Children[0]->eval();
+	auto din = m_Children[0]->diff(var);
+
+	return din / square(cos(in));
+}
+
+// <================================== ASIN ===================================>
+
+tc::expression::tentok tc::expression::asin(const tentok& a)
+{
+	if (a.first.has_value()) {
+		return std::make_pair(torch::asin(a.first.value()), std::nullopt);
+	}
+	else if (a.second.has_value()) {
+		return std::make_pair(std::nullopt, asin(*a.second.value()));
+	}
+	else {
+		throw std::runtime_error("more than two eval() optionals was nullopt");
+	}
+}
+
+tc::expression::AsinNode::AsinNode(std::unique_ptr<Node> child)
+{
+	m_Children.push_back(std::move(child));
+}
+
+tc::expression::tentok tc::expression::AsinNode::eval()
+{
+	return asin(m_Children[0]->eval());
+}
+
+tc::expression::tentok tc::expression::AsinNode::diff(const VariableToken& var)
+{
+	auto in = m_Children[0]->eval();
+	auto din = m_Children[0]->diff(var);
+
+	return din / sqrt(tentok_from_unity() - square(in));
+}
+
+// <================================== ACOS ===================================>
+
+tc::expression::tentok tc::expression::acos(const tentok& a)
+{
+	if (a.first.has_value()) {
+		return std::make_pair(torch::acos(a.first.value()), std::nullopt);
+	}
+	else if (a.second.has_value()) {
+		return std::make_pair(std::nullopt, acos(*a.second.value()));
+	}
+	else {
+		throw std::runtime_error("more than two eval() optionals was nullopt");
+	}
+}
+
+tc::expression::AcosNode::AcosNode(std::unique_ptr<Node> child)
+{
+	m_Children.push_back(std::move(child));
+}
+
+tc::expression::tentok tc::expression::AcosNode::eval()
+{
+	return acos(m_Children[0]->eval());
+}
+
+tc::expression::tentok tc::expression::AcosNode::diff(const VariableToken& var)
+{
+	auto in = m_Children[0]->eval();
+	auto din = m_Children[0]->diff(var);
+
+	return -din / sqrt(tentok_from_unity() - square(in));
+}
+
+// <================================== ATAN ===================================>
+
+tc::expression::tentok tc::expression::atan(const tentok& a)
+{
+	if (a.first.has_value()) {
+		return std::make_pair(torch::atan(a.first.value()), std::nullopt);
+	}
+	else if (a.second.has_value()) {
+		return std::make_pair(std::nullopt, atan(*a.second.value()));
+	}
+	else {
+		throw std::runtime_error("more than two eval() optionals was nullopt");
+	}
+}
+
+tc::expression::AtanNode::AtanNode(std::unique_ptr<Node> child)
+{
+	m_Children.push_back(std::move(child));
+}
+
+tc::expression::tentok tc::expression::AtanNode::eval()
+{
+	return atan(m_Children[0]->eval());
+}
+
+tc::expression::tentok tc::expression::AtanNode::diff(const VariableToken& var)
+{
+	auto in = m_Children[0]->eval();
+	auto din = m_Children[0]->diff(var);
+
+	return din / (tentok_from_unity() + square(in));
+}
+
+// <================================== SINH ===================================>
+
+tc::expression::tentok tc::expression::sinh(const tentok& a)
+{
+	if (a.first.has_value()) {
+		return std::make_pair(torch::sinh(a.first.value()), std::nullopt);
+	}
+	else if (a.second.has_value()) {
+		return std::make_pair(std::nullopt, sinh(*a.second.value()));
+	}
+	else {
+		throw std::runtime_error("more than two eval() optionals was nullopt");
+	}
+}
+
+tc::expression::SinhNode::SinhNode(std::unique_ptr<Node> child)
+{
+	m_Children.push_back(std::move(child));
+}
+
+tc::expression::tentok tc::expression::SinhNode::eval()
+{
+	return asin(m_Children[0]->eval());
+}
+
+tc::expression::tentok tc::expression::SinhNode::diff(const VariableToken& var)
+{
+	auto in = m_Children[0]->eval();
+	auto din = m_Children[0]->diff(var);
+
+	return din * cosh(in);
+}
+
+// <================================== COSH ===================================>
+
+tc::expression::tentok tc::expression::cosh(const tentok& a)
+{
+	if (a.first.has_value()) {
+		return std::make_pair(torch::cosh(a.first.value()), std::nullopt);
+	}
+	else if (a.second.has_value()) {
+		return std::make_pair(std::nullopt, cosh(*a.second.value()));
+	}
+	else {
+		throw std::runtime_error("more than two eval() optionals was nullopt");
+	}
+}
+
+tc::expression::CoshNode::CoshNode(std::unique_ptr<Node> child)
+{
+	m_Children.push_back(std::move(child));
+}
+
+tc::expression::tentok tc::expression::CoshNode::eval()
+{
+	return cosh(m_Children[0]->eval());
+}
+
+tc::expression::tentok tc::expression::CoshNode::diff(const VariableToken& var)
+{
+	auto in = m_Children[0]->eval();
+	auto din = m_Children[0]->diff(var);
+
+	return din * sinh(in);
+}
+
+// <================================== TANH ===================================>
+
+tc::expression::tentok tc::expression::tanh(const tentok& a)
+{
+	if (a.first.has_value()) {
+		return std::make_pair(torch::tanh(a.first.value()), std::nullopt);
+	}
+	else if (a.second.has_value()) {
+		return std::make_pair(std::nullopt, tanh(*a.second.value()));
+	}
+	else {
+		throw std::runtime_error("more than two eval() optionals was nullopt");
+	}
+}
+
+tc::expression::TanhNode::TanhNode(std::unique_ptr<Node> child)
+{
+	m_Children.push_back(std::move(child));
+}
+
+tc::expression::tentok tc::expression::TanhNode::eval()
+{
+	return tanh(m_Children[0]->eval());
+}
+
+tc::expression::tentok tc::expression::TanhNode::diff(const VariableToken& var)
+{
+	auto in = m_Children[0]->eval();
+	auto din = m_Children[0]->diff(var);
+
+	return din / square(cosh(in));
+}
+
+// <================================== ASINH ===================================>
+
+tc::expression::tentok tc::expression::asinh(const tentok& a)
+{
+	if (a.first.has_value()) {
+		return std::make_pair(torch::asinh(a.first.value()), std::nullopt);
+	}
+	else if (a.second.has_value()) {
+		return std::make_pair(std::nullopt, asinh(*a.second.value()));
+	}
+	else {
+		throw std::runtime_error("more than two eval() optionals was nullopt");
+	}
+}
+
+tc::expression::AsinhNode::AsinhNode(std::unique_ptr<Node> child)
+{
+	m_Children.push_back(std::move(child));
+}
+
+tc::expression::tentok tc::expression::AsinhNode::eval()
+{
+	return asinh(m_Children[0]->eval());
+}
+
+tc::expression::tentok tc::expression::AsinhNode::diff(const VariableToken& var)
+{
+	auto in = m_Children[0]->eval();
+	auto din = m_Children[0]->diff(var);
+
+	return din / sqrt(square(in)+tentok_from_unity());
+}
+
+// <================================== ACOSH ===================================>
+
+tc::expression::tentok tc::expression::acosh(const tentok& a)
+{
+	if (a.first.has_value()) {
+		return std::make_pair(torch::acosh(a.first.value()), std::nullopt);
+	}
+	else if (a.second.has_value()) {
+		return std::make_pair(std::nullopt, acosh(*a.second.value()));
+	}
+	else {
+		throw std::runtime_error("more than two eval() optionals was nullopt");
+	}
+}
+
+tc::expression::AcoshNode::AcoshNode(std::unique_ptr<Node> child)
+{
+	m_Children.push_back(std::move(child));
+}
+
+tc::expression::tentok tc::expression::AcoshNode::eval()
+{
+	return acosh(m_Children[0]->eval());
+}
+
+tc::expression::tentok tc::expression::AcoshNode::diff(const VariableToken& var)
+{
+	auto in = m_Children[0]->eval();
+	auto din = m_Children[0]->diff(var);
+
+	return din / sqrt(square(in) - tentok_from_unity());
+}
+
+// <================================== ATANH ===================================>
+
+tc::expression::tentok tc::expression::atanh(const tentok& a)
+{
+	if (a.first.has_value()) {
+		return std::make_pair(torch::atanh(a.first.value()), std::nullopt);
+	}
+	else if (a.second.has_value()) {
+		return std::make_pair(std::nullopt, atanh(*a.second.value()));
+	}
+	else {
+		throw std::runtime_error("more than two eval() optionals was nullopt");
+	}
+}
+
+tc::expression::AtanhNode::AtanhNode(std::unique_ptr<Node> child)
+{
+	m_Children.push_back(std::move(child));
+}
+
+tc::expression::tentok tc::expression::AtanhNode::eval()
+{
+	return atanh(m_Children[0]->eval());
+}
+
+tc::expression::tentok tc::expression::AtanhNode::diff(const VariableToken& var)
+{
+	auto in = m_Children[0]->eval();
+	auto din = m_Children[0]->diff(var);
+
+	return din / (tentok_from_unity() - square(in));
+}
 

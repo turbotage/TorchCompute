@@ -8,7 +8,13 @@ namespace tc {
 
 		using tentok = std::pair<std::optional<torch::Tensor>, tc::OptUPtr<Token>>;
 
-		tentok from_number(float a);
+		std::string tentok_to_string(const tentok& in);
+
+		tentok tentok_from_number(float a);
+		tentok tentok_from_zero();
+		tentok tentok_from_unity();
+		tentok tentok_from_negunity();
+
 
 		std::unique_ptr<Token> copy_token(const Token& tok);
 
@@ -26,6 +32,8 @@ namespace tc {
 
 			std::unique_ptr<Token> m_pToken;
 		};
+
+		std::unique_ptr<Node> node_from_token(const Token& tok);
 
 		std::unique_ptr<Node> node_from_pair(const tentok& pair);
 
@@ -243,6 +251,135 @@ namespace tc {
 
 		};
 
+		tentok tan(const tentok& a);
+
+		class TanNode : public Node {
+		public:
+
+			TanNode(std::unique_ptr<Node> child);
+
+			tentok eval() override;
+
+			tentok diff(const VariableToken& var) override;
+
+		};
+
+		tentok asin(const tentok& a);
+
+		class AsinNode : public Node {
+		public:
+
+			AsinNode(std::unique_ptr<Node> child);
+
+			tentok eval() override;
+
+			tentok diff(const VariableToken& var) override;
+
+		};
+
+		tentok acos(const tentok& a);
+
+		class AcosNode : public Node {
+		public:
+
+			AcosNode(std::unique_ptr<Node> child);
+
+			tentok eval() override;
+
+			tentok diff(const VariableToken& var) override;
+
+		};
+
+		tentok atan(const tentok& a);
+
+		class AtanNode : public Node {
+		public:
+
+			AtanNode(std::unique_ptr<Node> child);
+
+			tentok eval() override;
+
+			tentok diff(const VariableToken& var) override;
+
+		};
+
+		tentok sinh(const tentok& a);
+
+		class SinhNode : public Node {
+		public:
+
+			SinhNode(std::unique_ptr<Node> child);
+
+			tentok eval() override;
+
+			tentok diff(const VariableToken& var) override;
+
+		};
+
+		tentok cosh(const tentok& a);
+
+		class CoshNode : public Node {
+		public:
+
+			CoshNode(std::unique_ptr<Node> child);
+
+			tentok eval() override;
+
+			tentok diff(const VariableToken& var) override;
+
+		};
+
+		tentok tanh(const tentok& a);
+
+		class TanhNode : public Node {
+		public:
+
+			TanhNode(std::unique_ptr<Node> child);
+
+			tentok eval() override;
+
+			tentok diff(const VariableToken& var) override;
+
+		};
+
+		tentok asinh(const tentok& a);
+
+		class AsinhNode : public Node {
+		public:
+
+			AsinhNode(std::unique_ptr<Node> child);
+
+			tentok eval() override;
+
+			tentok diff(const VariableToken& var) override;
+
+		};
+
+		tentok acosh(const tentok& a);
+
+		class AcoshNode : public Node {
+		public:
+
+			AcoshNode(std::unique_ptr<Node> child);
+
+			tentok eval() override;
+
+			tentok diff(const VariableToken& var) override;
+
+		};
+
+		tentok atanh(const tentok& a);
+
+		class AtanhNode : public Node {
+		public:
+
+			AtanhNode(std::unique_ptr<Node> child);
+
+			tentok eval() override;
+
+			tentok diff(const VariableToken& var) override;
+
+		};
 
 	}
 }

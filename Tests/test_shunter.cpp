@@ -17,7 +17,7 @@ int main() {
 
 	Lexer lexer(std::move(context));
 
-	std::string expr = "-log(2.24e-15i-24*X)-sin(X)^cos(Y)^2*pow(X,+Y)";
+	std::string expr = "-log(2.24e-15i-24*X)-sin(X)^cos(Y)^2*pow(X,Y)";
 
 	std::vector<std::unique_ptr<Token>> toks;
 	try {

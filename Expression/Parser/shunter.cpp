@@ -9,6 +9,8 @@ std::deque<std::unique_ptr<tc::expression::Token>> tc::expression::Shunter::shun
 	for (auto& tok : toks) {
 
 		switch (tok->get_token_type()) {
+		case TokenType::UNITY_TYPE:
+		case TokenType::ZERO_TYPE:
 		case TokenType::NUMBER_TYPE:
 			m_Output.emplace_back(std::move(tok));
 			break;

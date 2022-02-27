@@ -7,7 +7,7 @@
 
 std::int32_t tc::expression::NoToken::get_id() const
 {
-	return FixedIDs::NO_TOKEN;
+	return FixedIDs::NO_TOKEN_ID;
 }
 
 std::int32_t tc::expression::NoToken::get_token_type() const
@@ -19,7 +19,7 @@ std::int32_t tc::expression::NoToken::get_token_type() const
 
 std::int32_t tc::expression::LeftParenToken::get_id() const
 {
-	return FixedIDs::LEFT_PAREN;
+	return FixedIDs::LEFT_PAREN_ID;
 }
 
 std::int32_t tc::expression::LeftParenToken::get_token_type() const
@@ -31,7 +31,7 @@ std::int32_t tc::expression::LeftParenToken::get_token_type() const
 
 std::int32_t tc::expression::RightParenToken::get_id() const
 {
-	return FixedIDs::RIGHT_PAREN;
+	return FixedIDs::RIGHT_PAREN_ID;
 }
 
 std::int32_t tc::expression::RightParenToken::get_token_type() const
@@ -43,7 +43,7 @@ std::int32_t tc::expression::RightParenToken::get_token_type() const
 
 std::int32_t tc::expression::CommaToken::get_id() const
 {
-	return FixedIDs::COMMA;
+	return FixedIDs::COMMA_ID;
 }
 
 std::int32_t tc::expression::CommaToken::get_token_type() const
@@ -109,7 +109,7 @@ tc::expression::NumberToken::NumberToken(const std::string& numberstr, std::comp
 
 std::int32_t tc::expression::NumberToken::get_id() const
 {
-	return FixedIDs::NUMBER;
+	return FixedIDs::NUMBER_ID;
 }
 
 std::int32_t tc::expression::NumberToken::get_token_type() const
@@ -136,7 +136,7 @@ tc::expression::VariableToken::VariableToken(const std::string& name)
 
 std::int32_t tc::expression::VariableToken::get_id() const
 {
-	return FixedIDs::VARIABLE;
+	return FixedIDs::VARIABLE_ID;
 }
 
 std::int32_t tc::expression::VariableToken::get_token_type() const
@@ -158,7 +158,7 @@ tc::expression::ZeroToken::ZeroToken(const std::vector<int64_t>& sizes)
 
 std::int32_t tc::expression::ZeroToken::get_id() const
 {
-	return FixedIDs::ZERO;
+	return FixedIDs::ZERO_ID;
 }
 
 std::int32_t tc::expression::ZeroToken::get_token_type() const
@@ -180,7 +180,7 @@ tc::expression::UnityToken::UnityToken(const std::vector<int64_t>& sizes)
 
 std::int32_t tc::expression::UnityToken::get_id() const
 {
-	return FixedIDs::UNITY;
+	return FixedIDs::UNITY_ID;
 }
 
 std::int32_t tc::expression::UnityToken::get_token_type() const
@@ -202,7 +202,7 @@ tc::expression::NegUnityToken::NegUnityToken(const std::vector<int64_t>& sizes)
 
 std::int32_t tc::expression::NegUnityToken::get_id() const
 {
-	return FixedIDs::NEG_UNITY;
+	return FixedIDs::NEG_UNITY_ID;
 }
 
 std::int32_t tc::expression::NegUnityToken::get_token_type() const
@@ -224,12 +224,12 @@ tc::expression::NanToken::NanToken(const std::vector<int64_t>& sizes)
 
 std::int32_t tc::expression::NanToken::get_id() const
 {
-	return FixedIDs::NEG_UNITY;
+	return FixedIDs::NAN_ID;
 }
 
 std::int32_t tc::expression::NanToken::get_token_type() const
 {
-	return TokenType::NEG_UNITY_TYPE;
+	return TokenType::NAN_TYPE;
 }
 
 // <=========================== OPERATOR ============================>
