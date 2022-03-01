@@ -15,11 +15,11 @@
 namespace tc {
 	namespace expression {
 
-		std::unique_ptr<Token> to_ptr(const ZeroToken& tok);
-		std::unique_ptr<Token> to_ptr(const UnityToken& tok);
-		std::unique_ptr<Token> to_ptr(const NegUnityToken& tok);
-		std::unique_ptr<Token> to_ptr(const NanToken& tok);
-		std::unique_ptr<Token> to_ptr(const NumberToken& tok);
+		std::unique_ptr<NumberBaseToken> to_ptr(const ZeroToken& tok);
+		std::unique_ptr<NumberBaseToken> to_ptr(const UnityToken& tok);
+		std::unique_ptr<NumberBaseToken> to_ptr(const NegUnityToken& tok);
+		std::unique_ptr<NumberBaseToken> to_ptr(const NanToken& tok);
+		std::unique_ptr<NumberBaseToken> to_ptr(const NumberToken& tok);
 
 		NumberToken to_num(const Token& tok);
 		NumberToken to_num(const ZeroToken& tok);

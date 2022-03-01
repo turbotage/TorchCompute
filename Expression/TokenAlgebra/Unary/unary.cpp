@@ -8,7 +8,7 @@ namespace expression {
 
 // <====================================== ABS ============================================>
 
-std::unique_ptr<Token> abs(const Token& in)
+std::unique_ptr<NumberBaseToken> abs(const Token& in)
 {
 	switch (in.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -69,7 +69,7 @@ NumberToken abs(const NumberToken& in)
 
 // <====================================== SQRT ============================================>
 
-std::unique_ptr<Token> sqrt(const Token& in)
+std::unique_ptr<NumberBaseToken> sqrt(const Token& in)
 {
 	switch (in.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -129,7 +129,7 @@ NumberToken sqrt(const NumberToken& in)
 
 // <====================================== SQUARE ============================================>
 
-std::unique_ptr<Token> square(const Token& in)
+std::unique_ptr<NumberBaseToken> square(const Token& in)
 {
 	switch (in.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -189,7 +189,7 @@ NumberToken square(const NumberToken& in)
 
 // <====================================== EXP ============================================>
 
-std::unique_ptr<Token> exp(const Token& in)
+std::unique_ptr<NumberBaseToken> exp(const Token& in)
 {
 	switch (in.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -249,7 +249,7 @@ NumberToken exp(const NumberToken& in)
 
 // <====================================== LOG ============================================>
 
-std::unique_ptr<Token> log(const Token& in)
+std::unique_ptr<NumberBaseToken> log(const Token& in)
 {
 	switch (in.get_token_type()) {
 	case TokenType::ZERO_TYPE:

@@ -51,59 +51,67 @@ std::int32_t tc::expression::CommaToken::get_token_type() const
 	return TokenType::COMMA_TYPE;
 }
 
+// <=========================== NUMBER-BASE ============================>
+
+tc::expression::NumberBaseToken::NumberBaseToken(const std::vector<int64_t>& sizes)
+	: sizes(sizes)
+{
+}
+
+
 // <=========================== NUMBER ============================>
 
 tc::expression::NumberToken::NumberToken()
-	: name("DEFAULT_NUMBER"), is_imaginary(false), num(0.0f, 0.0f), sizes({ 1 })
+	: name("DEFAULT_NUMBER"), is_imaginary(false), num(0.0f, 0.0f), NumberBaseToken({ 1 })
 {
 }
 
 tc::expression::NumberToken::NumberToken(const NumberToken& other)
-	: name(other.name), is_imaginary(other.is_imaginary), num(other.num), sizes(other.sizes)
+	: name(other.name), is_imaginary(other.is_imaginary), num(other.num), NumberBaseToken(other.sizes)
 {
 }
 
 tc::expression::NumberToken::NumberToken(const std::string& realnumberstr, bool is_imaginary)
 	: name(realnumberstr), is_imaginary(is_imaginary),
-	num(is_imaginary ? std::complex<float>(0.0f, std::atof(name.c_str())) : std::complex<float>(std::atof(name.c_str()), 0.0f)), sizes({ 1 })
+	num(is_imaginary ? std::complex<float>(0.0f, std::atof(name.c_str())) : std::complex<float>(std::atof(name.c_str()), 0.0f)), NumberBaseToken({ 1 })
 {
 }
 
 tc::expression::NumberToken::NumberToken(const std::string& realnumberstr, bool is_imaginary, const std::vector<int64_t>& sizes)
 	: name(realnumberstr), is_imaginary(is_imaginary),
-	num(is_imaginary ? std::complex<float>(0.0f, std::atof(name.c_str())) : std::complex<float>(std::atof(name.c_str()), 0.0f)), sizes(sizes)
+	num(is_imaginary ? std::complex<float>(0.0f, std::atof(name.c_str())) : std::complex<float>(std::atof(name.c_str()), 0.0f)), NumberBaseToken(sizes)
 {
 }
 
 tc::expression::NumberToken::NumberToken(float number, bool is_imaginary)
 	: name(is_imaginary ? std::to_string(number) + "i" : std::to_string(number)), is_imaginary(is_imaginary),
-	num(is_imaginary ? std::complex<float>(0.0f, number) : std::complex<float>(number, 0.0f)), sizes({ 1 })
+	num(is_imaginary ? std::complex<float>(0.0f, number) : std::complex<float>(number, 0.0f)), NumberBaseToken({ 1 })
 {
 }
 
 tc::expression::NumberToken::NumberToken(float number, bool is_imaginary, const std::vector<int64_t>& sizes)
 	: name(is_imaginary ? std::to_string(number) + "i" : std::to_string(number)), is_imaginary(is_imaginary),
-	num(is_imaginary ? std::complex<float>(0.0f, number) : std::complex<float>(number, 0.0f)), sizes(sizes)
+	num(is_imaginary ? std::complex<float>(0.0f, number) : std::complex<float>(number, 0.0f)), NumberBaseToken(sizes)
 {
 }
 
 tc::expression::NumberToken::NumberToken(std::complex<float> num, bool is_imaginary)
-	: name(is_imaginary ? (std::to_string(num.real()) + "+" + std::to_string(num.imag()) + "i") : std::to_string(num.real())), is_imaginary(is_imaginary), num(num), sizes({ 1 })
+	: name(is_imaginary ? (std::to_string(num.real()) + "+" + std::to_string(num.imag()) + "i") : std::to_string(num.real())), is_imaginary(is_imaginary), num(num), NumberBaseToken({ 1 })
 {
 }
 
 tc::expression::NumberToken::NumberToken(std::complex<float> num, bool is_imaginary, const std::vector<int64_t>& sizes)
-	: name(is_imaginary ? (std::to_string(num.real()) + "+" + std::to_string(num.imag()) + "i") : std::to_string(num.real())), is_imaginary(is_imaginary), num(num), sizes(sizes)
+	: name(is_imaginary ? (std::to_string(num.real()) + "+" + std::to_string(num.imag()) + "i") : std::to_string(num.real())), is_imaginary(is_imaginary), num(num), NumberBaseToken(sizes)
 {
 }
 
 tc::expression::NumberToken::NumberToken(const std::string& numberstr, std::complex<float> num, bool is_imaginary)
-	: name(numberstr), num(num), is_imaginary(is_imaginary), sizes({1})
+	: name(numberstr), num(num), is_imaginary(is_imaginary), NumberBaseToken({1})
 {
 }
 
 tc::expression::NumberToken::NumberToken(const std::string& numberstr, std::complex<float> num, bool is_imaginary, const std::vector<int64_t>& sizes)
-	: name(numberstr), num(num), is_imaginary(is_imaginary), sizes(sizes)
+	: name(numberstr), num(num), is_imaginary(is_imaginary), NumberBaseToken(sizes)
 {
 }
 
@@ -147,12 +155,12 @@ std::int32_t tc::expression::VariableToken::get_token_type() const
 // <=========================== ZERO ============================>
 
 tc::expression::ZeroToken::ZeroToken()
-	: sizes({ 1 })
+	: NumberBaseToken({ 1 })
 {
 }
 
 tc::expression::ZeroToken::ZeroToken(const std::vector<int64_t>& sizes)
-	: sizes(sizes)
+	: NumberBaseToken(sizes)
 {
 }
 
@@ -169,12 +177,12 @@ std::int32_t tc::expression::ZeroToken::get_token_type() const
 // <=========================== UNITY ============================>
 
 tc::expression::UnityToken::UnityToken()
-	: sizes({ 1 })
+	: NumberBaseToken({ 1 })
 {
 }
 
 tc::expression::UnityToken::UnityToken(const std::vector<int64_t>& sizes)
-	: sizes(sizes)
+	: NumberBaseToken(sizes)
 {
 }
 
@@ -191,12 +199,12 @@ std::int32_t tc::expression::UnityToken::get_token_type() const
 // <=========================== NEG_UNITY ============================>
 
 tc::expression::NegUnityToken::NegUnityToken()
-	: sizes({ 1 })
+	: NumberBaseToken({ 1 })
 {
 }
 
 tc::expression::NegUnityToken::NegUnityToken(const std::vector<int64_t>& sizes)
-	: sizes(sizes)
+	: NumberBaseToken(sizes)
 {
 }
 
@@ -213,12 +221,12 @@ std::int32_t tc::expression::NegUnityToken::get_token_type() const
 // <=========================== NAN ============================>
 
 tc::expression::NanToken::NanToken()
-	: sizes({ 1 })
+	: NumberBaseToken({ 1 })
 {
 }
 
 tc::expression::NanToken::NanToken(const std::vector<int64_t>& sizes)
-	: sizes(sizes)
+	: NumberBaseToken(sizes)
 {
 }
 

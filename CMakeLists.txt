@@ -22,7 +22,7 @@ message("BUILD_SHARED_LIBS: ${BUILD_SHARED_LIBS}")
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 add_library(ComputeLib
-    #"Compute/gradients.cpp"
+    "Compute/gradients.cpp"
     #"Compute/kmeans.cpp"
     #"Compute/random.cpp"
     #"Compute/lstq.cpp"

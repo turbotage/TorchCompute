@@ -10,13 +10,13 @@ namespace tc {
 		torch::Tensor pow(const torch::Tensor& a, const Token& b);
 		torch::Tensor pow(const Token& a, const torch::Tensor& b);
 
-		std::unique_ptr<Token> pow(const Token& a, const Token& b);
+		std::unique_ptr<NumberBaseToken> pow(const Token& a, const Token& b);
 
-		std::unique_ptr<Token> pow(const ZeroToken& a, const Token& b);
-		std::unique_ptr<Token> pow(const UnityToken& a, const Token& b);
-		std::unique_ptr<Token> pow(const NegUnityToken& a, const Token& b);
-		std::unique_ptr<Token> pow(const NanToken& a, const Token& b);
-		std::unique_ptr<Token> pow(const NumberToken& a, const Token& b);
+		std::unique_ptr<NumberBaseToken> pow(const ZeroToken& a, const Token& b);
+		std::unique_ptr<NumberBaseToken> pow(const UnityToken& a, const Token& b);
+		std::unique_ptr<NumberBaseToken> pow(const NegUnityToken& a, const Token& b);
+		std::unique_ptr<NumberBaseToken> pow(const NanToken& a, const Token& b);
+		std::unique_ptr<NumberBaseToken> pow(const NumberToken& a, const Token& b);
 
 		UnityToken pow(const ZeroToken& a, const ZeroToken& b);
 		NanToken pow(const ZeroToken& a, const NegUnityToken& b);

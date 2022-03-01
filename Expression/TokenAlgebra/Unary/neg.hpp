@@ -7,7 +7,7 @@ namespace tc {
 
 		// Neg
 
-		std::unique_ptr<Token> operator-(const Token& other);
+		std::unique_ptr<NumberBaseToken> operator-(const Token& other);
 
 		ZeroToken operator-(const ZeroToken& other);
 		UnityToken operator-(const NegUnityToken& other);

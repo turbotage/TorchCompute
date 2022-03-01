@@ -8,7 +8,7 @@ namespace expression {
 
 // <===================================== NEG =========================================>
 
-std::unique_ptr<Token> operator-(const Token& other)
+std::unique_ptr<NumberBaseToken> operator-(const Token& other)
 {
 	switch (other.get_token_type()) {
 	case TokenType::ZERO_TYPE:

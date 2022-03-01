@@ -3,7 +3,7 @@
 #include "pch.hpp"
 
 // Compute
-//#include "Compute/gradients.hpp"
+#include "Compute/gradients.hpp"
 //#include "Compute/kmeans.hpp"
 //#include "Compute/random.hpp"
 

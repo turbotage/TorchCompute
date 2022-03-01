@@ -89,7 +89,7 @@ torch::Tensor operator-(const Token& a, const torch::Tensor& b)
 	}
 }
 
-std::unique_ptr<Token> operator-(const Token& a, const Token& b)
+std::unique_ptr<NumberBaseToken> operator-(const Token& a, const Token& b)
 {
 	switch (a.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -122,7 +122,7 @@ std::unique_ptr<Token> operator-(const Token& a, const Token& b)
 	}
 }
 
-std::unique_ptr<Token> operator-(const ZeroToken& a, const Token& b)
+std::unique_ptr<NumberBaseToken> operator-(const ZeroToken& a, const Token& b)
 {
 	switch (b.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -155,7 +155,7 @@ std::unique_ptr<Token> operator-(const ZeroToken& a, const Token& b)
 	}
 }
 
-std::unique_ptr<Token> operator-(const UnityToken& a, const Token& b)
+std::unique_ptr<NumberBaseToken> operator-(const UnityToken& a, const Token& b)
 {
 	switch (b.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -188,7 +188,7 @@ std::unique_ptr<Token> operator-(const UnityToken& a, const Token& b)
 	}
 }
 
-std::unique_ptr<Token> operator-(const NegUnityToken& a, const Token& b)
+std::unique_ptr<NumberBaseToken> operator-(const NegUnityToken& a, const Token& b)
 {
 	switch (b.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -221,7 +221,7 @@ std::unique_ptr<Token> operator-(const NegUnityToken& a, const Token& b)
 	}
 }
 
-std::unique_ptr<Token> operator-(const NanToken& a, const Token& b)
+std::unique_ptr<NumberBaseToken> operator-(const NanToken& a, const Token& b)
 {
 	switch (b.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -254,7 +254,7 @@ std::unique_ptr<Token> operator-(const NanToken& a, const Token& b)
 	}
 }
 
-std::unique_ptr<Token> operator-(const NumberToken& a, const Token& b)
+std::unique_ptr<NumberBaseToken> operator-(const NumberToken& a, const Token& b)
 {
 	switch (b.get_token_type()) {
 	case TokenType::ZERO_TYPE:

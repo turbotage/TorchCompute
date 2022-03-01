@@ -65,7 +65,16 @@ tc::expression::tentok tc::expression::tentok_from_negunity()
 	return std::make_pair(std::nullopt, std::make_unique<NegUnityToken>());
 }
 
-std::unique_ptr<tc::expression::Token> tc::expression::copy_token(const Token& tok)
+tc::expression::tentok tc::expression::tentok_from_nan()
+{
+	return std::make_pair(std::nullopt, std::make_unique<NanToken>());
+}
+
+
+
+
+
+std::unique_ptr<tc::expression::NumberBaseToken> tc::expression::copy_token(const Token& tok)
 {
 	std::int32_t type = tok.get_token_type();
 
@@ -105,6 +114,50 @@ std::unique_ptr<tc::expression::Token> tc::expression::copy_token(const Token& t
 	}
 }
 
+torch::Tensor tc::expression::tensor_from_tentok(const tentok& in, torch::Device& device)
+{
+	torch::TensorOptions tops;
+	tops = tops.device(device);
+
+	if (in.first.has_value()) {
+		return in.first.value();
+	}
+	else if (in.second.has_value()) {
+		auto& tok = in.second.value();
+		switch (tok->get_token_type()) {
+		case TokenType::NUMBER_TYPE:
+		{
+			const NumberToken& numtok = static_cast<const NumberToken&>(*tok);
+			if (numtok.is_imaginary)
+				return torch::full(numtok.sizes, c10::complex<float>(numtok.num), tops);
+			return torch::full(numtok.sizes, numtok.num.real(), tops);
+		}
+		case TokenType::UNITY_TYPE:
+		{
+			return torch::ones(tok->sizes, tops);
+		}
+		case TokenType::NEG_UNITY_TYPE:
+		{
+			return -torch::ones(tok->sizes, tops);
+		}
+		case TokenType::ZERO_TYPE:
+		{
+			return -torch::zeros(tok->sizes, tops);
+		}
+		case TokenType::NAN_TYPE:
+			return torch::full(tok->sizes, std::numeric_limits<float>::quiet_NaN(), tops);
+		}
+	}
+	throw std::runtime_error("tentok contained two nullopt");
+}
+
+// <================================== NODE ===================================>
+
+tc::expression::Node::Node(std::unique_ptr<NumberBaseToken> base_token)
+	: m_pToken(std::move(base_token))
+{
+}
+
 
 std::unique_ptr<tc::expression::Node> tc::expression::node_from_token(const Token& tok)
 {
@@ -127,8 +180,8 @@ std::unique_ptr<tc::expression::Node> tc::expression::node_from_pair(const tento
 // <================================== TOKEN ===================================>
 
 tc::expression::TokenNode::TokenNode(const Token& tok)
+	: Node(copy_token(tok))
 {
-	m_pToken = copy_token(tok);
 }
 
 tc::expression::tentok tc::expression::TokenNode::eval()
@@ -138,7 +191,7 @@ tc::expression::tentok tc::expression::TokenNode::eval()
 
 tc::expression::tentok tc::expression::TokenNode::diff(const VariableToken& var)
 {
-	return std::make_pair(std::nullopt, std::make_unique<ZeroToken>(m_Sizes)); // derivative of number is always zero
+	return std::make_pair(std::nullopt, std::make_unique<ZeroToken>(m_pToken->sizes)); // derivative of number is always zero
 }
 
 // <================================== TENSOR-NODE ===================================>
@@ -175,13 +228,12 @@ tc::expression::tentok tc::expression::VariableNode::eval()
 
 tc::expression::tentok tc::expression::VariableNode::diff(const VariableToken& var)
 {
-	auto sizes = m_VariableFetcher().sizes();
-	std::vector<int64_t> vecsizes(sizes.data(), sizes.data() + sizes.size());
+	auto sizes = m_VariableFetcher().sizes().vec();
 
 	if (var.name == m_VarToken.name) {
-		return std::make_pair(std::nullopt, std::make_unique<UnityToken>(vecsizes));
+		return std::make_pair(std::nullopt, std::make_unique<UnityToken>(sizes));
 	}
-	return std::make_pair(std::nullopt, std::make_unique<ZeroToken>(vecsizes));
+	return std::make_pair(std::nullopt, std::make_unique<ZeroToken>(sizes));
 }
 
 // <================================== NEG ===================================>
@@ -992,4 +1044,3 @@ tc::expression::tentok tc::expression::AtanhNode::diff(const VariableToken& var)
 
 	return din / (tentok_from_unity() - square(in));
 }
-

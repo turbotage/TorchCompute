@@ -10,13 +10,13 @@ namespace tc {
 		torch::Tensor operator-(const torch::Tensor& a, const Token& b);
 		torch::Tensor operator-(const Token& a, const torch::Tensor& b);
 
-		std::unique_ptr<Token> operator-(const Token& a, const Token& b);
+		std::unique_ptr<NumberBaseToken> operator-(const Token& a, const Token& b);
 
-		std::unique_ptr<Token> operator-(const ZeroToken& a, const Token& b);
-		std::unique_ptr<Token> operator-(const UnityToken& a, const Token& b);
-		std::unique_ptr<Token> operator-(const NegUnityToken& a, const Token& b);
-		std::unique_ptr<Token> operator-(const NanToken& a, const Token& b);
-		std::unique_ptr<Token> operator-(const NumberToken& a, const Token& b);
+		std::unique_ptr<NumberBaseToken> operator-(const ZeroToken& a, const Token& b);
+		std::unique_ptr<NumberBaseToken> operator-(const UnityToken& a, const Token& b);
+		std::unique_ptr<NumberBaseToken> operator-(const NegUnityToken& a, const Token& b);
+		std::unique_ptr<NumberBaseToken> operator-(const NanToken& a, const Token& b);
+		std::unique_ptr<NumberBaseToken> operator-(const NumberToken& a, const Token& b);
 
 		ZeroToken operator-(const ZeroToken& a, const ZeroToken& b);
 		UnityToken operator-(const ZeroToken& a, const NegUnityToken& b);

@@ -8,7 +8,7 @@ namespace tc {
 		
 		// Sin
 
-		std::unique_ptr<Token> sin(const Token& in);
+		std::unique_ptr<NumberBaseToken> sin(const Token& in);
 		ZeroToken sin(const ZeroToken& in);
 		NumberToken sin(const NegUnityToken& in);
 		NumberToken sin(const UnityToken& in);
@@ -17,7 +17,7 @@ namespace tc {
 
 		// Cos
 
-		std::unique_ptr<Token> cos(const Token& in);
+		std::unique_ptr<NumberBaseToken> cos(const Token& in);
 		UnityToken cos(const ZeroToken& in);
 		NumberToken cos(const NegUnityToken& in);
 		NumberToken cos(const UnityToken& in);
@@ -26,7 +26,7 @@ namespace tc {
 
 		// Tan
 
-		std::unique_ptr<Token> tan(const Token& in);
+		std::unique_ptr<NumberBaseToken> tan(const Token& in);
 		UnityToken tan(const ZeroToken& in);
 		NumberToken tan(const NegUnityToken& in);
 		NumberToken tan(const UnityToken& in);
@@ -35,7 +35,7 @@ namespace tc {
 
 		// Asin
 
-		std::unique_ptr<Token> asin(const Token& in);
+		std::unique_ptr<NumberBaseToken> asin(const Token& in);
 		UnityToken asin(const ZeroToken& in);
 		NumberToken asin(const NegUnityToken& in);
 		NumberToken asin(const UnityToken& in);
@@ -44,7 +44,7 @@ namespace tc {
 
 		// Acos
 
-		std::unique_ptr<Token> acos(const Token& in);
+		std::unique_ptr<NumberBaseToken> acos(const Token& in);
 		NumberToken acos(const ZeroToken& in);
 		NumberToken acos(const NegUnityToken& in);
 		ZeroToken acos(const UnityToken& in);
@@ -53,7 +53,7 @@ namespace tc {
 
 		// Atan
 
-		std::unique_ptr<Token> atan(const Token& in);
+		std::unique_ptr<NumberBaseToken> atan(const Token& in);
 		ZeroToken atan(const ZeroToken& in);
 		NumberToken atan(const NegUnityToken& in);
 		NumberToken atan(const UnityToken& in);
@@ -62,7 +62,7 @@ namespace tc {
 
 		// Sinh
 
-		std::unique_ptr<Token> sinh(const Token& in);
+		std::unique_ptr<NumberBaseToken> sinh(const Token& in);
 		ZeroToken sinh(const ZeroToken& in);
 		NumberToken sinh(const NegUnityToken& in);
 		NumberToken sinh(const UnityToken& in);
@@ -71,7 +71,7 @@ namespace tc {
 
 		// Cosh
 
-		std::unique_ptr<Token> cosh(const Token& in);
+		std::unique_ptr<NumberBaseToken> cosh(const Token& in);
 		UnityToken cosh(const ZeroToken& in);
 		NumberToken cosh(const NegUnityToken& in);
 		NumberToken cosh(const UnityToken& in);
@@ -80,7 +80,7 @@ namespace tc {
 
 		// Tanh
 
-		std::unique_ptr<Token> tanh(const Token& in);
+		std::unique_ptr<NumberBaseToken> tanh(const Token& in);
 		ZeroToken tanh(const ZeroToken& in);
 		NumberToken tanh(const NegUnityToken& in);
 		NumberToken tanh(const UnityToken& in);
@@ -89,7 +89,7 @@ namespace tc {
 
 		// Asinh
 
-		std::unique_ptr<Token> asinh(const Token& in);
+		std::unique_ptr<NumberBaseToken> asinh(const Token& in);
 		ZeroToken asinh(const ZeroToken& in);
 		NumberToken asinh(const NegUnityToken& in);
 		NumberToken asinh(const UnityToken& in);
@@ -98,7 +98,7 @@ namespace tc {
 
 		// Acosh
 
-		std::unique_ptr<Token> acosh(const Token& in);
+		std::unique_ptr<NumberBaseToken> acosh(const Token& in);
 		NanToken acosh(const ZeroToken& in);
 		NanToken acosh(const NegUnityToken& in);
 		ZeroToken acosh(const UnityToken& in);
@@ -107,7 +107,7 @@ namespace tc {
 
 		// Atanh
 
-		std::unique_ptr<Token> atanh(const Token& in);
+		std::unique_ptr<NumberBaseToken> atanh(const Token& in);
 		ZeroToken atanh(const ZeroToken& in);
 		NanToken atanh(const NegUnityToken& in);
 		NanToken atanh(const UnityToken& in);

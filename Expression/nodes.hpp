@@ -6,7 +6,7 @@
 namespace tc {
 	namespace expression {
 
-		using tentok = std::pair<std::optional<torch::Tensor>, tc::OptUPtr<Token>>;
+		using tentok = std::pair<std::optional<torch::Tensor>, tc::OptUPtr<NumberBaseToken>>;
 
 		std::string tentok_to_string(const tentok& in);
 
@@ -14,14 +14,18 @@ namespace tc {
 		tentok tentok_from_zero();
 		tentok tentok_from_unity();
 		tentok tentok_from_negunity();
+		tentok tentok_from_nan();
 
+		std::unique_ptr<NumberBaseToken> copy_token(const Token& tok);
 
-		std::unique_ptr<Token> copy_token(const Token& tok);
+		torch::Tensor tensor_from_tentok(const tentok& in, torch::Device& device);
 
 		class Node {
 		public:
 
 			Node() = default;
+
+			Node(std::unique_ptr<NumberBaseToken> base_token);
 
 			virtual tentok eval() = 0;
 
@@ -30,7 +34,7 @@ namespace tc {
 		public:
 			std::vector<std::unique_ptr<Node>> m_Children;
 
-			std::unique_ptr<Token> m_pToken;
+			std::unique_ptr<NumberBaseToken> m_pToken;
 		};
 
 		std::unique_ptr<Node> node_from_token(const Token& tok);
@@ -46,9 +50,6 @@ namespace tc {
 
 			tentok diff(const VariableToken& var) override;
 
-		private:
-			std::uint32_t m_TokenType;
-			std::vector<int64_t> m_Sizes;
 		};
 
 		class TensorNode : public Node {

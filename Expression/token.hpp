@@ -89,7 +89,16 @@ namespace tc {
 			std::int32_t get_token_type() const override;
 		};
 
-		class NumberToken : public Token {
+		class NumberBaseToken : public Token {
+		public:
+
+			NumberBaseToken(const std::vector<int64_t>& sizes);
+
+			std::vector<int64_t> sizes;
+
+		};
+
+		class NumberToken : public NumberBaseToken {
 		public:
 
 			NumberToken();
@@ -115,7 +124,6 @@ namespace tc {
 			std::string name;
 			bool is_imaginary;
 			std::complex<float> num;
-			std::vector<int64_t> sizes;
 
 			std::int32_t get_id() const override;
 
@@ -141,7 +149,7 @@ namespace tc {
 
 		};
 
-		class ZeroToken : public Token {
+		class ZeroToken : public NumberBaseToken {
 		public:
 
 			ZeroToken();
@@ -154,11 +162,9 @@ namespace tc {
 
 			std::int32_t get_token_type() const override;
 
-			std::vector<int64_t> sizes;
-
 		};
 
-		class UnityToken : public Token {
+		class UnityToken : public NumberBaseToken {
 		public:
 
 			UnityToken();
@@ -171,10 +177,9 @@ namespace tc {
 
 			std::int32_t get_token_type() const override;
 
-			std::vector<int64_t> sizes;
 		};
 
-		class NegUnityToken : public Token {
+		class NegUnityToken : public NumberBaseToken {
 		public:
 
 			NegUnityToken();
@@ -187,10 +192,9 @@ namespace tc {
 
 			std::int32_t get_token_type() const override;
 
-			std::vector<int64_t> sizes;
 		};
 
-		class NanToken : public Token {
+		class NanToken : public NumberBaseToken {
 		public:
 
 			NanToken();
@@ -202,8 +206,6 @@ namespace tc {
 			std::int32_t get_id() const override;
 
 			std::int32_t get_token_type() const override;
-
-			std::vector<int64_t> sizes;
 
 		};
 

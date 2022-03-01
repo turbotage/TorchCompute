@@ -8,7 +8,7 @@ namespace expression {
 
 // <====================================== SIN ============================================>
 
-std::unique_ptr<Token> sin(const Token& in)
+std::unique_ptr<NumberBaseToken> sin(const Token& in)
 {
 	switch (in.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -68,7 +68,7 @@ NumberToken sin(const NumberToken& in)
 
 // <====================================== COS ============================================>
 
-std::unique_ptr<Token> cos(const Token& in)
+std::unique_ptr<NumberBaseToken> cos(const Token& in)
 {
 	switch (in.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -128,7 +128,7 @@ NumberToken cos(const NumberToken& in)
 
 // <====================================== TAN ============================================>
 
-std::unique_ptr<Token> tan(const Token& in)
+std::unique_ptr<NumberBaseToken> tan(const Token& in)
 {
 	switch (in.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -188,7 +188,7 @@ NumberToken tan(const NumberToken& in)
 
 // <====================================== ASIN ============================================>
 
-std::unique_ptr<Token> asin(const Token& in)
+std::unique_ptr<NumberBaseToken> asin(const Token& in)
 {
 	switch (in.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -248,7 +248,7 @@ NumberToken asin(const NumberToken& in)
 
 // <====================================== ACOS ============================================>
 
-std::unique_ptr<Token> acos(const Token& in)
+std::unique_ptr<NumberBaseToken> acos(const Token& in)
 {
 	switch (in.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -308,7 +308,7 @@ NumberToken acos(const NumberToken& in)
 
 // <====================================== ATAN ============================================>
 
-std::unique_ptr<Token> atan(const Token& in)
+std::unique_ptr<NumberBaseToken> atan(const Token& in)
 {
 	switch (in.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -368,7 +368,7 @@ NumberToken atan(const NumberToken& in)
 
 // <====================================== SINH ============================================>
 
-std::unique_ptr<Token> sinh(const Token& in)
+std::unique_ptr<NumberBaseToken> sinh(const Token& in)
 {
 	switch (in.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -428,7 +428,7 @@ NumberToken sinh(const NumberToken& in)
 
 // <====================================== COSH ============================================>
 
-std::unique_ptr<Token> cosh(const Token& in)
+std::unique_ptr<NumberBaseToken> cosh(const Token& in)
 {
 	switch (in.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -488,7 +488,7 @@ NumberToken cosh(const NumberToken& in)
 
 // <====================================== TANH ============================================>
 
-std::unique_ptr<Token> tanh(const Token& in)
+std::unique_ptr<NumberBaseToken> tanh(const Token& in)
 {
 	switch (in.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -548,7 +548,7 @@ NumberToken tanh(const NumberToken& in)
 
 // <====================================== ASINH ============================================>
 
-std::unique_ptr<Token> asinh(const Token& in)
+std::unique_ptr<NumberBaseToken> asinh(const Token& in)
 {
 	switch (in.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -608,7 +608,7 @@ NumberToken asinh(const NumberToken& in)
 
 // <====================================== ACOSH ============================================>
 
-std::unique_ptr<Token> acosh(const Token& in)
+std::unique_ptr<NumberBaseToken> acosh(const Token& in)
 {
 	switch (in.get_token_type()) {
 	case TokenType::ZERO_TYPE:
@@ -668,7 +668,7 @@ NumberToken acosh(const NumberToken& in)
 
 // <====================================== ATANH ============================================>
 
-std::unique_ptr<Token> atanh(const Token& in)
+std::unique_ptr<NumberBaseToken> atanh(const Token& in)
 {
 	switch (in.get_token_type()) {
 	case TokenType::ZERO_TYPE:
