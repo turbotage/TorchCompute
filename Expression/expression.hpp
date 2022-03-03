@@ -6,27 +6,37 @@
 namespace tc {
 	namespace expression {
 		
-		using FetcherMap = std::unordered_map<std::string, std::function<torch::Tensor()>>;
+		using FetcherMap = std::unordered_map<std::string, FetcherFuncRef>;
 
 		using ExpressionCreationMap = std::unordered_map<int32_t, std::function<void(
 			const Token&, const FetcherMap&, std::vector<std::unique_ptr<Node>>&)>>;
 
 
-		class Expression : protected Node {
+		class Expression : public Node {
 		public:
+
+			Expression(std::unique_ptr<Node> root_child, const FetcherMap& fetchers);
 
 			Expression(const std::deque<std::unique_ptr<Token>>& tokens, const ExpressionCreationMap& creation_map,
 				const FetcherMap& fetchers);
 
+			tentok eval() override;
+
+			std::unique_ptr<Node> evalnode() override;
+
+			std::unique_ptr<Expression> exprevalnode();
+
+			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
+
+			std::unique_ptr<Expression> exprdiffnode(const VariableToken& var);
+
 			static ExpressionCreationMap default_expression_creation_map();
-
-			virtual tentok eval();
-
-			virtual tentok diff(const VariableToken& var);
-
+			
 		private:
 
-			std::unordered_map<std::string, std::function<torch::Tensor()>> m_VariableFetchers;
+			FetcherMap m_VariableFetchers;
 
 		};
 

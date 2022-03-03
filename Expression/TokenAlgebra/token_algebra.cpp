@@ -88,6 +88,16 @@ NumberToken to_num(const NumberToken& tok)
 	return tok;
 }
 
+NumberToken from_number(float number)
+{
+	return NumberToken(number, false);
+}
+
+NumberToken from_number(std::complex<float> number)
+{
+	return NumberToken(number, true);
+}
+
 
 
 

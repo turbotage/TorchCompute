@@ -28,7 +28,8 @@ add_library(ComputeLib
     #"Compute/lstq.cpp"
     #"Compute/linalg_utils.cpp"
     
-    #"Optim/model.cpp"
+    "Optim/mp_model.cpp"
+    "Optim/mp_expr.cpp"
     #"Optim/optim.cpp"
     #"Optim/strp.cpp"
     

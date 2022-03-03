@@ -28,5 +28,8 @@ namespace tc {
 		NumberToken to_num(const NanToken& tok);
 		NumberToken to_num(const NumberToken& tok);
 
+		NumberToken from_number(float number);
+		NumberToken from_number(std::complex<float> number);
+
 	}
 }

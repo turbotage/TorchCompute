@@ -4,6 +4,12 @@
 #include "Parser/lexer.hpp"
 #include "nodes.hpp"
 
+tc::expression::Expression::Expression(std::unique_ptr<Node> root_child, const FetcherMap& fetchers)
+	: m_VariableFetchers(fetchers)
+{
+	m_Children.push_back(std::move(root_child));
+}
+
 tc::expression::Expression::Expression(const std::deque<std::unique_ptr<Token>>& tokens, const ExpressionCreationMap& creation_map,
 	const FetcherMap& fetchers)
 	: m_VariableFetchers(fetchers)
@@ -26,9 +32,29 @@ tc::expression::tentok tc::expression::Expression::eval()
 	return m_Children[0]->eval();
 }
 
+std::unique_ptr<tc::expression::Node> tc::expression::Expression::evalnode()
+{
+	return std::make_unique<Expression>(std::move(m_Children[0]->evalnode()), m_VariableFetchers);
+}
+
+std::unique_ptr<tc::expression::Expression> tc::expression::Expression::exprevalnode()
+{
+	return std::make_unique<Expression>(std::move(m_Children[0]->evalnode()), m_VariableFetchers);
+}
+
 tc::expression::tentok tc::expression::Expression::diff(const VariableToken& var)
 {
 	return m_Children[0]->diff(var);
+}
+
+std::unique_ptr<tc::expression::Node> tc::expression::Expression::diffnode(const VariableToken& var)
+{
+	return std::unique_ptr<Node>();
+}
+
+std::unique_ptr<tc::expression::Expression> tc::expression::Expression::exprdiffnode(const VariableToken& var)
+{
+	return std::make_unique<Expression>(std::move(m_Children[0]->diffnode(var)), m_VariableFetchers);
 }
 
 tc::expression::ExpressionCreationMap tc::expression::Expression::default_expression_creation_map()

@@ -18,7 +18,8 @@
 #include "Expression/expression.hpp"
 
 // Optim
-//#include "Optim/model.hpp"
+#include "Optim/mp_model.hpp"
+#include "Optim/mp_expr.hpp"
 //#include "Optim/strp.hpp"
 //#include "Optim/optim.hpp"
 

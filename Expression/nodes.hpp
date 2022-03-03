@@ -6,6 +6,8 @@
 namespace tc {
 	namespace expression {
 
+		using FetcherFuncRef = tc::refw<const std::function<torch::Tensor()>>;
+
 		using tentok = std::pair<std::optional<torch::Tensor>, tc::OptUPtr<NumberBaseToken>>;
 
 		std::string tentok_to_string(const tentok& in);
@@ -29,7 +31,11 @@ namespace tc {
 
 			virtual tentok eval() = 0;
 
+			virtual std::unique_ptr<Node> evalnode() = 0;
+
 			virtual tentok diff(const VariableToken& var) = 0;
+
+			virtual std::unique_ptr<Node> diffnode(const VariableToken& var) = 0;
 
 		public:
 			std::vector<std::unique_ptr<Node>> m_Children;
@@ -48,7 +54,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 
@@ -59,7 +69,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		private:
 			torch::Tensor m_Tensor;
@@ -68,15 +82,19 @@ namespace tc {
 		class VariableNode : public Node {
 		public:
 
-			VariableNode(const VariableToken& token, const std::function<torch::Tensor()>& variable_fetcher);
+			VariableNode(const VariableToken& token, FetcherFuncRef variable_fetcher);
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		private:
 			const VariableToken& m_VarToken;
-			const std::function<torch::Tensor()>& m_VariableFetcher; // fetches the tensor
+			FetcherFuncRef m_VariableFetcher; // fetches the tensor
 		};
 
 		// Operators
@@ -90,7 +108,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 
@@ -103,7 +125,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 
@@ -116,7 +142,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 		};
 
 		tentok operator+(const tentok& a, const tentok& b);
@@ -128,7 +158,12 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
+
 		};
 
 		tentok operator-(const tentok& a, const tentok& b);
@@ -140,7 +175,12 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
+
 		};
 
 		tentok pow(const tentok& a, const tentok& b);
@@ -152,7 +192,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 		
@@ -168,7 +212,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 
@@ -181,7 +229,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 
@@ -194,7 +246,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 
@@ -207,7 +263,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 
@@ -220,7 +280,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 
@@ -235,7 +299,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 		
@@ -248,7 +316,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 
@@ -261,7 +333,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 
@@ -274,7 +350,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 
@@ -287,7 +367,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 
@@ -300,7 +384,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 
@@ -313,7 +401,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 
@@ -326,7 +418,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 
@@ -339,7 +435,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 
@@ -352,7 +452,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 
@@ -365,7 +469,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 
@@ -378,7 +486,11 @@ namespace tc {
 
 			tentok eval() override;
 
+			std::unique_ptr<Node> evalnode() override;
+
 			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
 
 		};
 
