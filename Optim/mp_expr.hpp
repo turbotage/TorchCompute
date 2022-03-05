@@ -17,7 +17,7 @@ namespace tc {
 				tc::OptRef<const std::unordered_map<std::string, int>> per_problem_input_map,
 				tc::OptRef<const std::unordered_map<std::string, int>> constant_map);
 
-			MPExpr(const std::string& expression, const std::vector<std::string>& diffexpressions, 
+			MPExpr(const std::string& expression, const std::unordered_map<int, std::string>& diffexpressions,
 				const tc::expression::FetcherMap& fetcher_map,
 				const std::unordered_map<std::string, int>& parameter_map,
 				tc::OptRef<const std::unordered_map<std::string, int>> per_problem_input_map,

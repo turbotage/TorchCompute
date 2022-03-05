@@ -56,7 +56,7 @@ tc::optim::MPExpr::MPExpr(const std::string& expression, const tc::expression::F
 
 }
 
-tc::optim::MPExpr::MPExpr(const std::string& expression, const std::vector<std::string>& diffexpressions, 
+tc::optim::MPExpr::MPExpr(const std::string& expression, const std::unordered_map<int, std::string>& diffexpressions, 
 	const tc::expression::FetcherMap& fetcher_map, 
 	const std::unordered_map<std::string, int>& parameter_map, 
 	tc::OptRef<const std::unordered_map<std::string, int>> per_problem_input_map, 
@@ -69,23 +69,27 @@ tc::optim::MPExpr::MPExpr(const std::string& expression, const std::vector<std::
 	if (constant_map.has_value())
 		this->constant_map = constant_map;
 
-	tc::expression::LexContext context;
+	if (diffexpressions.size() != parameter_map.size())
+		throw std::runtime_error("number of diffexpressions was not equal to number of parameters");
+
+	tc::expression::LexContext basecontext;
 	for (auto& var : this->parameter_map) {
-		context.variables.emplace_back(var.first);
+		basecontext.variables.emplace_back(var.first);
 	}
 	if (per_problem_input_map.has_value()) {
 		for (auto& var : this->per_problem_input_map.value()) {
-			context.variables.emplace_back(var.first);
+			basecontext.variables.emplace_back(var.first);
 		}
 	}
 	if (constant_map.has_value()) {
 		for (auto& var : this->constant_map.value()) {
-			context.variables.emplace_back(var.first);
+			basecontext.variables.emplace_back(var.first);
 		}
 	}
 
 	// Eval
 	{
+		auto context = basecontext;
 		tc::expression::Lexer lexer(std::move(context));
 
 		auto toks = lexer.lex(expression);
@@ -98,6 +102,18 @@ tc::optim::MPExpr::MPExpr(const std::string& expression, const std::vector<std::
 	}
 
 	// Diff
+	for (auto& par : diffexpressions) {
+		auto context = basecontext;
+		tc::expression::Lexer lexer(std::move(context));
+
+		auto toks = lexer.lex(expression);
+		
+		tc::expression::Shunter shunter;
+		auto shunter_toks = shunter.shunt(std::move(toks));
+
+		diff.emplace(par.first, shunter_toks, tc::expression::Expression::default_expression_creation_map(), this->fetcher_map);
+	}
 	
+
 
 }
