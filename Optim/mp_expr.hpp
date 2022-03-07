@@ -29,8 +29,6 @@ namespace tc {
 				const std::vector<std::string>& parameters,
 				tc::OptRef<const std::vector<std::string>> constants);
 
-		private:
-
 			std::string expression;
 			std::unique_ptr<tc::expression::Expression> eval;
 

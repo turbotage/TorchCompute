@@ -6,7 +6,7 @@
 namespace tc {
 	namespace expression {
 		
-		using FetcherMap = std::unordered_map<std::string, FetcherFuncRef>;
+		using FetcherMap = std::unordered_map<std::string, FetcherFunc>;
 
 		using ExpressionCreationMap = std::unordered_map<int32_t, std::function<void(
 			const Token&, const FetcherMap&, std::vector<std::unique_ptr<Node>>&)>>;
@@ -33,10 +33,10 @@ namespace tc {
 			std::unique_ptr<Expression> exprdiffnode(const VariableToken& var);
 
 			static ExpressionCreationMap default_expression_creation_map();
-			
+
 		private:
 
-			FetcherMap m_VariableFetchers;
+			const FetcherMap& m_VariableFetchers;
 
 		};
 

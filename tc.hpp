@@ -28,8 +28,14 @@ namespace tc {
 	template<typename T>
 	using OptOutRef = std::optional<refw<T>>;
 
+	template<typename T, typename U>
+	using OptOutPairRef = std::optional<std::pair<refw<T>, refw<U>>>;
+
 	template<typename T>
 	using OptRef = std::optional<refw<T>>;
+
+	template<typename T, typename U>
+	using OptPairRef = std::optional<std::pair<refw<T>, refw<U>>>;
 
 	template<typename T>
 	using OptUPtr = std::optional<std::unique_ptr<T>>;

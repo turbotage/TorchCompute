@@ -6,6 +6,8 @@
 namespace tc {
 	namespace expression {
 
+
+		using FetcherFunc = std::function<torch::Tensor()>;
 		using FetcherFuncRef = tc::refw<const std::function<torch::Tensor()>>;
 
 		using tentok = std::pair<std::optional<torch::Tensor>, tc::OptUPtr<NumberBaseToken>>;
