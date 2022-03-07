@@ -4,6 +4,7 @@
 
 #include <optional>
 #include "../Expression/expression.hpp"
+#include "mp_expr.hpp"
 
 namespace tc {
 	namespace optim {
@@ -15,17 +16,6 @@ namespace tc {
 			tc::OptOutRef<torch::Tensor>,	tc::OptOutRef<torch::Tensor>,	tc::OptOutRef<torch::Tensor>,	tc::OptRef<torch::Tensor>)>;
 
 
-		class MPExpr {
-		public:
-
-
-		private:
-			std::unique_ptr<tc::expression::Expression> eval;
-			std::vector<std::unique_ptr<tc::expression::Expression>> diff;
-			std::vector<std::unique_ptr<tc::expression::Expression>> seconddiff;
-		};
-
-
 		class MPModel {
 		public:
 
@@ -33,28 +23,12 @@ namespace tc {
 		
 			MPModel(MPEvalDiffHessFunc func);
 
-			MPModel(const std::string& expression,
-				std::optional<std::unordered_map<std::string, int>> parameter_map,
-				std::optional<std::unordered_map<std::string, int>> per_problem_input_map,
-				std::optional<std::unordered_map<std::string, int>> constant_map);
-
-			MPModel(const std::string& expression, const std::vector<std::string>& jacexpressions,
-				std::optional<std::unordered_map<std::string, int>> parameter_map,
-				std::optional<std::unordered_map<std::string, int>> per_problem_input_map,
-				std::optional<std::unordered_map<std::string, int>> constant_map);
-
-			MPModel(const std::string& expression, const std::vector<std::string>& jacexpressions, const std::vector<std::string>& hessexpressions,
-				std::optional<std::unordered_map<std::string, int>> parameter_map,
-				std::optional<std::unordered_map<std::string, int>> per_problem_input_map,
-				std::optional<std::unordered_map<std::string, int>> constant_map);
-
+			MPModel(MPExpr&& mpexpr);
 			
 			void to(torch::Device device);
 			
 
 			std::vector<torch::Tensor>& constants();
-
-			torch::Tensor& per_problem_inputs();
 		
 			torch::Tensor& parameters();
 
@@ -71,15 +45,14 @@ namespace tc {
 
 			void res_diff_hess(torch::Tensor& residual, torch::Tensor& jacobian, torch::Tensor& hessian, const torch::Tensor& data);
 
+
+
 		private:
 
 			MPEvalDiffHessFunc m_Func;
 
 			std::unordered_map<std::string, int> m_ConstantMap;
 			std::vector<torch::Tensor> m_Constants;
-
-			std::unordered_map<std::string, int> m_PerProblemInputMap;
-			torch::Tensor m_PerProblemInputs;
 
 			std::unordered_map<std::string, int> m_ParameterMap;
 			torch::Tensor m_Parameters;

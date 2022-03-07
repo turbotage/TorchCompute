@@ -13,25 +13,35 @@ namespace tc {
 
 			MPExpr(const std::string& expression, 
 				const tc::expression::FetcherMap& fetcher_map,
-				const std::unordered_map<std::string, int>& parameter_map,
-				tc::OptRef<const std::unordered_map<std::string, int>> per_problem_input_map,
-				tc::OptRef<const std::unordered_map<std::string, int>> constant_map);
+				const std::vector<std::string>& parameters,
+				tc::OptRef<const std::vector<std::string>> constants);
 
-			MPExpr(const std::string& expression, const std::unordered_map<int, std::string>& diffexpressions,
+			MPExpr(const std::string& expression, 
+				const std::vector<std::string>& diffexpressions,
 				const tc::expression::FetcherMap& fetcher_map,
-				const std::unordered_map<std::string, int>& parameter_map,
-				tc::OptRef<const std::unordered_map<std::string, int>> per_problem_input_map,
-				tc::OptRef<const std::unordered_map<std::string, int>> constant_map);
+				const std::vector<std::string>& parameters,
+				tc::OptRef<const std::vector<std::string>> constants);
+
+			MPExpr(const std::string& expression, 
+				const std::vector<std::string>& diffexpressions,
+				const std::vector<std::string>& seconddiffexpressions,
+				const tc::expression::FetcherMap& fetcher_map,
+				const std::vector<std::string>& parameters,
+				tc::OptRef<const std::vector<std::string>> constants);
 
 		private:
 
+			std::string expression;
 			std::unique_ptr<tc::expression::Expression> eval;
-			std::unordered_map<int, tc::expression::Expression> diff;
-			std::unordered_map<std::pair<int,int>, tc::expression::Expression> seconddiff;
 
-			std::unordered_map<std::string, int> parameter_map;
-			std::optional<std::unordered_map<std::string, int>> per_problem_input_map;
-			std::optional<std::unordered_map<std::string, int>> constant_map;
+			std::vector<std::string> diffexpressions;
+			std::vector<tc::expression::Expression> diff;
+
+			std::vector<std::string> seconddiffexpressions;
+			std::vector<tc::expression::Expression> seconddiff;
+
+			std::vector<std::string> parameters;
+			std::optional<std::vector<std::string>> constants;
 
 			tc::expression::FetcherMap fetcher_map;
 
