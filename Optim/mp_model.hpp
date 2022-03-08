@@ -31,24 +31,22 @@ namespace tc {
 		public:
 
 			MPModel() = delete;
+			MPModel(const MPModel&) = delete;
 		
 			MPModel(MPEvalDiffHessFunc func, MPFirstDiff firstdiff, MPSecondDiff seconddiff);
 
 			MPModel(const std::string& expression,
-				const tc::expression::FetcherMap& fetcher_map,
 				const std::vector<std::string>& parameters,
 				tc::OptRef<const std::vector<std::string>> constants);
 			
 			MPModel(const std::string& expression,
 				const std::vector<std::string>& diffexpressions,
-				const tc::expression::FetcherMap& fetcher_map,
 				const std::vector<std::string>& parameters,
 				tc::OptRef<const std::vector<std::string>> constants);
 
 			MPModel(const std::string& expression,
 				const std::vector<std::string>& diffexpressions,
 				const std::vector<std::string>& seconddiffexpressions,
-				const tc::expression::FetcherMap& fetcher_map,
 				const std::vector<std::string>& parameters,
 				tc::OptRef<const std::vector<std::string>> constants);
 
@@ -84,8 +82,8 @@ namespace tc {
 			MPFirstDiff m_FirstDiff;
 			MPSecondDiff m_SecondDiff;
 
-			std::optional<tc::expression::FetcherMap> m_FetcherMap;
-			std::optional<MPExpr> m_Expr;
+			std::unique_ptr<tc::expression::FetcherMap> m_FetcherMap;
+			std::unique_ptr<MPExpr> m_Expr;
 
 			torch::Tensor m_Parameters;
 			std::vector<torch::Tensor> m_Constants;

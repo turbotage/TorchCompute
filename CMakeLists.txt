@@ -117,6 +117,9 @@ target_link_libraries(ComputeTestLexer ComputeLib)
 #add_executable(ComputeTestLSTQ "Tests/test_lstq.cpp")
 #target_link_libraries(ComputeTestLSTQ ComputeLib)
 
+add_executable(ComputeTestModel "Tests/test_model.cpp")
+target_link_libraries(ComputeTestModel ComputeLib)
+
 add_executable(ComputeTestShunter "Tests/test_shunter.cpp")
 target_link_libraries(ComputeTestShunter ComputeLib)
 

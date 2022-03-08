@@ -64,6 +64,23 @@ namespace tc {
 
 		};
 
+		class TokenFetcherNode : public Node {
+		public:
+
+			TokenFetcherNode(const Token& tok, const FetcherFuncRef& fetcher);
+
+			tentok eval() override;
+
+			std::unique_ptr<Node> evalnode() override;
+
+			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
+
+		private:
+			FetcherFuncRef m_VariableFetcher; // fetches the tensor
+		};
+
 		class TensorNode : public Node {
 		public:
 

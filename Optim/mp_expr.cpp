@@ -49,7 +49,7 @@ tc::optim::MPExpr::MPExpr(const std::string& expression,
 	// Create seconddiff expressions
 	for (int i = 0; i < diff.size(); ++i) {
 		for (int j = 0; j < i + 1; ++j) {
-			seconddiff.emplace_back(diff[i].exprdiffnode(tc::expression::VariableToken(parameters[j])));
+			seconddiff.emplace_back(diff[i]->exprdiffnode(tc::expression::VariableToken(parameters[j])));
 		}
 	}
 	// Get back seconddiff expressions // TODO
@@ -107,13 +107,13 @@ tc::optim::MPExpr::MPExpr(const std::string& expression,
 		tc::expression::Shunter shunter;
 		auto shunter_toks = shunter.shunt(std::move(toks));
 
-		diff.emplace_back(shunter_toks, tc::expression::Expression::default_expression_creation_map(), this->fetcher_map);
+		diff.emplace_back(std::make_unique<tc::expression::Expression>(shunter_toks, tc::expression::Expression::default_expression_creation_map(), this->fetcher_map));
 	}
 
 	// Create seconddiff expressions
 	for (int i = 0; i < diff.size(); ++i) {
 		for (int j = 0; j < i + 1; ++j) {
-			seconddiff.emplace_back(diff[i].exprdiffnode(tc::expression::VariableToken(parameters[j])));
+			seconddiff.emplace_back(diff[i]->exprdiffnode(tc::expression::VariableToken(parameters[j])));
 		}
 	}
 
@@ -128,6 +128,7 @@ tc::optim::MPExpr::MPExpr(const std::string& expression,
 	const tc::expression::FetcherMap& fetcher_map,
 	const std::vector<std::string>& parameters,
 	tc::OptRef<const std::vector<std::string>> constants)
+	: fetcher_map(fetcher_map)
 {
 	this->parameters = parameters;
 	if (constants.has_value())
@@ -177,7 +178,7 @@ tc::optim::MPExpr::MPExpr(const std::string& expression,
 		tc::expression::Shunter shunter;
 		auto shunter_toks = shunter.shunt(std::move(toks));
 
-		diff.emplace_back(shunter_toks, tc::expression::Expression::default_expression_creation_map(), this->fetcher_map);
+		diff.emplace_back(std::make_unique<tc::expression::Expression>(shunter_toks, tc::expression::Expression::default_expression_creation_map(), this->fetcher_map));
 	}
 
 	// Second diff
@@ -190,7 +191,7 @@ tc::optim::MPExpr::MPExpr(const std::string& expression,
 		tc::expression::Shunter shunter;
 		auto shunter_toks = shunter.shunt(std::move(toks));
 
-		seconddiff.emplace_back(shunter_toks, tc::expression::Expression::default_expression_creation_map(), this->fetcher_map);
+		seconddiff.emplace_back(std::make_unique<tc::expression::Expression>(shunter_toks, tc::expression::Expression::default_expression_creation_map(), this->fetcher_map));
 	}
 
 }

@@ -33,15 +33,15 @@ namespace tc {
 			std::unique_ptr<tc::expression::Expression> eval;
 
 			std::vector<std::string> diffexpressions;
-			std::vector<tc::expression::Expression> diff;
+			std::vector<std::unique_ptr<tc::expression::Expression>> diff;
 
 			std::vector<std::string> seconddiffexpressions;
-			std::vector<tc::expression::Expression> seconddiff;
+			std::vector<std::unique_ptr<tc::expression::Expression>> seconddiff;
 
 			std::vector<std::string> parameters;
 			std::optional<std::vector<std::string>> constants;
 
-			tc::expression::FetcherMap fetcher_map;
+			const tc::expression::FetcherMap& fetcher_map;
 
 		};
 

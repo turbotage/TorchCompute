@@ -204,6 +204,35 @@ std::unique_ptr<tc::expression::Node> tc::expression::TokenNode::diffnode(const 
 	return std::make_unique<TokenNode>(ZeroToken(m_pToken->sizes));
 }
 
+// <================================== TOKEN-FETCHER ===================================>
+
+tc::expression::TokenFetcherNode::TokenFetcherNode(const Token& tok, const FetcherFuncRef& fetcher)
+	: m_VariableFetcher(fetcher), Node(copy_token(tok))
+{
+}
+
+tc::expression::tentok tc::expression::TokenFetcherNode::eval()
+{
+	m_pToken->sizes = m_VariableFetcher().sizes().vec();
+	return std::make_pair(std::nullopt, copy_token(*m_pToken));
+}
+
+std::unique_ptr<tc::expression::Node> tc::expression::TokenFetcherNode::evalnode()
+{
+	return std::make_unique<TokenFetcherNode>(*m_pToken, m_VariableFetcher);
+}
+
+tc::expression::tentok tc::expression::TokenFetcherNode::diff(const VariableToken& var)
+{
+	m_pToken->sizes = m_VariableFetcher().sizes().vec();
+	return std::make_pair(std::nullopt, std::make_unique<ZeroToken>(m_pToken->sizes)); // derivative of number is always zero
+}
+
+std::unique_ptr<tc::expression::Node> tc::expression::TokenFetcherNode::diffnode(const VariableToken& var)
+{
+	return std::make_unique<TokenFetcherNode>(ZeroToken(), m_VariableFetcher);
+}
+
 // <================================== TENSOR-NODE ===================================>
 
 tc::expression::TensorNode::TensorNode(const torch::Tensor& tensor)
@@ -260,12 +289,10 @@ tc::expression::tentok tc::expression::VariableNode::diff(const VariableToken& v
 
 std::unique_ptr<tc::expression::Node> tc::expression::VariableNode::diffnode(const VariableToken& var)
 {
-	auto sizes = m_VariableFetcher.get()().sizes().vec();
-
 	if (var.name == m_VarToken.name) {
-		return std::make_unique<TokenNode>(UnityToken(sizes));
+		return std::make_unique<TokenFetcherNode>(UnityToken(), m_VariableFetcher);
 	}
-	return std::make_unique<TokenNode>(ZeroToken(sizes));
+	return std::make_unique<TokenFetcherNode>(ZeroToken(), m_VariableFetcher);
 }
 
 // <================================== NEG ===================================>
@@ -332,8 +359,8 @@ tc::expression::tentok tc::expression::operator*(const tentok& a, const tentok& 
 tc::expression::MulNode::MulNode(std::unique_ptr<Node> left_child, std::unique_ptr<Node> right_child)
 {
 	m_Children.resize(2);
-	m_Children[0] = std::move(left_child);
-	m_Children[1] = std::move(right_child);
+	m_Children.at(0) = std::move(left_child);
+	m_Children.at(1) = std::move(right_child);
 }
 
 tc::expression::tentok tc::expression::MulNode::eval()
@@ -442,7 +469,7 @@ std::unique_ptr<tc::expression::Node> tc::expression::DivNode::diffnode(const Va
 	auto ldr = std::make_unique<MulNode>(std::move(l), std::move(dr));
 	auto dife = std::make_unique<SubNode>(std::move(dlr), std::move(ldr));
 
-	return std::make_unique<DivNode>(dife, std::make_unique<SquareNode>(r2));
+	return std::make_unique<DivNode>(std::move(dife), std::make_unique<SquareNode>(std::move(r2)));
 }
 
 // <================================== ADD ===================================>
@@ -622,7 +649,7 @@ std::unique_ptr<tc::expression::Node> tc::expression::PowNode::diffnode(const Va
 
 	auto pow = std::make_unique<PowNode>(std::move(l1), std::move(r1));
 	auto left = std::make_unique<MulNode>(std::move(dr), std::make_unique<LogNode>(std::move(l2)));
-	auto right = std::make_unique<MulNode>(std::move(r2), std::make_unique<DivNode>(std::move(dl), std::move(l2));
+	auto right = std::make_unique<MulNode>(std::move(r2), std::make_unique<DivNode>(std::move(dl), std::move(l2)));
 	auto add = std::make_unique<AddNode>(std::move(left), std::move(right));
 	return std::make_unique<MulNode>(std::move(pow), std::move(add));
 }
@@ -668,7 +695,7 @@ tc::expression::tentok tc::expression::AbsNode::diff(const VariableToken& var)
 std::unique_ptr<tc::expression::Node> tc::expression::AbsNode::diffnode(const VariableToken& var)
 {
 	auto mul = std::make_unique<MulNode>(m_Children[0]->diffnode(var), m_Children[0]->evalnode());
-	return std::make_unique<DivNode>(mul, evalnode());
+	return std::make_unique<DivNode>(std::move(mul), evalnode());
 }
 
 // <================================== SQRT ===================================>
@@ -712,7 +739,7 @@ tc::expression::tentok tc::expression::SqrtNode::diff(const VariableToken& var)
 std::unique_ptr<tc::expression::Node> tc::expression::SqrtNode::diffnode(const VariableToken& var)
 {
 	auto mul = std::make_unique<MulNode>(std::make_unique<TokenNode>(from_number(0.5f)), m_Children[0]->diffnode(var));
-	return std::make_unique<DivNode>(mul, m_Children[0]->evalnode());
+	return std::make_unique<DivNode>(std::move(mul), m_Children[0]->evalnode());
 }
 
 // <================================== SQUARE ===================================>
@@ -754,9 +781,9 @@ tc::expression::tentok tc::expression::SquareNode::diff(const VariableToken& var
 std::unique_ptr<tc::expression::Node> tc::expression::SquareNode::diffnode(const VariableToken& var)
 {
 	auto two = std::make_unique<TokenNode>(from_number(2.0f));
-	auto two_child = std::make_unique<MulNode>(two, m_Children[0]->evalnode());
+	auto two_child = std::make_unique<MulNode>(std::move(two), std::move(m_Children[0]->evalnode()));
 
-	return std::make_unique<MulNode>(two_child, m_Children[0]->diffnode(var));
+	return std::make_unique<MulNode>(std::move(two_child), std::move(m_Children[0]->diffnode(var)));
 }
 
 // <================================== EXP ===================================>
@@ -797,7 +824,7 @@ tc::expression::tentok tc::expression::ExpNode::diff(const VariableToken& var)
 std::unique_ptr<tc::expression::Node> tc::expression::ExpNode::diffnode(const VariableToken& var)
 {
 	auto exp = std::make_unique<ExpNode>(m_Children[0]->evalnode());
-	return std::make_unique<MulNode>(exp, m_Children[0]->diffnode(var));
+	return std::make_unique<MulNode>(std::move(exp), m_Children[0]->diffnode(var));
 }
 
 // <================================== LOG ===================================>
@@ -1103,7 +1130,7 @@ std::unique_ptr<tc::expression::Node> tc::expression::AtanNode::diffnode(const V
 	auto square = std::make_unique<SquareNode>(m_Children[0]->evalnode());
 	auto dife = std::make_unique<AddNode>(std::move(unity), std::move(square));
 
-	return std::make_unique<DivNode>(m_Children[0]->diffnode(var), std::move(dife));
+	return std::make_unique<DivNode>(std::move(m_Children[0]->diffnode(var)), std::move(dife));
 }
 
 // <================================== SINH ===================================>
@@ -1133,7 +1160,7 @@ tc::expression::tentok tc::expression::SinhNode::eval()
 
 std::unique_ptr<tc::expression::Node> tc::expression::SinhNode::evalnode()
 {
-	return std::make_unique<SinhNode>(m_Children[0]->evalnode());
+	return std::make_unique<SinhNode>(std::move(m_Children[0]->evalnode()));
 }
 
 tc::expression::tentok tc::expression::SinhNode::diff(const VariableToken& var)
@@ -1146,8 +1173,8 @@ tc::expression::tentok tc::expression::SinhNode::diff(const VariableToken& var)
 
 std::unique_ptr<tc::expression::Node> tc::expression::SinhNode::diffnode(const VariableToken& var)
 {
-	return std::make_unique<MulNode>(m_Children[0]->diffnode(var),
-		std::make_unique<CoshNode>(m_Children[0]->evalnode()));
+	return std::make_unique<MulNode>(std::move(m_Children[0]->diffnode(var)),
+		std::make_unique<CoshNode>(std::move(m_Children[0]->evalnode())));
 }
 
 // <================================== COSH ===================================>
@@ -1177,7 +1204,7 @@ tc::expression::tentok tc::expression::CoshNode::eval()
 
 std::unique_ptr<tc::expression::Node> tc::expression::CoshNode::evalnode()
 {
-	return std::make_unique<CoshNode>(m_Children[0]->evalnode());
+	return std::make_unique<CoshNode>(std::move(m_Children[0]->evalnode()));
 }
 
 tc::expression::tentok tc::expression::CoshNode::diff(const VariableToken& var)
@@ -1190,8 +1217,8 @@ tc::expression::tentok tc::expression::CoshNode::diff(const VariableToken& var)
 
 std::unique_ptr<tc::expression::Node> tc::expression::CoshNode::diffnode(const VariableToken& var)
 {
-	return std::make_unique<MulNode>(m_Children[0]->diffnode(var),
-		std::make_unique<SinhNode>(m_Children[0]->evalnode()));
+	return std::make_unique<MulNode>(std::move(m_Children[0]->diffnode(var)),
+		std::make_unique<SinhNode>(std::move(m_Children[0]->evalnode())));
 }
 
 // <================================== TANH ===================================>
@@ -1221,7 +1248,7 @@ tc::expression::tentok tc::expression::TanhNode::eval()
 
 std::unique_ptr<tc::expression::Node> tc::expression::TanhNode::evalnode()
 {
-	return std::make_unique<TanhNode>(m_Children[0]->evalnode());
+	return std::make_unique<TanhNode>(std::move(m_Children[0]->evalnode()));
 }
 
 tc::expression::tentok tc::expression::TanhNode::diff(const VariableToken& var)
@@ -1234,8 +1261,8 @@ tc::expression::tentok tc::expression::TanhNode::diff(const VariableToken& var)
 
 std::unique_ptr<tc::expression::Node> tc::expression::TanhNode::diffnode(const VariableToken& var)
 {
-	auto square = std::make_unique<SquareNode>(std::make_unique<CoshNode>(m_Children[0]->evalnode()));
-	return std::make_unique<DivNode>(m_Children[0]->diffnode(var), std::move(square));
+	auto square = std::make_unique<SquareNode>(std::make_unique<CoshNode>(std::move(m_Children[0]->evalnode())));
+	return std::make_unique<DivNode>(std::move(m_Children[0]->diffnode(var)), std::move(square));
 }
 
 // <================================== ASINH ===================================>
@@ -1265,7 +1292,7 @@ tc::expression::tentok tc::expression::AsinhNode::eval()
 
 std::unique_ptr<tc::expression::Node> tc::expression::AsinhNode::evalnode()
 {
-	return std::make_unique<AsinhNode>(m_Children[0]->evalnode());
+	return std::make_unique<AsinhNode>(std::move(m_Children[0]->evalnode()));
 }
 
 tc::expression::tentok tc::expression::AsinhNode::diff(const VariableToken& var)
@@ -1279,9 +1306,9 @@ tc::expression::tentok tc::expression::AsinhNode::diff(const VariableToken& var)
 std::unique_ptr<tc::expression::Node> tc::expression::AsinhNode::diffnode(const VariableToken& var)
 {
 	auto square = std::make_unique<SquareNode>(m_Children[0]->evalnode());
-	auto add = std::make_unique<AddNode>(square, std::make_unique<TokenNode>(UnityToken()));
+	auto add = std::make_unique<AddNode>(std::move(square), std::make_unique<TokenNode>(UnityToken()));
 	auto sqrt = std::make_unique<SqrtNode>(std::move(add));
-	return std::make_unique<DivNode>(m_Children[0]->diffnode(var), std::move(sqrt));
+	return std::make_unique<DivNode>(std::move(m_Children[0]->diffnode(var)), std::move(sqrt));
 }
 
 // <================================== ACOSH ===================================>
@@ -1311,7 +1338,7 @@ tc::expression::tentok tc::expression::AcoshNode::eval()
 
 std::unique_ptr<tc::expression::Node> tc::expression::AcoshNode::evalnode()
 {
-	return std::make_unique<AcoshNode>(m_Children[0]->evalnode());
+	return std::make_unique<AcoshNode>(std::move(m_Children[0]->evalnode()));
 }
 
 tc::expression::tentok tc::expression::AcoshNode::diff(const VariableToken& var)
@@ -1325,7 +1352,7 @@ tc::expression::tentok tc::expression::AcoshNode::diff(const VariableToken& var)
 std::unique_ptr<tc::expression::Node> tc::expression::AcoshNode::diffnode(const VariableToken& var)
 {
 	auto square = std::make_unique<SquareNode>(m_Children[0]->evalnode());
-	auto sub = std::make_unique<SubNode>(square, std::make_unique<TokenNode>(UnityToken()));
+	auto sub = std::make_unique<SubNode>(std::move(square), std::make_unique<TokenNode>(UnityToken()));
 	auto sqrt = std::make_unique<SqrtNode>(std::move(sub));
 	return std::make_unique<DivNode>(m_Children[0]->diffnode(var), std::move(sqrt));
 }
@@ -1371,6 +1398,6 @@ tc::expression::tentok tc::expression::AtanhNode::diff(const VariableToken& var)
 std::unique_ptr<tc::expression::Node> tc::expression::AtanhNode::diffnode(const VariableToken& var)
 {
 	auto square = std::make_unique<SquareNode>(m_Children[0]->evalnode());
-	auto sub = std::make_unique<SubNode>(std::make_unique<TokenNode>(UnityToken()), square);
+	auto sub = std::make_unique<SubNode>(std::make_unique<TokenNode>(UnityToken()), std::move(square));
 	return std::make_unique<DivNode>(m_Children[0]->diffnode(var), std::move(sub));
 }
