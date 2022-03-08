@@ -12,7 +12,7 @@ int main() {
 
 	std::string expression = "S0*exp(-b*ADC)";
 
-	tc::optim::MPModel mp_model(expression, parameters, constants);
+	tc::optim::MP_Model mp_model(expression, parameters, constants);
 
 	torch::Tensor params = torch::rand({ nprob, npar });
 	torch::Tensor guess = torch::rand({ nprob, npar });

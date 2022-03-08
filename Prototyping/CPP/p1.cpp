@@ -42,7 +42,7 @@ std::vector<int64_t> test_tc_broadcast_shapes(std::vector<int64_t>& shape1, std:
 	return ret;
 }
 
-int main() {
+void test_broadcasting() {
 	// Initializing vector with values
 	std::vector<int64_t> vect1{ 1, 2, 3, 4 };
 
@@ -56,6 +56,12 @@ int main() {
 		std::cout << "," << o;
 	}
 	std::cout << "}";
+}
+
+
+
+int main() {
+	
 
 
 	return 0;

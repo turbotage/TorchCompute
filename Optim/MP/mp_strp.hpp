@@ -1,22 +1,22 @@
 #pragma once
 
-#include "optim.hpp"
+#include "mp_optim.hpp"
 
 #include <limits>
 
 namespace tc {
 	namespace optim {
 
-		class STRPSettings final : public OptimizerSettings {
+		class MP_STRPSettings final : public MP_OptimizerSettings {
 		public:
-			STRPSettings() = delete;
-			STRPSettings(const STRPSettings&) = delete;
-			STRPSettings& operator=(const STRPSettings&) = delete;
+			MP_STRPSettings() = delete;
+			MP_STRPSettings(const MP_STRPSettings&) = delete;
+			MP_STRPSettings& operator=(const MP_STRPSettings&) = delete;
 
-			STRPSettings(STRPSettings&& settings);
+			MP_STRPSettings(MP_STRPSettings&& settings);
 
-			STRPSettings(OptimizerSettings&& optimsettings, const torch::Tensor& start_residuals, const torch::Tensor& start_jacobian,
-				const torch::Tensor& start_deltas, const torch::Tensor& scaling, float mu = 0.25, float eta = 0.74);
+			MP_STRPSettings(MP_OptimizerSettings&& optimsettings, const torch::Tensor& start_residuals, const torch::Tensor& start_jacobian,
+				const torch::Tensor& start_deltas, const torch::Tensor& scaling, float mu = 0.25, float eta = 0.75);
 
 			torch::Tensor start_residuals;
 			torch::Tensor start_jacobian;
@@ -47,7 +47,7 @@ namespace tc {
 			STRPVars(const STRPVars&) = delete;
 			STRPVars& operator=(const STRPVars&) = delete;
 
-			static std::unique_ptr<STRPVars> make(std::unique_ptr<optim::Model>& pModel, torch::Tensor& data,
+			static std::unique_ptr<STRPVars> make(std::unique_ptr<optim::MP_Model>& pModel, torch::Tensor& data,
 				torch::Tensor& residuals, torch::Tensor& jacobian, torch::Tensor& delta, torch::Tensor& scaling, 
 				float mu = 0.25, float eta = 0.75);
 
@@ -115,23 +115,23 @@ namespace tc {
 
 		private:
 
-			STRPVars(const std::unique_ptr<optim::Model>& pModel, torch::Tensor& data,
+			STRPVars(const std::unique_ptr<optim::MP_Model>& pModel, torch::Tensor& data,
 				torch::Tensor& residuals, torch::Tensor& jacobian, torch::Tensor& delta, torch::Tensor& scaling,
 				float mu = 0.25, float eta = 0.75);
 
 		};
 
-		class STRP final : public Optimizer {
+		class MP_STRP final : public MP_Optimizer {
 		public:
 
-			STRP() = delete;
-			STRP(const STRP&) = delete;
-			STRP& operator=(const STRP&) = delete;
+			MP_STRP() = delete;
+			MP_STRP(const MP_STRP&) = delete;
+			MP_STRP& operator=(const MP_STRP&) = delete;
 
-			STRP(STRP&&) = default;
+			MP_STRP(MP_STRP&&) = default;
 
-			static STRP make(STRPSettings&& settings);
-			STRP(OptimizerSettings&& optsettings, std::unique_ptr<STRPVars> strpvars);
+			static MP_STRP make(MP_STRPSettings&& settings);
+			MP_STRP(MP_OptimizerSettings&& optsettings, std::unique_ptr<STRPVars> strpvars);
 
 			torch::Tensor last_parameters();
 			torch::Tensor last_step();
@@ -147,13 +147,13 @@ namespace tc {
 			static torch::Tensor default_scaling_setup(torch::Tensor& J);
 
 			//					res,			  J
-			static std::pair<torch::Tensor, torch::Tensor> default_res_J_setup(optim::Model& model, torch::Tensor data);
+			static std::pair<torch::Tensor, torch::Tensor> default_res_J_setup(optim::MP_Model& model, torch::Tensor data);
 
 		private:
 
 			void on_run() override;
 
-			OptimResult on_acquire_result() override;
+			MP_OptimResult on_acquire_result() override;
 
 			void on_abort() override;
 

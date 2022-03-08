@@ -1,12 +1,12 @@
-#include "../pch.hpp"
+#include "../../pch.hpp"
 
-#include "strp.hpp"
+#include "mp_strp.hpp"
 
 constexpr int SUCCESSFULL_LU_DECOMP = 0;
 
 
-tc::optim::STRPSettings::STRPSettings(STRPSettings&& settings)
-	: OptimizerSettings(std::move(settings)), 
+tc::optim::MP_STRPSettings::MP_STRPSettings(MP_STRPSettings&& settings)
+	: MP_OptimizerSettings(std::move(settings)), 
 	start_residuals(std::move(settings.start_residuals)), 
 	start_jacobian(std::move(settings.start_jacobian)),
 	start_deltas(std::move(settings.start_deltas)),
@@ -15,9 +15,9 @@ tc::optim::STRPSettings::STRPSettings(STRPSettings&& settings)
 {
 }
 
-tc::optim::STRPSettings::STRPSettings(OptimizerSettings&& optimsettings, const torch::Tensor& start_residuals, const torch::Tensor& start_jacobian,
+tc::optim::MP_STRPSettings::MP_STRPSettings(MP_OptimizerSettings&& optimsettings, const torch::Tensor& start_residuals, const torch::Tensor& start_jacobian,
 	const torch::Tensor& start_deltas, const torch::Tensor& scaling, float mu, float eta)
-	: OptimizerSettings(std::move(optimsettings)),
+	: MP_OptimizerSettings(std::move(optimsettings)),
 	start_residuals(start_residuals),
 	start_jacobian(start_jacobian),
 	start_deltas(start_deltas),
@@ -28,7 +28,7 @@ tc::optim::STRPSettings::STRPSettings(OptimizerSettings&& optimsettings, const t
 
 
 
-std::unique_ptr<tc::optim::STRPVars> tc::optim::STRPVars::make(std::unique_ptr<optim::Model>& pModel, torch::Tensor& data,
+std::unique_ptr<tc::optim::STRPVars> tc::optim::STRPVars::make(std::unique_ptr<optim::MP_Model>& pModel, torch::Tensor& data,
 	torch::Tensor& residuals, torch::Tensor& jacobian, torch::Tensor& delta, torch::Tensor& scaling,
 	float mu, float eta)
 {
@@ -253,19 +253,19 @@ void tc::optim::STRPVars::debug_print(bool sizes, bool types, bool values) {
 }
 
 
-tc::optim::STRPVars::STRPVars(const std::unique_ptr<optim::Model>& pModel, torch::Tensor& data,
+tc::optim::STRPVars::STRPVars(const std::unique_ptr<optim::MP_Model>& pModel, torch::Tensor& data,
 	torch::Tensor& residuals, torch::Tensor& jacobian, torch::Tensor& delta, torch::Tensor& scaling,
 	float mu, float eta)
 {
 	torch::InferenceMode im_guard;
 
-	auto dops = pModel->getParameters().options();
+	auto dops = pModel->parameters().options();
 
 	this->mu = mu;
 	this->eta = eta;
 
 	numProbs = data.size(0);
-	numParam = pModel->getParameters().size(1);
+	numParam = pModel->parameters().size(1);
 	numData = data.size(1);
 
 	this->res = residuals;
@@ -306,16 +306,16 @@ tc::optim::STRPVars::STRPVars(const std::unique_ptr<optim::Model>& pModel, torch
 
 
 
-tc::optim::STRP tc::optim::STRP::make(STRPSettings&& settings)
+tc::optim::MP_STRP tc::optim::MP_STRP::make(MP_STRPSettings&& settings)
 {
 	auto pVars = STRPVars::make(settings.pModel, settings.data, settings.start_residuals,
 		settings.start_jacobian, settings.start_deltas, settings.scaling, settings.mu, settings.eta);
 
-	return STRP(std::move(settings), std::move(pVars));
+	return MP_STRP(std::move(settings), std::move(pVars));
 }
 
-tc::optim::STRP::STRP(OptimizerSettings&& optsettings, std::unique_ptr<STRPVars> strpvars)
-	: Optimizer(std::move(optsettings)), m_pVars(std::move(strpvars))
+tc::optim::MP_STRP::MP_STRP(MP_OptimizerSettings&& optsettings, std::unique_ptr<STRPVars> strpvars)
+	: MP_Optimizer(std::move(optsettings)), m_pVars(std::move(strpvars))
 {
 
 }
@@ -323,15 +323,15 @@ tc::optim::STRP::STRP(OptimizerSettings&& optsettings, std::unique_ptr<STRPVars>
 
 
 
-torch::Tensor tc::optim::STRP::last_parameters()
+torch::Tensor tc::optim::MP_STRP::last_parameters()
 {
 	if (!pModel)
 		throw std::runtime_error("Tried to get parameters on optimizer where OptimResult had been acquired");
 
-	return pModel->getParameters();
+	return pModel->parameters();
 }
 
-torch::Tensor tc::optim::STRP::last_step()
+torch::Tensor tc::optim::MP_STRP::last_step()
 {
 	if (!m_pVars)
 		throw std::runtime_error("Tried to get last_step on optimizer where vars had been aquired");
@@ -340,7 +340,7 @@ torch::Tensor tc::optim::STRP::last_step()
 	return m_pVars->plike4;
 }
 
-torch::Tensor tc::optim::STRP::last_jacobian()
+torch::Tensor tc::optim::MP_STRP::last_jacobian()
 {
 	if (!m_pVars)
 		throw std::runtime_error("Tried to get last_jacobian on optimizer where vars had been aquired");
@@ -348,7 +348,7 @@ torch::Tensor tc::optim::STRP::last_jacobian()
 	return m_pVars->J;
 }
 
-torch::Tensor tc::optim::STRP::last_residuals()
+torch::Tensor tc::optim::MP_STRP::last_residuals()
 {
 	if (!m_pVars)
 		throw std::runtime_error("Tried to get last_residuals on optimizer where vars had been aquired");
@@ -356,7 +356,7 @@ torch::Tensor tc::optim::STRP::last_residuals()
 	return m_pVars->res;
 }
 
-torch::Tensor tc::optim::STRP::last_deltas()
+torch::Tensor tc::optim::MP_STRP::last_deltas()
 {
 	if (!m_pVars)
 		throw std::runtime_error("Tried to get last_deltas on optimizer where vars had been aquired");
@@ -364,7 +364,7 @@ torch::Tensor tc::optim::STRP::last_deltas()
 	return m_pVars->delta;
 }
 
-torch::Tensor tc::optim::STRP::last_multiplier()
+torch::Tensor tc::optim::MP_STRP::last_multiplier()
 {
 	if (!m_pVars)
 		throw std::runtime_error("Tried to get last_multiplier on optimizer where vars had been aquired");
@@ -376,20 +376,20 @@ torch::Tensor tc::optim::STRP::last_multiplier()
 
 
 
-std::unique_ptr<tc::optim::STRPVars> tc::optim::STRP::acquire_vars()
+std::unique_ptr<tc::optim::STRPVars> tc::optim::MP_STRP::acquire_vars()
 {
 	return std::move(m_pVars);
 }
 
 
 
-torch::Tensor tc::optim::STRP::default_delta_setup(torch::Tensor& parameters, float multiplier)
+torch::Tensor tc::optim::MP_STRP::default_delta_setup(torch::Tensor& parameters, float multiplier)
 {
 	torch::InferenceMode im_guard;
 	return multiplier * torch::sqrt(torch::square(parameters).sum(1));
 }
 
-torch::Tensor tc::optim::STRP::default_scaling_setup(torch::Tensor& J)
+torch::Tensor tc::optim::MP_STRP::default_scaling_setup(torch::Tensor& J)
 {
 	torch::InferenceMode im_guard;
 	//return torch::sqrt(torch::square(J).sum(1));
@@ -398,21 +398,21 @@ torch::Tensor tc::optim::STRP::default_scaling_setup(torch::Tensor& J)
 	return torch::sqrt(torch::diagonal(torch::bmm(J.transpose(1, 2), J), 0, -2, -1));
 }
 
-std::pair<torch::Tensor, torch::Tensor> tc::optim::STRP::default_res_J_setup(optim::Model& model, torch::Tensor data)
+std::pair<torch::Tensor, torch::Tensor> tc::optim::MP_STRP::default_res_J_setup(optim::MP_Model& model, torch::Tensor data)
 {
 	torch::InferenceMode im_guard;
 
-	torch::Tensor& pars = model.getParameters();
+	torch::Tensor& pars = model.parameters();
 
 	torch::Tensor J = torch::empty({ pars.size(0), data.size(1), pars.size(1) }, pars.options());
 	torch::Tensor res = torch::empty_like(data);
 
-	model.res_diff(res, J, data);
+	model.res_jac(res, J, data);
 
 	return std::make_pair(res, J);
 }
 
-void tc::optim::STRP::on_run()
+void tc::optim::MP_STRP::on_run()
 {
 	if (!m_pVars)
 		throw std::runtime_error("Tried to run() on STRPOptimizer where vars had been acquired");
@@ -420,16 +420,16 @@ void tc::optim::STRP::on_run()
 	solve();
 }
 
-tc::optim::OptimResult tc::optim::STRP::on_acquire_result()
+tc::optim::MP_OptimResult tc::optim::MP_STRP::on_acquire_result()
 {
-	return OptimResult(std::move(pModel));
+	return MP_OptimResult(std::move(pModel));
 }
 
-void tc::optim::STRP::on_abort()
+void tc::optim::MP_STRP::on_abort()
 {
 }
 
-void tc::optim::STRP::dogleg()
+void tc::optim::MP_STRP::dogleg()
 {
 	torch::InferenceMode im_guard;
 
@@ -628,12 +628,12 @@ void tc::optim::STRP::dogleg()
 
 }
 
-void tc::optim::STRP::step()
+void tc::optim::MP_STRP::step()
 {
 	torch::InferenceMode im_guard;
 	//debug_print(true, false);
 
-	pModel->res_diff(m_pVars->res, m_pVars->J, data);
+	pModel->res_jac(m_pVars->res, m_pVars->J, data);
 
 	dogleg();
 
@@ -658,7 +658,7 @@ void tc::optim::STRP::step()
 	//std::cout << "p: " << p << std::endl;
 
 	torch::Tensor& x_last = m_pVars->plike3;
-	x_last.copy_(pModel->getParameters().unsqueeze(-1));
+	x_last.copy_(pModel->parameters().unsqueeze(-1));
 
 	torch::Tensor& ep = m_pVars->deltalike2;
 	{
@@ -666,7 +666,7 @@ void tc::optim::STRP::step()
 		torch::sum_out(ep, m_pVars->reslike1, 1).mul_(0.5f);
 	}
 
-	pModel->getParameters().add_(p.squeeze(-1));
+	pModel->parameters().add_(p.squeeze(-1));
 	
 	
 
@@ -751,7 +751,7 @@ void tc::optim::STRP::step()
 	//std::cout << "p: " << p << std::endl;
 
 	// Update the model with our new parameters
-	torch::add_out(pModel->getParameters(), x_last.squeeze(-1), p.squeeze(-1));
+	torch::add_out(pModel->parameters(), x_last.squeeze(-1), p.squeeze(-1));
 
 	//std::cout << "param: " << m_pModel->getParameters() << std::endl;
 
@@ -769,15 +769,15 @@ void tc::optim::STRP::step()
 }
 
 
-void tc::optim::STRP::solve()
+void tc::optim::MP_STRP::solve()
 {
 	torch::InferenceMode im_guard;
 
 	for (tc::ui32 iter = 0; iter < maxiter + 1; ++iter) {
 		step();
 
-		if (Optimizer::should_stop())
+		if (MP_Optimizer::should_stop())
 			break;
-		Optimizer::set_n_iter(iter);
+		MP_Optimizer::set_n_iter(iter);
 	}
 }

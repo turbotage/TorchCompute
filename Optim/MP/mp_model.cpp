@@ -1,15 +1,15 @@
-#include "../pch.hpp"
+#include "../../pch.hpp"
 
 #include "mp_model.hpp"
 
-#include "../Compute/gradients.hpp"
+#include "../../Compute/gradients.hpp"
 
-tc::optim::MPModel::MPModel(MPEvalDiffHessFunc func, MPFirstDiff firstdiff, MPSecondDiff seconddiff)
+tc::optim::MP_Model::MP_Model(MP_EvalDiffHessFunc func, MP_FirstDiff firstdiff, MP_SecondDiff seconddiff)
 	: m_Func(func), m_FirstDiff(firstdiff), m_SecondDiff(seconddiff)
 {
 }
 
-tc::optim::MPModel::MPModel(const std::string& expression, const std::vector<std::string>& parameters, tc::OptRef<const std::vector<std::string>> constants)
+tc::optim::MP_Model::MP_Model(const std::string& expression, const std::vector<std::string>& parameters, tc::OptRef<const std::vector<std::string>> constants)
 {
 	m_FetcherMap = std::make_unique<tc::expression::FetcherMap>();
 	int32_t size = constants.has_value() ? parameters.size() + constants.value().get().size() : parameters.size();
@@ -37,13 +37,13 @@ tc::optim::MPModel::MPModel(const std::string& expression, const std::vector<std
 		m_FetcherMap->emplace(parameters[i], std::move(par_fetcher));
 	}
 
-	m_Expr = std::make_unique<MPExpr>(std::move(MPExpr(expression, *m_FetcherMap, parameters, constants)));
+	m_Expr = std::make_unique<MP_Expr>(std::move(MP_Expr(expression, *m_FetcherMap, parameters, constants)));
 
 	build_funcs_from_expr();
 
 }
 
-tc::optim::MPModel::MPModel(const std::string& expression, const std::vector<std::string>& diffexpressions, const std::vector<std::string>& parameters, tc::OptRef<const std::vector<std::string>> constants)
+tc::optim::MP_Model::MP_Model(const std::string& expression, const std::vector<std::string>& diffexpressions, const std::vector<std::string>& parameters, tc::OptRef<const std::vector<std::string>> constants)
 {
 	m_FetcherMap = std::make_unique<tc::expression::FetcherMap>();
 	int32_t size = constants.has_value() ? parameters.size() + constants.value().get().size() : parameters.size();
@@ -71,12 +71,12 @@ tc::optim::MPModel::MPModel(const std::string& expression, const std::vector<std
 		m_FetcherMap->emplace(parameters[i], std::move(par_fetcher));
 	}
 
-	m_Expr = std::make_unique<MPExpr>(std::move(MPExpr(expression, *m_FetcherMap, parameters, constants)));
+	m_Expr = std::make_unique<MP_Expr>(std::move(MP_Expr(expression, *m_FetcherMap, parameters, constants)));
 
 	build_funcs_from_expr();
 }
 
-tc::optim::MPModel::MPModel(const std::string& expression, const std::vector<std::string>& diffexpressions, const std::vector<std::string>& seconddiffexpressions, const std::vector<std::string>& parameters, tc::OptRef<const std::vector<std::string>> constants)
+tc::optim::MP_Model::MP_Model(const std::string& expression, const std::vector<std::string>& diffexpressions, const std::vector<std::string>& seconddiffexpressions, const std::vector<std::string>& parameters, tc::OptRef<const std::vector<std::string>> constants)
 {
 	m_FetcherMap = std::make_unique<tc::expression::FetcherMap>();
 	int32_t size = constants.has_value() ? parameters.size() + constants.value().get().size() : parameters.size();
@@ -104,12 +104,12 @@ tc::optim::MPModel::MPModel(const std::string& expression, const std::vector<std
 		m_FetcherMap->emplace(parameters[i], std::move(par_fetcher));
 	}
 
-	m_Expr = std::make_unique<MPExpr>(std::move(MPExpr(expression, *m_FetcherMap, parameters, constants)));
+	m_Expr = std::make_unique<MP_Expr>(std::move(MP_Expr(expression, *m_FetcherMap, parameters, constants)));
 
 	build_funcs_from_expr();
 }
 
-void tc::optim::MPModel::to(torch::Device device)
+void tc::optim::MP_Model::to(torch::Device device)
 {
 	// Move parameters
 	if (m_Parameters.device() != device) {
@@ -125,47 +125,47 @@ void tc::optim::MPModel::to(torch::Device device)
 
 }
 
-std::vector<torch::Tensor>& tc::optim::MPModel::constants()
+std::vector<torch::Tensor>& tc::optim::MP_Model::constants()
 {
 	return m_Constants;
 }
 
-torch::Tensor& tc::optim::MPModel::parameters()
+torch::Tensor& tc::optim::MP_Model::parameters()
 {
 	return m_Parameters;
 }
 
-void tc::optim::MPModel::eval(torch::Tensor& value)
+void tc::optim::MP_Model::eval(torch::Tensor& value)
 {
 	return m_Func(m_Constants, m_Parameters, value, std::nullopt, std::nullopt, std::nullopt);
 }
 
-void tc::optim::MPModel::res(torch::Tensor& residual, const torch::Tensor& data)
+void tc::optim::MP_Model::res(torch::Tensor& residual, const torch::Tensor& data)
 {
 	return m_Func(m_Constants, m_Parameters, residual, std::nullopt, std::nullopt, data);
 }
 
-void tc::optim::MPModel::eval_jac(torch::Tensor& value, torch::Tensor& jacobian)
+void tc::optim::MP_Model::eval_jac(torch::Tensor& value, torch::Tensor& jacobian)
 {
 	return m_Func(m_Constants, m_Parameters, value, jacobian, std::nullopt, std::nullopt);
 }
 
-void tc::optim::MPModel::res_jac(torch::Tensor& residual, torch::Tensor& jacobian, const torch::Tensor& data)
+void tc::optim::MP_Model::res_jac(torch::Tensor& residual, torch::Tensor& jacobian, const torch::Tensor& data)
 {
 	return m_Func(m_Constants, m_Parameters, residual, jacobian, std::nullopt, data);
 }
 
-void tc::optim::MPModel::res_jac_hess(torch::Tensor& residual, torch::Tensor& jacobian, torch::Tensor& hessian, const torch::Tensor& data)
+void tc::optim::MP_Model::res_jac_hess(torch::Tensor& residual, torch::Tensor& jacobian, torch::Tensor& hessian, const torch::Tensor& data)
 {
 	return m_Func(m_Constants, m_Parameters, residual, jacobian, hessian, data);
 }
 
-void tc::optim::MPModel::diff(torch::Tensor& value, int32_t index)
+void tc::optim::MP_Model::diff(torch::Tensor& value, int32_t index)
 {
 	return m_FirstDiff(m_Constants, m_Parameters, index, value);
 }
 
-void tc::optim::MPModel::second_diff(torch::Tensor& value, const std::pair<int32_t, int32_t>& indices)
+void tc::optim::MP_Model::second_diff(torch::Tensor& value, const std::pair<int32_t, int32_t>& indices)
 {
 	return m_SecondDiff(m_Constants, m_Parameters, indices, value);
 }
@@ -178,7 +178,7 @@ void tc::optim::MPModel::second_diff(torch::Tensor& value, const std::pair<int32
 
 
 
-void tc::optim::MPModel::build_funcs_from_expr()
+void tc::optim::MP_Model::build_funcs_from_expr()
 {
 	
 	m_Func = [this](

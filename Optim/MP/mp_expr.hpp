@@ -1,28 +1,28 @@
 #pragma once
 
-#include "../pch.hpp"
+#include "../../pch.hpp"
 
-#include "../Expression/expression.hpp"
-#include "../Expression/nodes.hpp"
+#include "../../Expression/expression.hpp"
+#include "../../Expression/nodes.hpp"
 
 namespace tc {
 	namespace optim {
 
-		class MPExpr {
+		class MP_Expr {
 		public:
 
-			MPExpr(const std::string& expression, 
+			MP_Expr(const std::string& expression, 
 				const tc::expression::FetcherMap& fetcher_map,
 				const std::vector<std::string>& parameters,
 				tc::OptRef<const std::vector<std::string>> constants);
 
-			MPExpr(const std::string& expression, 
+			MP_Expr(const std::string& expression, 
 				const std::vector<std::string>& diffexpressions,
 				const tc::expression::FetcherMap& fetcher_map,
 				const std::vector<std::string>& parameters,
 				tc::OptRef<const std::vector<std::string>> constants);
 
-			MPExpr(const std::string& expression, 
+			MP_Expr(const std::string& expression, 
 				const std::vector<std::string>& diffexpressions,
 				const std::vector<std::string>& seconddiffexpressions,
 				const tc::expression::FetcherMap& fetcher_map,

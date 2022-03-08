@@ -28,10 +28,10 @@ add_library(ComputeLib
     #"Compute/lstq.cpp"
     #"Compute/linalg_utils.cpp"
     
-    "Optim/mp_model.cpp"
-    "Optim/mp_expr.cpp"
-    #"Optim/optim.cpp"
-    #"Optim/strp.cpp"
+    "Optim/MP/mp_model.cpp"
+    "Optim/MP/mp_expr.cpp"
+    "Optim/MP/mp_optim.cpp"
+    "Optim/MP/mp_strp.cpp"
     
     "Expression/TokenAlgebra/Unary/neg.cpp"
     "Expression/TokenAlgebra/Unary/trig.cpp"

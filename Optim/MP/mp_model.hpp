@@ -1,50 +1,50 @@
 #pragma once
 
-#include "../pch.hpp"
+#include "../../pch.hpp"
 
 #include <optional>
-#include "../Expression/expression.hpp"
+#include "../../Expression/expression.hpp"
 #include "mp_expr.hpp"
 
 namespace tc {
 	namespace optim {
 	
-		using MPEvalDiffHessFunc = std::function<void(
+		using MP_EvalDiffHessFunc = std::function<void(
 			// Constants						// Parameters
 			const std::vector<torch::Tensor>&,	const torch::Tensor&,
 			// Values						// Jacobian						// Hessian						// Data,
 			tc::OptOutRef<torch::Tensor>,	tc::OptOutRef<torch::Tensor>,	tc::OptOutRef<torch::Tensor>,	tc::OptRef<const torch::Tensor>)>;
 
-		using MPFirstDiff = std::function<void(
+		using MP_FirstDiff = std::function<void(
 			// Constants						// Parameters			// Variable index
 			const std::vector<torch::Tensor>&,	const torch::Tensor&,	int32_t,
 			// Derivative
 			torch::Tensor&)>;
 
-		using MPSecondDiff = std::function<void(
+		using MP_SecondDiff = std::function<void(
 			// Constants						// Parameters			// Variable indices
 			const std::vector<torch::Tensor>&,	const torch::Tensor&,	const std::pair<int32_t, int32_t>&,
 			// Second Derivative
 			torch::Tensor&)>;
 
-		class MPModel {
+		class MP_Model {
 		public:
 
-			MPModel() = delete;
-			MPModel(const MPModel&) = delete;
+			MP_Model() = delete;
+			MP_Model(const MP_Model&) = delete;
 		
-			MPModel(MPEvalDiffHessFunc func, MPFirstDiff firstdiff, MPSecondDiff seconddiff);
+			MP_Model(MP_EvalDiffHessFunc func, MP_FirstDiff firstdiff, MP_SecondDiff seconddiff);
 
-			MPModel(const std::string& expression,
+			MP_Model(const std::string& expression,
 				const std::vector<std::string>& parameters,
 				tc::OptRef<const std::vector<std::string>> constants);
 			
-			MPModel(const std::string& expression,
+			MP_Model(const std::string& expression,
 				const std::vector<std::string>& diffexpressions,
 				const std::vector<std::string>& parameters,
 				tc::OptRef<const std::vector<std::string>> constants);
 
-			MPModel(const std::string& expression,
+			MP_Model(const std::string& expression,
 				const std::vector<std::string>& diffexpressions,
 				const std::vector<std::string>& seconddiffexpressions,
 				const std::vector<std::string>& parameters,
@@ -78,12 +78,12 @@ namespace tc {
 
 		private:
 
-			MPEvalDiffHessFunc m_Func;
-			MPFirstDiff m_FirstDiff;
-			MPSecondDiff m_SecondDiff;
+			MP_EvalDiffHessFunc m_Func;
+			MP_FirstDiff m_FirstDiff;
+			MP_SecondDiff m_SecondDiff;
 
 			std::unique_ptr<tc::expression::FetcherMap> m_FetcherMap;
-			std::unique_ptr<MPExpr> m_Expr;
+			std::unique_ptr<MP_Expr> m_Expr;
 
 			torch::Tensor m_Parameters;
 			std::vector<torch::Tensor> m_Constants;

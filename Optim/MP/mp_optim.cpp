@@ -1,19 +1,19 @@
-#include "../pch.hpp"
+#include "../../pch.hpp"
 
-#include "optim.hpp"
+#include "mp_optim.hpp"
 
-#include "../Compute/gradients.hpp"
-
-
+#include "../../Compute/gradients.hpp"
 
 
-tc::optim::OptimizerSettings::OptimizerSettings(std::unique_ptr<optim::Model> pModel, 
+
+
+tc::optim::MP_OptimizerSettings::MP_OptimizerSettings(std::unique_ptr<optim::MP_Model> pModel, 
 	const torch::Tensor& data, tc::ui32 maxiter)
 {
-	if (pModel->getParameters().size(0) != data.size(0))
+	if (pModel->parameters().size(0) != data.size(0))
 		throw std::runtime_error("Number sizes in parameter and data did not match");
 
-	if (!pModel->getParameters().is_contiguous())
+	if (!pModel->parameters().is_contiguous())
 		throw std::runtime_error("Optimizer requires contigous parameters");
 
 	if (!data.is_contiguous())
@@ -25,7 +25,7 @@ tc::optim::OptimizerSettings::OptimizerSettings(std::unique_ptr<optim::Model> pM
 }
 
 /*
-tc::optim::OptimizerSettings::OptimizerSettings(OptimizerSettings&& other) noexcept
+tc::optim::MPOptimizerSettings::MPOptimizerSettings(MPOptimizerSettings&& other) noexcept
 	: pModel(std::move(other.pModel)),
 	data(std::move(other.data)),
 	maxiter(other.maxiter)
@@ -33,11 +33,11 @@ tc::optim::OptimizerSettings::OptimizerSettings(OptimizerSettings&& other) noexc
 }
 */
 
-tc::optim::OptimizerSettings::~OptimizerSettings()
+tc::optim::MP_OptimizerSettings::~MP_OptimizerSettings()
 {
 }
 
-tc::optim::OptimResult::OptimResult(std::unique_ptr<optim::Model> pFinalModel)
+tc::optim::MP_OptimResult::MP_OptimResult(std::unique_ptr<optim::MP_Model> pFinalModel)
 	: pFinalModel(std::move(pFinalModel))
 {
 
@@ -45,19 +45,19 @@ tc::optim::OptimResult::OptimResult(std::unique_ptr<optim::Model> pFinalModel)
 
 
 
-tc::optim::Optimizer::Optimizer(OptimizerSettings&& settings) 
+tc::optim::MP_Optimizer::MP_Optimizer(MP_OptimizerSettings&& settings) 
  : pModel(std::move(settings.pModel)), data(settings.data),
 	maxiter(settings.maxiter)
 {
 
 }
 
-void tc::optim::Optimizer::run()
+void tc::optim::MP_Optimizer::run()
 {
 	on_run();
 }
 
-tc::optim::OptimResult tc::optim::Optimizer::acquire_result()
+tc::optim::MP_OptimResult tc::optim::MP_Optimizer::acquire_result()
 {
 	if (m_HasAcquiredResult)
 		throw std::runtime_error("Tried to acquire results from optimizer twice");
@@ -66,23 +66,23 @@ tc::optim::OptimResult tc::optim::Optimizer::acquire_result()
 	return on_acquire_result();
 }
 
-void tc::optim::Optimizer::abort()
+void tc::optim::MP_Optimizer::abort()
 {
 	m_ShouldStop = true;
 	on_abort();
 }
 
-tc::ui32 tc::optim::Optimizer::get_n_iter() const
+tc::ui32 tc::optim::MP_Optimizer::get_n_iter() const
 {
 	return m_Iter;
 }
 
-void tc::optim::Optimizer::set_n_iter(tc::ui32 iter)
+void tc::optim::MP_Optimizer::set_n_iter(tc::ui32 iter)
 {
 	m_Iter = iter;
 }
 
-bool tc::optim::Optimizer::should_stop() const
+bool tc::optim::MP_Optimizer::should_stop() const
 {
 	return m_ShouldStop;
 }

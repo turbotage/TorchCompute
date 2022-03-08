@@ -58,12 +58,12 @@ std::tuple<torch::Tensor, torch::Tensor> tc::compute::KMeans::maxSimilarity(torc
 		throw new std::runtime_error("Unsupported type for cuda device in KMeans routine");
 
 	// Some bug here
-	int id;
-	cudaGetDevice(&id);
+	//int id;
+	//cudaGetDevice(&id);
 	size_t free, total;
 	cudaMemGetInfo(&free, &total);
 	//std::cout << "GPU: " << id << "  free: " << free << "  total:  " << total;
-
+	
 	uint64_t allocated = total - free;
 
 

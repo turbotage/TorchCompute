@@ -8,8 +8,6 @@
 //#include "Compute/random.hpp"
 
 // Expression
-//#include "Expression/expression.hpp"
-//#include "Expression/expression_nodes.hpp"
 #include "Expression/Parser/lexer.hpp"
 #include "Expression/Parser/shunter.hpp"
 #include "Expression/TokenAlgebra/token_algebra.hpp"
@@ -18,10 +16,10 @@
 #include "Expression/expression.hpp"
 
 // Optim
-#include "Optim/mp_model.hpp"
-#include "Optim/mp_expr.hpp"
-//#include "Optim/strp.hpp"
-//#include "Optim/optim.hpp"
+#include "Optim/MP/mp_model.hpp"
+#include "Optim/MP/mp_expr.hpp"
+#include "Optim/MP/mp_optim.hpp"
+#include "Optim/MP/mp_strp.hpp"
 
 // Models
 //#include "Models/models.hpp"

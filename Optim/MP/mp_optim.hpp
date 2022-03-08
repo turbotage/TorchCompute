@@ -1,63 +1,61 @@
 #pragma once
 
-#include "../pch.hpp"
-
-#include "model.hpp"
+#include "mp_model.hpp"
 #include <atomic>
 
 namespace tc {
 	namespace optim {
 
-		class OptimizerSettings {
+		class MP_OptimizerSettings {
 		public:
-			OptimizerSettings() = delete;
-			OptimizerSettings(const OptimizerSettings&) = delete;
-			OptimizerSettings& operator=(const OptimizerSettings&) = delete;
+			MP_OptimizerSettings() = delete;
+			MP_OptimizerSettings(const MP_OptimizerSettings&) = delete;
+			MP_OptimizerSettings& operator=(const MP_OptimizerSettings&) = delete;
 
-			OptimizerSettings(std::unique_ptr<optim::Model> pModel, const torch::Tensor& data, tc::ui32 maxiter = 50);
+			MP_OptimizerSettings(std::unique_ptr<optim::MP_Model> pModel, const torch::Tensor& data, tc::ui32 maxiter = 50);
 
-			OptimizerSettings(OptimizerSettings&&) = default;
+			MP_OptimizerSettings(MP_OptimizerSettings&&) = default;
 
-			virtual ~OptimizerSettings();
+			virtual ~MP_OptimizerSettings();
 
-			std::unique_ptr<optim::Model>			pModel;
+			std::unique_ptr<optim::MP_Model>			pModel;
 			torch::Tensor							data;
 			tc::ui32								maxiter = 50;
 		};
 
-		class OptimResult {
+		class MP_OptimResult {
 		public:
 
-			OptimResult() = delete;
-			OptimResult(const OptimResult&) = delete;
-			OptimResult& operator=(const OptimResult&) = delete;
+			MP_OptimResult() = delete;
+			MP_OptimResult(const MP_OptimResult&) = delete;
+			MP_OptimResult& operator=(const MP_OptimResult&) = delete;
 
-			OptimResult(OptimResult&&) = default;
+			MP_OptimResult(MP_OptimResult&&) = default;
 
-			OptimResult(std::unique_ptr<optim::Model> pFinalModel);
+			MP_OptimResult(std::unique_ptr<optim::MP_Model> pFinalModel);
 			
-			std::unique_ptr<optim::Model> pFinalModel;
+			std::unique_ptr<optim::MP_Model> pFinalModel;
 
 		protected:
-			friend class Optimizer;
+			friend class MP_Optimizer;
 
 
 		};
 
-		class Optimizer {
+		class MP_Optimizer {
 		public:
 
-			Optimizer() = delete;
-			Optimizer(const Optimizer&) = delete;
-			Optimizer& operator=(const Optimizer&) = delete;
+			MP_Optimizer() = delete;
+			MP_Optimizer(const MP_Optimizer&) = delete;
+			MP_Optimizer& operator=(const MP_Optimizer&) = delete;
 
-			Optimizer(Optimizer&&) = default;
+			MP_Optimizer(MP_Optimizer&&) = default;
 
-			Optimizer(OptimizerSettings&& settings);
+			MP_Optimizer(MP_OptimizerSettings&& settings);
 
 			void run();
 
-			OptimResult acquire_result();
+			MP_OptimResult acquire_result();
 
 			void abort();
 
@@ -67,7 +65,7 @@ namespace tc {
 
 			virtual void on_run() = 0;
 
-			virtual OptimResult on_acquire_result() = 0;
+			virtual MP_OptimResult on_acquire_result() = 0;
 
 			virtual void on_abort() = 0;
 
@@ -77,7 +75,7 @@ namespace tc {
 
 		protected:
 
-			std::unique_ptr<optim::Model>			pModel;
+			std::unique_ptr<optim::MP_Model>			pModel;
 			torch::Tensor							data;
 			tc::ui32								maxiter = 50;
 
