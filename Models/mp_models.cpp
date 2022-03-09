@@ -60,6 +60,39 @@ void tc::models::mp_adc_eval_jac_hess(
 
 }
 
+void tc::models::mp_adc_diff(
+	// Constants									// Parameters						// Variable index
+	const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters, int32_t index,
+	// Derivative
+	torch::Tensor& diff) 
+{
+	torch::Tensor S0 = parameters.select(1, 0).unsqueeze(-1);
+	torch::Tensor ADC = parameters.select(1, 1).unsqueeze(-1);
+	torch::Tensor b = constants[0];
+
+	if (index == 0) {
+		diff = torch::exp(b.neg() * ADC);
+		return;
+	}
+	else if (index == 1) {
+		diff = b.neg() * S0 * torch::exp(b.neg() * ADC);
+		return;
+	}
+
+	throw std::runtime_error("Only allowed indices for mp_adc_diff is 1 or 0");
+}
+
+void tc::models::mp_adc_diff2(
+	// Constants									// Parameters						// Variable indices
+	const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters, const std::pair<int32_t, int32_t>& indices,
+	// Derivative
+	torch::Tensor& diff2)
+{
+	throw std::runtime_error("Not implemented");
+}
+
+
+
 
 
 void tc::models::mp_vfa_eval_jac_hess(
@@ -139,6 +172,26 @@ void tc::models::mp_vfa_eval_jac_hess(
 
 }
 
+void tc::models::mp_vfa_diff(
+	// Constants									// Parameters						// Variable index
+	const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters, int32_t index,
+	// Derivative
+	torch::Tensor& diff)
+{
+	throw std::runtime_error("Not implemented");
+}
+
+void tc::models::mp_vfa_diff2(
+	// Constants									// Parameters						// Variable indices
+	const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters, const std::pair<int32_t, int32_t>& indices,
+	// Derivative
+	torch::Tensor& diff2)
+{
+	throw std::runtime_error("Not implemented");
+}
+
+
+
 
 
 void tc::models::mp_psir_eval_jac_hess(
@@ -208,6 +261,26 @@ void tc::models::mp_psir_eval_jac_hess(
 	}
 
 }
+
+void tc::models::mp_psir_diff(
+	// Constants									// Parameters						// Variable index
+	const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters, int32_t index,
+	// Derivative
+	torch::Tensor& diff)
+{
+	throw std::runtime_error("Not implemented");
+}
+
+void tc::models::mp_psir_diff2(
+	// Constants									// Parameters						// Variable indices
+	const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters, const std::pair<int32_t, int32_t>& indices,
+	// Derivative
+	torch::Tensor& diff2)
+{
+	throw std::runtime_error("Not implemented");
+}
+
+
 
 
 
@@ -281,6 +354,24 @@ void tc::models::mp_irmag_eval_jac_hess(
 
 }
 
+void tc::models::mp_irmag_diff(
+	// Constants									// Parameters						// Variable index
+	const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters, int32_t index,
+	// Derivative
+	torch::Tensor& diff)
+{
+	throw std::runtime_error("Not implemented");
+}
+
+void tc::models::mp_irmag_diff2(
+	// Constants									// Parameters						// Variable indices
+	const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters, const std::pair<int32_t, int32_t>& indices,
+	// Derivative
+	torch::Tensor& diff2)
+{
+	throw std::runtime_error("Not implemented");
+}
+
 
 
 void tc::models::mp_t2_eval_jac_hess(
@@ -344,7 +435,23 @@ void tc::models::mp_t2_eval_jac_hess(
 
 }
 
+void tc::models::mp_t2_diff(
+	// Constants									// Parameters						// Variable index
+	const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters, int32_t index,
+	// Derivative
+	torch::Tensor& diff)
+{
+	throw std::runtime_error("Not implemented");
+}
 
+void tc::models::mp_t2_diff2(
+	// Constants									// Parameters						// Variable indices
+	const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters, const std::pair<int32_t, int32_t>& indices,
+	// Derivative
+	torch::Tensor& diff2)
+{
+	throw std::runtime_error("Not implemented");
+}
 
 
 
