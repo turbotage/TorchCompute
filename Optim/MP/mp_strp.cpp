@@ -28,14 +28,14 @@ tc::optim::MP_STRPSettings::MP_STRPSettings(MP_OptimizerSettings&& optimsettings
 
 
 
-std::unique_ptr<tc::optim::STRPVars> tc::optim::STRPVars::make(std::unique_ptr<optim::MP_Model>& pModel, torch::Tensor& data,
+std::unique_ptr<tc::optim::MP_STRPVars> tc::optim::MP_STRPVars::make(std::unique_ptr<optim::MP_Model>& pModel, torch::Tensor& data,
 	torch::Tensor& residuals, torch::Tensor& jacobian, torch::Tensor& delta, torch::Tensor& scaling,
 	float mu, float eta)
 {
-	return std::unique_ptr<STRPVars>(new STRPVars(pModel, data, residuals, jacobian, delta, scaling, mu, eta));
+	return std::unique_ptr<MP_STRPVars>(new MP_STRPVars(pModel, data, residuals, jacobian, delta, scaling, mu, eta));
 }
 
-void tc::optim::STRPVars::to_device(const torch::Device& device)
+void tc::optim::MP_STRPVars::to_device(const torch::Device& device)
 {
 	torch::InferenceMode im_guard;
 
@@ -76,7 +76,7 @@ void tc::optim::STRPVars::to_device(const torch::Device& device)
 
 }
 
-void tc::optim::STRPVars::to_float32()
+void tc::optim::MP_STRPVars::to_float32()
 {
 	torch::InferenceMode im_guard;
 
@@ -107,7 +107,7 @@ void tc::optim::STRPVars::to_float32()
 	inv_scale_matrix.to(torch::ScalarType::Float);
 }
 
-void tc::optim::STRPVars::to_float64()
+void tc::optim::MP_STRPVars::to_float64()
 {
 	torch::InferenceMode im_guard;
 
@@ -138,7 +138,7 @@ void tc::optim::STRPVars::to_float64()
 	inv_scale_matrix.to(torch::ScalarType::Double);
 }
 
-void tc::optim::STRPVars::debug_print(bool sizes, bool types, bool values) {
+void tc::optim::MP_STRPVars::debug_print(bool sizes, bool types, bool values) {
 	torch::InferenceMode im_guard;
 
 	std::cout << "<=================== BEGIN DEBUG-PRINT =====================>\n";
@@ -253,7 +253,7 @@ void tc::optim::STRPVars::debug_print(bool sizes, bool types, bool values) {
 }
 
 
-tc::optim::STRPVars::STRPVars(const std::unique_ptr<optim::MP_Model>& pModel, torch::Tensor& data,
+tc::optim::MP_STRPVars::MP_STRPVars(const std::unique_ptr<optim::MP_Model>& pModel, torch::Tensor& data,
 	torch::Tensor& residuals, torch::Tensor& jacobian, torch::Tensor& delta, torch::Tensor& scaling,
 	float mu, float eta)
 {
@@ -308,13 +308,13 @@ tc::optim::STRPVars::STRPVars(const std::unique_ptr<optim::MP_Model>& pModel, to
 
 tc::optim::MP_STRP tc::optim::MP_STRP::make(MP_STRPSettings&& settings)
 {
-	auto pVars = STRPVars::make(settings.pModel, settings.data, settings.start_residuals,
+	auto pVars = MP_STRPVars::make(settings.pModel, settings.data, settings.start_residuals,
 		settings.start_jacobian, settings.start_deltas, settings.scaling, settings.mu, settings.eta);
 
 	return MP_STRP(std::move(settings), std::move(pVars));
 }
 
-tc::optim::MP_STRP::MP_STRP(MP_OptimizerSettings&& optsettings, std::unique_ptr<STRPVars> strpvars)
+tc::optim::MP_STRP::MP_STRP(MP_OptimizerSettings&& optsettings, std::unique_ptr<MP_STRPVars> strpvars)
 	: MP_Optimizer(std::move(optsettings)), m_pVars(std::move(strpvars))
 {
 
@@ -376,7 +376,7 @@ torch::Tensor tc::optim::MP_STRP::last_multiplier()
 
 
 
-std::unique_ptr<tc::optim::STRPVars> tc::optim::MP_STRP::acquire_vars()
+std::unique_ptr<tc::optim::MP_STRPVars> tc::optim::MP_STRP::acquire_vars()
 {
 	return std::move(m_pVars);
 }

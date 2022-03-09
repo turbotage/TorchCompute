@@ -40,14 +40,14 @@ namespace tc {
 			CAUCHY, // (Steepest descent)
 		};
 
-		class STRPVars {
+		class MP_STRPVars {
 		public:
 
-			STRPVars() = delete;
-			STRPVars(const STRPVars&) = delete;
-			STRPVars& operator=(const STRPVars&) = delete;
+			MP_STRPVars() = delete;
+			MP_STRPVars(const MP_STRPVars&) = delete;
+			MP_STRPVars& operator=(const MP_STRPVars&) = delete;
 
-			static std::unique_ptr<STRPVars> make(std::unique_ptr<optim::MP_Model>& pModel, torch::Tensor& data,
+			static std::unique_ptr<MP_STRPVars> make(std::unique_ptr<optim::MP_Model>& pModel, torch::Tensor& data,
 				torch::Tensor& residuals, torch::Tensor& jacobian, torch::Tensor& delta, torch::Tensor& scaling, 
 				float mu = 0.25, float eta = 0.75);
 
@@ -115,7 +115,7 @@ namespace tc {
 
 		private:
 
-			STRPVars(const std::unique_ptr<optim::MP_Model>& pModel, torch::Tensor& data,
+			MP_STRPVars(const std::unique_ptr<optim::MP_Model>& pModel, torch::Tensor& data,
 				torch::Tensor& residuals, torch::Tensor& jacobian, torch::Tensor& delta, torch::Tensor& scaling,
 				float mu = 0.25, float eta = 0.75);
 
@@ -131,7 +131,7 @@ namespace tc {
 			MP_STRP(MP_STRP&&) = default;
 
 			static MP_STRP make(MP_STRPSettings&& settings);
-			MP_STRP(MP_OptimizerSettings&& optsettings, std::unique_ptr<STRPVars> strpvars);
+			MP_STRP(MP_OptimizerSettings&& optsettings, std::unique_ptr<MP_STRPVars> strpvars);
 
 			torch::Tensor last_parameters();
 			torch::Tensor last_step();
@@ -140,7 +140,7 @@ namespace tc {
 			torch::Tensor last_deltas();
 			torch::Tensor last_multiplier();
 
-			std::unique_ptr<STRPVars> acquire_vars();
+			std::unique_ptr<MP_STRPVars> acquire_vars();
 
 			static torch::Tensor default_delta_setup(torch::Tensor& parameters, float multiplier = 1.0f);
 
@@ -167,7 +167,7 @@ namespace tc {
 
 		private:
 
-			std::unique_ptr<STRPVars> m_pVars;
+			std::unique_ptr<MP_STRPVars> m_pVars;
 
 		};
 

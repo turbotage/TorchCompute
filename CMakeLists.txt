@@ -52,7 +52,7 @@ add_library(ComputeLib
     "Expression/nodes.cpp"
     "Expression/expression.cpp"
     
-    #"Models/models.cpp"
+    "Models/mp_models.cpp"
 
     "tc.cpp"
 )

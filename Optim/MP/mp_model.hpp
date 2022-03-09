@@ -13,7 +13,7 @@ namespace tc {
 			// Constants						// Parameters
 			const std::vector<torch::Tensor>&,	const torch::Tensor&,
 			// Values						// Jacobian						// Hessian						// Data,
-			tc::OptOutRef<torch::Tensor>,	tc::OptOutRef<torch::Tensor>,	tc::OptOutRef<torch::Tensor>,	tc::OptRef<const torch::Tensor>)>;
+			torch::Tensor&,					tc::OptOutRef<torch::Tensor>,	tc::OptOutRef<torch::Tensor>,	tc::OptRef<const torch::Tensor>)>;
 
 		using MP_FirstDiff = std::function<void(
 			// Constants						// Parameters			// Variable index

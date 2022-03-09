@@ -22,5 +22,5 @@
 #include "Optim/MP/mp_strp.hpp"
 
 // Models
-//#include "Models/models.hpp"
+#include "Models/mp_models.hpp"
 
