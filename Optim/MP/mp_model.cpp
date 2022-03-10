@@ -4,9 +4,10 @@
 
 #include "../../Compute/gradients.hpp"
 
-tc::optim::MP_Model::MP_Model(MP_EvalDiffHessFunc func, MP_FirstDiff firstdiff, MP_SecondDiff seconddiff)
+tc::optim::MP_Model::MP_Model(const MP_EvalDiffHessFunc& func, const MP_FirstDiff& firstdiff, const MP_SecondDiff& seconddiff)
 	: m_Func(func), m_FirstDiff(firstdiff), m_SecondDiff(seconddiff)
 {
+
 }
 
 tc::optim::MP_Model::MP_Model(const std::string& expression, const std::vector<std::string>& parameters, tc::OptRef<const std::vector<std::string>> constants)

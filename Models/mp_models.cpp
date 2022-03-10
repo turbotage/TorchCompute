@@ -71,11 +71,11 @@ void tc::models::mp_adc_diff(
 	torch::Tensor b = constants[0];
 
 	if (index == 0) {
-		diff = torch::exp(b.neg() * ADC);
+		torch::exp_out(diff, b.neg() * ADC);
 		return;
 	}
 	else if (index == 1) {
-		diff = b.neg() * S0 * torch::exp(b.neg() * ADC);
+		torch::mul_out(diff, b.neg(), S0 * torch::exp(b.neg() * ADC));
 		return;
 	}
 
@@ -89,6 +89,24 @@ void tc::models::mp_adc_diff2(
 	torch::Tensor& diff2)
 {
 	throw std::runtime_error("Not implemented");
+
+	torch::Tensor S0 = parameters.select(1, 0).unsqueeze(-1);
+	torch::Tensor ADC = parameters.select(1, 1).unsqueeze(-1);
+	torch::Tensor b = constants[0];
+
+	if (indices.first == 0 && indices.second == 0) {
+		diff2.zero_();
+		return;
+	}
+	else if (( indices.first == 0 && indices.second == 1) || (indices.first == 1 && indices.second == 0)) {
+		torch::mul_out(diff2, b.neg(), torch::exp(b.neg() * ADC));
+		return;
+	}
+	else if (indices.first == 1 && indices.second == 1) {
+		torch::mul_out(diff2, torch::square(b) * S0, torch::exp(b.neg() * ADC));
+	}
+
+	throw std::runtime_error("Only allowed indices for mp_adc_diff is 1 or 0");
 }
 
 

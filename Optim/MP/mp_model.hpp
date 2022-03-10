@@ -12,8 +12,8 @@ namespace tc {
 		using MP_EvalDiffHessFunc = std::function<void(
 			// Constants						// Parameters
 			const std::vector<torch::Tensor>&,	const torch::Tensor&,
-			// Values						// Jacobian						// Hessian						// Data,
-			torch::Tensor&,					tc::OptOutRef<torch::Tensor>,	tc::OptOutRef<torch::Tensor>,	tc::OptRef<const torch::Tensor>)>;
+			// Values							// Jacobian						// Hessian						// Data,
+			torch::Tensor&,						tc::OptOutRef<torch::Tensor>,	tc::OptOutRef<torch::Tensor>,	tc::OptRef<const torch::Tensor>)>;
 
 		using MP_FirstDiff = std::function<void(
 			// Constants						// Parameters			// Variable index
@@ -33,7 +33,7 @@ namespace tc {
 			MP_Model() = delete;
 			MP_Model(const MP_Model&) = delete;
 		
-			MP_Model(MP_EvalDiffHessFunc func, MP_FirstDiff firstdiff, MP_SecondDiff seconddiff);
+			MP_Model(const MP_EvalDiffHessFunc& func, const MP_FirstDiff& firstdiff, const MP_SecondDiff& seconddiff);
 
 			MP_Model(const std::string& expression,
 				const std::vector<std::string>& parameters,
