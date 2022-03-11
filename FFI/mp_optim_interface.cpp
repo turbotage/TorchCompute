@@ -254,7 +254,7 @@ void ffi::strp_last_jacobian(ffi::OptimHandle* optim_handle, torch::Tensor** las
 {
 	tc::optim::MP_Optimizer& opt = *optim_handle->p_optim_handle;
 	tc::optim::MP_STRP& strp = dynamic_cast<tc::optim::MP_STRP&>(opt);
-	*last_jacobian = new torch::Tensor(strp.last_parameters());
+	*last_jacobian = new torch::Tensor(strp.last_jacobian());
 }
 
 void ffi::strp_last_residuals(ffi::OptimHandle* optim_handle, torch::Tensor** last_residuals)
