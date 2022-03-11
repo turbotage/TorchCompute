@@ -8,7 +8,7 @@
 
 
 tc::optim::MP_OptimizerSettings::MP_OptimizerSettings(std::unique_ptr<optim::MP_Model> pModel, 
-	const torch::Tensor& data, tc::ui32 maxiter)
+	const torch::Tensor& data)
 {
 	if (pModel->parameters().size(0) != data.size(0))
 		throw std::runtime_error("Number sizes in parameter and data did not match");
@@ -21,7 +21,6 @@ tc::optim::MP_OptimizerSettings::MP_OptimizerSettings(std::unique_ptr<optim::MP_
 
 	this->pModel = std::move(pModel);
 	this->data = data;
-	this->maxiter = maxiter;
 }
 
 /*
@@ -40,15 +39,14 @@ tc::optim::MP_OptimizerSettings::~MP_OptimizerSettings()
 
 
 tc::optim::MP_Optimizer::MP_Optimizer(MP_OptimizerSettings&& settings) 
- : pModel(std::move(settings.pModel)), data(settings.data),
-	maxiter(settings.maxiter)
+ : pModel(std::move(settings.pModel)), data(settings.data)
 {
 
 }
 
-void tc::optim::MP_Optimizer::run()
+void tc::optim::MP_Optimizer::run(tc::ui32 iter)
 {
-	on_run();
+	on_run(iter);
 }
 
 std::unique_ptr<tc::optim::MP_Model> tc::optim::MP_Optimizer::acquire_model()

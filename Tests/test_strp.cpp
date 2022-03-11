@@ -54,7 +54,7 @@ void strp_cpu_ir_anal_specific(int32_t n, int32_t iter, bool print) {
 		std::cout << "scaling: " << scaling << std::endl;
 	}
 
-	tc::optim::MP_OptimizerSettings optsettings(std::move(mp_model), data, iter);
+	tc::optim::MP_OptimizerSettings optsettings(std::move(mp_model), data);
 
 	tc::optim::MP_STRPSettings strpsettings(std::move(optsettings), resJ.first, resJ.second, delta, scaling);
 
@@ -62,7 +62,7 @@ void strp_cpu_ir_anal_specific(int32_t n, int32_t iter, bool print) {
 
 
 	auto strp = optim::MP_STRP::make(std::move(strpsettings));
-	strp->run();
+	strp->run(iter);
 
 	auto t2 = std::chrono::steady_clock::now();
 	std::cout << "time: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
@@ -128,13 +128,13 @@ void strp_cuda_ir_anal_specific(int32_t n, int32_t iter, bool print) {
 		std::cout << "scaling: " << scaling << std::endl;
 	}
 
-	tc::optim::MP_OptimizerSettings optsettings(std::move(mp_model), data, iter);
+	tc::optim::MP_OptimizerSettings optsettings(std::move(mp_model), data);
 	tc::optim::MP_STRPSettings strpsettings(std::move(optsettings), resJ.first, resJ.second, delta, scaling);
 
 	auto t1 = std::chrono::steady_clock::now();
 
 	auto strp = optim::MP_STRP::make(std::move(strpsettings));
-	strp->run();
+	strp->run(iter);
 
 	auto t2 = std::chrono::steady_clock::now();
 	std::cout << "time: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;

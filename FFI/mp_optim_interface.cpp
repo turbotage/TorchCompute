@@ -143,12 +143,12 @@ void ffi::optim_free(ffi::OptimHandle* optim_handle)
 	delete optim_handle;
 }
 
-void ffi::optim_run(ffi::OptimRunHandle** model_run_handle, ffi::OptimHandle* optim_handle)
+void ffi::optim_run(ffi::OptimRunHandle** model_run_handle, ffi::OptimHandle* optim_handle, uint32_t iter)
 {
 	auto mrh = *model_run_handle;
 	mrh = new ffi::OptimRunHandle;
-	mrh->task_future = std::async(std::launch::async, [optim_handle]() {
-			optim_handle->p_optim_handle->run(); });
+	mrh->task_future = std::async(std::launch::async, [optim_handle, iter]() {
+			optim_handle->p_optim_handle->run(iter); });
 }
 
 void ffi::optim_wait(OptimRunHandle* optim_run_handle) {
@@ -236,7 +236,7 @@ void ffi::strp_create(ffi::OptimHandle** optim_handle, ffi::ModelHandle* model_h
 	torch::Tensor delta = tc::optim::MP_STRP::default_delta_setup(mod->parameters());
 	torch::Tensor scaling = tc::optim::MP_STRP::default_scaling_setup(rJ.second);
 
-	tc::optim::MP_OptimizerSettings optsettings(std::move(mod), *data, max_iter);
+	tc::optim::MP_OptimizerSettings optsettings(std::move(mod), *data);
 	tc::optim::MP_STRPSettings strpsettings(std::move(optsettings), rJ.first, rJ.second, delta, scaling, mu, eta);
 
 	auto oh = *optim_handle;

@@ -153,7 +153,7 @@ namespace tc {
 
 		private:
 
-			void on_run() override;
+			void on_run(tc::ui32 iter) override;
 
 			void on_acquire_model() override;
 
@@ -165,7 +165,7 @@ namespace tc {
 
 			void step();
 
-			void solve();
+			void solve(tc::ui32 iter);
 
 		private:
 

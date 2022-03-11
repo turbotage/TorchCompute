@@ -12,7 +12,7 @@ namespace tc {
 			MP_OptimizerSettings(const MP_OptimizerSettings&) = delete;
 			MP_OptimizerSettings& operator=(const MP_OptimizerSettings&) = delete;
 
-			MP_OptimizerSettings(std::unique_ptr<optim::MP_Model> pModel, const torch::Tensor& data, tc::ui32 maxiter = 50);
+			MP_OptimizerSettings(std::unique_ptr<optim::MP_Model> pModel, const torch::Tensor& data);
 
 			MP_OptimizerSettings(MP_OptimizerSettings&&) = default;
 
@@ -20,7 +20,6 @@ namespace tc {
 
 			std::unique_ptr<optim::MP_Model>		pModel;
 			torch::Tensor							data;
-			tc::ui32								maxiter = 50;
 		};
 
 		class MP_Optimizer {
@@ -34,7 +33,7 @@ namespace tc {
 
 			MP_Optimizer(MP_OptimizerSettings&& settings);
 
-			void run();
+			void run(tc::ui32 iter);
 
 			std::unique_ptr<optim::MP_Model> acquire_model();
 
@@ -44,7 +43,7 @@ namespace tc {
 
 		protected:
 
-			virtual void on_run() = 0;
+			virtual void on_run(tc::ui32 iter) = 0;
 
 			virtual void on_acquire_model() = 0;
 
@@ -58,7 +57,6 @@ namespace tc {
 
 			std::unique_ptr<optim::MP_Model>		pModel;
 			torch::Tensor							data;
-			tc::ui32								maxiter = 50;
 
 		private:
 			bool m_HasAcquiredModel = false;

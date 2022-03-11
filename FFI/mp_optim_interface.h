@@ -48,7 +48,7 @@ namespace ffi {
 
 	void optim_free(OptimHandle* optim_handle);
 
-	void optim_run(OptimRunHandle** model_run_handle, OptimHandle* optim_handle);
+	void optim_run(OptimRunHandle** model_run_handle, OptimHandle* optim_handle, uint32_t iter);
 
 	void optim_wait(OptimRunHandle* optim_run_handle);
 	

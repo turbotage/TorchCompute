@@ -412,7 +412,7 @@ std::pair<torch::Tensor, torch::Tensor> tc::optim::MP_STRP::default_res_J_setup(
 	return std::make_pair(res, J);
 }
 
-void tc::optim::MP_STRP::on_run()
+void tc::optim::MP_STRP::on_run(tc::ui32 iter)
 {
 	if (!pModel)
 		throw std::runtime_error("Tried to run() on STRPOptimizer where model had been acquired");
@@ -420,7 +420,7 @@ void tc::optim::MP_STRP::on_run()
 	if (!m_pVars)
 		throw std::runtime_error("Tried to run() on STRPOptimizer where vars had been acquired");
 
-	solve();
+	solve(iter);
 }
 
 void tc::optim::MP_STRP::on_acquire_model()
@@ -772,11 +772,11 @@ void tc::optim::MP_STRP::step()
 }
 
 
-void tc::optim::MP_STRP::solve()
+void tc::optim::MP_STRP::solve(tc::ui32 iter)
 {
 	torch::InferenceMode im_guard;
 
-	for (tc::ui32 iter = 0; iter < maxiter + 1; ++iter) {
+	for (tc::ui32 iter = 0; iter < iter; ++iter) {
 		step();
 
 		if (MP_Optimizer::should_stop())
