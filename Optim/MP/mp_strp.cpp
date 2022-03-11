@@ -772,11 +772,11 @@ void tc::optim::MP_STRP::step()
 }
 
 
-void tc::optim::MP_STRP::solve(tc::ui32 iter)
+void tc::optim::MP_STRP::solve(tc::ui32 maxiter)
 {
 	torch::InferenceMode im_guard;
 
-	for (tc::ui32 iter = 0; iter < iter; ++iter) {
+	for (tc::ui32 iter = 0; iter < maxiter; ++iter) {
 		step();
 
 		if (MP_Optimizer::should_stop())

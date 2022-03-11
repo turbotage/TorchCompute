@@ -165,7 +165,7 @@ namespace tc {
 
 			void step();
 
-			void solve(tc::ui32 iter);
+			void solve(tc::ui32 maxiter);
 
 		private:
 
