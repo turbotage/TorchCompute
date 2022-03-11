@@ -16,9 +16,17 @@ namespace ffi {
 		IR = 5,
 	};
 
-	struct ModelHandle;
-	struct OptimHandle;
-	struct OptimRunHandle;
+	struct ModelHandle {
+		std::unique_ptr<tc::optim::MP_Model> p_model;
+	};
+
+	struct OptimHandle {
+		std::unique_ptr<tc::optim::MP_Optimizer> p_optim_handle;
+	};
+
+	struct OptimRunHandle {
+		std::future<void> task_future;
+	};
 
 
 

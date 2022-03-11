@@ -4,21 +4,6 @@
 
 #include "../Models/mp_models.hpp"
 
-namespace ffi {
-
-	struct ffi::ModelHandle {
-		std::unique_ptr<tc::optim::MP_Model> p_model;
-	};
-
-	struct ffi::OptimHandle {
-		std::unique_ptr<tc::optim::MP_Optimizer> p_optim_handle;
-	};
-
-	struct ffi::OptimRunHandle {
-		std::future<void> task_future;
-	};
-}
-
 
 
 
