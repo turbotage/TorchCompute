@@ -93,7 +93,7 @@ void ffi::model_create_from_expr(ffi::ModelHandle** model_handle, const char* ex
 
 }
 
-void ffi::tc_model_free(ffi::ModelHandle* model_handle)
+void ffi::model_free(ffi::ModelHandle* model_handle)
 {
 	delete model_handle;
 }

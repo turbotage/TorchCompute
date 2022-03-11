@@ -29,7 +29,7 @@ namespace ffi {
 		const char** parameters, int num_parameters,
 		const char** constants, int num_constants);
 
-	void tc_model_free(ModelHandle* model_handle);
+	void model_free(ModelHandle* model_handle);
 
 	void model_set_parameters(ModelHandle* model_handle, torch::Tensor* parameters);
 
