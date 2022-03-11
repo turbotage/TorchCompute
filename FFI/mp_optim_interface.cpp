@@ -222,7 +222,7 @@ void ffi::get_gradient_converging_problems_combined(torch::Tensor** cp, torch::T
 
 
 
-void ffi::strp_create(ffi::OptimHandle** optim_handle, ffi::ModelHandle* model_handle, const torch::Tensor* data, float eta, float mu, uint32_t max_iter)
+void ffi::strp_create(ffi::OptimHandle** optim_handle, ffi::ModelHandle* model_handle, const torch::Tensor* data, float eta, float mu)
 {
 	auto& mod = model_handle->p_model;
 

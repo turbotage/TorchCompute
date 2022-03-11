@@ -84,7 +84,7 @@ namespace ffi {
 
 
 	void strp_create(OptimHandle** optim_handle, ModelHandle* model_handle, const torch::Tensor* data,
-		float eta, float mu, uint32_t max_iter);
+		float eta, float mu);
 
 	void strp_last_parameters(OptimHandle* optim_handle, torch::Tensor** last_parameters);
 	void strp_last_step(OptimHandle* optim_handle, torch::Tensor** last_step);
