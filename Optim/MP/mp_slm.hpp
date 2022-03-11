@@ -11,7 +11,7 @@ namespace tc {
 			MP_SLMSettings(const MP_SLMSettings&) = delete;
 			MP_SLMSettings& operator=(const MP_SLMSettings&) = delete;
 
-			MP_SLMSettings(MP_STRPSettings&& settings);
+			MP_SLMSettings(MP_SLMSettings&& settings);
 
 			MP_SLMSettings(MP_OptimizerSettings&& optimsettings, const torch::Tensor& start_residuals, const torch::Tensor& start_jacobian,
 				const torch::Tensor& start_deltas, const torch::Tensor& scaling, float mu = 0.25, float eta = 0.75);
@@ -25,7 +25,7 @@ namespace tc {
 			float mu = 0.25f;
 			float eta = 0.75f;
 
-		}
+		};
 
 		class MP_SLMVars {
 		public:

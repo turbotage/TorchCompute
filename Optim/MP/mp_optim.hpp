@@ -23,25 +23,6 @@ namespace tc {
 			tc::ui32								maxiter = 50;
 		};
 
-		class MP_OptimResult {
-		public:
-
-			MP_OptimResult() = delete;
-			MP_OptimResult(const MP_OptimResult&) = delete;
-			MP_OptimResult& operator=(const MP_OptimResult&) = delete;
-
-			MP_OptimResult(MP_OptimResult&&) = default;
-
-			MP_OptimResult(std::unique_ptr<optim::MP_Model> pFinalModel);
-			
-			std::unique_ptr<optim::MP_Model> pFinalModel;
-
-		protected:
-			friend class MP_Optimizer;
-
-
-		};
-
 		class MP_Optimizer {
 		public:
 
@@ -55,7 +36,7 @@ namespace tc {
 
 			void run();
 
-			MP_OptimResult acquire_result();
+			std::unique_ptr<optim::MP_Model> acquire_model();
 
 			void abort();
 
@@ -65,7 +46,7 @@ namespace tc {
 
 			virtual void on_run() = 0;
 
-			virtual MP_OptimResult on_acquire_result() = 0;
+			virtual void on_acquire_model() = 0;
 
 			virtual void on_abort() = 0;
 
@@ -80,7 +61,7 @@ namespace tc {
 			tc::ui32								maxiter = 50;
 
 		private:
-			bool m_HasAcquiredResult = false;
+			bool m_HasAcquiredModel = false;
 			// Thread access
 			std::atomic<tc::ui32> m_Iter = 0;
 			std::atomic<bool> m_ShouldStop = false;

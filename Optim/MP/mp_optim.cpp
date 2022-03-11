@@ -37,12 +37,6 @@ tc::optim::MP_OptimizerSettings::~MP_OptimizerSettings()
 {
 }
 
-tc::optim::MP_OptimResult::MP_OptimResult(std::unique_ptr<optim::MP_Model> pFinalModel)
-	: pFinalModel(std::move(pFinalModel))
-{
-
-}
-
 
 
 tc::optim::MP_Optimizer::MP_Optimizer(MP_OptimizerSettings&& settings) 
@@ -57,13 +51,14 @@ void tc::optim::MP_Optimizer::run()
 	on_run();
 }
 
-tc::optim::MP_OptimResult tc::optim::MP_Optimizer::acquire_result()
+std::unique_ptr<tc::optim::MP_Model> tc::optim::MP_Optimizer::acquire_model()
 {
-	if (m_HasAcquiredResult)
+	if (m_HasAcquiredModel)
 		throw std::runtime_error("Tried to acquire results from optimizer twice");
 
-	m_HasAcquiredResult = true;
-	return on_acquire_result();
+	m_HasAcquiredModel = true;
+	on_acquire_model();
+	return std::move(pModel);
 }
 
 void tc::optim::MP_Optimizer::abort()

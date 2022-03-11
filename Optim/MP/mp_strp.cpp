@@ -414,15 +414,18 @@ std::pair<torch::Tensor, torch::Tensor> tc::optim::MP_STRP::default_res_J_setup(
 
 void tc::optim::MP_STRP::on_run()
 {
+	if (!pModel)
+		throw std::runtime_error("Tried to run() on STRPOptimizer where model had been acquired");
+
 	if (!m_pVars)
 		throw std::runtime_error("Tried to run() on STRPOptimizer where vars had been acquired");
 
 	solve();
 }
 
-tc::optim::MP_OptimResult tc::optim::MP_STRP::on_acquire_result()
+void tc::optim::MP_STRP::on_acquire_model()
 {
-	return MP_OptimResult(std::move(pModel));
+
 }
 
 void tc::optim::MP_STRP::on_abort()

@@ -17,10 +17,6 @@ namespace ffi {
 	struct ffi::OptimRunHandle {
 		std::future<void> task_future;
 	};
-
-	struct ffi::OptimEvalHandle {
-		std::unique_ptr<tc::optim::MP_OptimResult> p_optim_result;
-	};
 }
 
 
@@ -155,33 +151,18 @@ void ffi::optim_run(ffi::OptimRunHandle** model_run_handle, ffi::OptimHandle* op
 			optim_handle->p_optim_handle->run(); });
 }
 
+void ffi::optim_wait(OptimRunHandle* optim_run_handle) {
+	optim_run_handle->task_future.get();
+}
+
 void ffi::optim_run_free(ffi::OptimRunHandle* optim_run_handle)
 {
 	delete optim_run_handle;
 }
 
-void ffi::optim_eval(ffi::OptimEvalHandle** optim_eval_handle, ffi::OptimRunHandle* optim_run_handle, ffi::OptimHandle* optim_handle)
+void ffi::optim_get_model(ModelHandle* model_handle, OptimHandle* optim_handle)
 {
-	auto meh = *optim_eval_handle;
-	meh = new ffi::OptimEvalHandle;
-	optim_run_handle->task_future.get();
-	meh->p_optim_result = std::make_unique<tc::optim::MP_OptimResult>(std::move(optim_handle->p_optim_handle->acquire_result()));
-}
-
-void ffi::optim_eval_free(ffi::OptimEvalHandle* optim_eval_handle)
-{
-	delete optim_eval_handle;
-}
-
-void ffi::optim_get_param(torch::Tensor** params, ffi::OptimEvalHandle* optim_eval_handle)
-{
-	auto p = *params;
-	p = new torch::Tensor(optim_eval_handle->p_optim_result->pFinalModel->parameters());
-}
-
-void ffi::optim_get_model(ffi::ModelHandle* model_handle, ffi::OptimEvalHandle* optim_eval_handle)
-{
-	model_handle->p_model = std::move(optim_eval_handle->p_optim_result->pFinalModel);
+	model_handle->p_model = std::move(optim_handle->p_optim_handle->acquire_model());
 }
 
 void ffi::optim_abort(ffi::OptimHandle* optim_handle, ffi::OptimRunHandle* optim_run_handle)

@@ -140,6 +140,8 @@ namespace tc {
 			torch::Tensor last_deltas();
 			torch::Tensor last_multiplier();
 
+
+
 			std::unique_ptr<MP_STRPVars> acquire_vars();
 
 			static torch::Tensor default_delta_setup(torch::Tensor& parameters, float multiplier = 1.0f);
@@ -153,7 +155,7 @@ namespace tc {
 
 			void on_run() override;
 
-			MP_OptimResult on_acquire_result() override;
+			void on_acquire_model() override;
 
 			void on_abort() override;
 

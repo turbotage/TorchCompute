@@ -19,7 +19,6 @@ namespace ffi {
 	struct ModelHandle;
 	struct OptimHandle;
 	struct OptimRunHandle;
-	struct OptimEvalHandle;
 
 
 
@@ -51,16 +50,14 @@ namespace ffi {
 
 	void optim_run(OptimRunHandle** model_run_handle, OptimHandle* optim_handle);
 
+	void optim_wait(OptimRunHandle* optim_run_handle);
+	
 	void optim_run_free(OptimRunHandle* optim_run_handle);
 
-	void optim_eval(OptimEvalHandle** optim_eval_handle, OptimRunHandle* optim_run_handle, OptimHandle* optim_handle);
 
-	void optim_eval_free(OptimEvalHandle* optim_eval_handle);
-
-	void optim_get_param(torch::Tensor** params, OptimEvalHandle* optim_eval_handle);
 
 	// OBS! This breaks the optimizer
-	void optim_get_model(ModelHandle* model_handle, OptimEvalHandle* optim_eval_handle);
+	void optim_get_model(ModelHandle* model_handle, OptimHandle* optim_handle);
 
 	void optim_abort(OptimHandle* optim_handle, OptimRunHandle* optim_run_handle);
 
