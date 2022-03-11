@@ -245,11 +245,12 @@ void tc::models::mp_psir_eval_jac_hess(
 	// Sets jacobian
 	torch::Tensor& J = jacobian.value().get();
 	J.select(2, 0) = values;
+	values.mul_(S0);
 	torch::Tensor T1_2 = torch::square(T1);
 	torch::Tensor TI_FAexp1 = TI * FAexp1;
 	torch::Tensor TR_exp2 = TR * expterm2;
 
-	J.select(2, 1) = S0 * (TR_exp2 - TI_FAexp1) / T1_2;
+	J.select(2, 1) = S0 * (TR_exp2 + TI_FAexp1) / T1_2;
 	// Jacobian set and eval
 
 	if (data.has_value())
@@ -272,7 +273,7 @@ void tc::models::mp_psir_eval_jac_hess(
 		torch::sum_out(H.select(1, 1).select(1, 0), values * torch::div(J.select(2, 1), S0), 1);
 		H.select(1, 0).select(1, 1) = H.select(1, 1).select(1, 0);
 		
-		torch::Tensor t1t1 = S0.neg() * (TI_FAexp1 * (TI - 2.0f * T1) - TR_exp2 * (TR - 2.0f * T1)) / torch::square(T1_2);
+		torch::Tensor t1t1 = S0 * (TI_FAexp1 * (TI - 2.0f * T1) + TR_exp2 * (TR - 2.0f * T1)) / torch::square(T1_2);
 		torch::sum_out(H.select(1, 1).select(1, 1), values * t1t1, 1);
 
 		H += torch::bmm(J.transpose(1, 2), J);

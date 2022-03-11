@@ -82,8 +82,8 @@ namespace tc {
 			MP_FirstDiff m_FirstDiff;
 			MP_SecondDiff m_SecondDiff;
 
-			std::unique_ptr<tc::expression::FetcherMap> m_FetcherMap;
-			std::unique_ptr<MP_Expr> m_Expr;
+			std::unique_ptr<tc::expression::FetcherMap> m_pFetcherMap;
+			std::unique_ptr<MP_Expr> m_pExpr;
 
 			torch::Tensor m_Parameters;
 			std::vector<torch::Tensor> m_Constants;

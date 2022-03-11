@@ -442,7 +442,10 @@ tc::expression::tentok tc::expression::DivNode::eval()
 
 std::unique_ptr<tc::expression::Node> tc::expression::DivNode::evalnode()
 {
-	return std::unique_ptr<Node>();
+	auto l = m_Children[0]->evalnode();
+	auto r = m_Children[1]->evalnode();
+
+	return std::make_unique<DivNode>(std::move(l), std::move(r));
 }
 
 tc::expression::tentok tc::expression::DivNode::diff(const VariableToken& var)

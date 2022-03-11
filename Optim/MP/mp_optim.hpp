@@ -18,7 +18,7 @@ namespace tc {
 
 			virtual ~MP_OptimizerSettings();
 
-			std::unique_ptr<optim::MP_Model>			pModel;
+			std::unique_ptr<optim::MP_Model>		pModel;
 			torch::Tensor							data;
 			tc::ui32								maxiter = 50;
 		};
@@ -75,7 +75,7 @@ namespace tc {
 
 		protected:
 
-			std::unique_ptr<optim::MP_Model>			pModel;
+			std::unique_ptr<optim::MP_Model>		pModel;
 			torch::Tensor							data;
 			tc::ui32								maxiter = 50;
 

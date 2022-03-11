@@ -12,9 +12,9 @@ tc::optim::MP_Model::MP_Model(const MP_EvalDiffHessFunc& func, const MP_FirstDif
 
 tc::optim::MP_Model::MP_Model(const std::string& expression, const std::vector<std::string>& parameters, tc::OptRef<const std::vector<std::string>> constants)
 {
-	m_FetcherMap = std::make_unique<tc::expression::FetcherMap>();
+	m_pFetcherMap = std::make_unique<tc::expression::FetcherMap>();
 	int32_t size = constants.has_value() ? parameters.size() + constants.value().get().size() : parameters.size();
-	m_FetcherMap->reserve(size);
+	m_pFetcherMap->reserve(size);
 
 	// Constants
 	if (constants.has_value()) {
@@ -24,7 +24,7 @@ tc::optim::MP_Model::MP_Model(const std::string& expression, const std::vector<s
 				return m_Constants[i];
 			};
 
-			m_FetcherMap->emplace(consts[i], constant_fetcher);
+			m_pFetcherMap->emplace(consts[i], constant_fetcher);
 			
 		}
 	}
@@ -35,10 +35,10 @@ tc::optim::MP_Model::MP_Model(const std::string& expression, const std::vector<s
 			return m_Parameters.select(1, i).unsqueeze(-1);
 		};
 
-		m_FetcherMap->emplace(parameters[i], std::move(par_fetcher));
+		m_pFetcherMap->emplace(parameters[i], std::move(par_fetcher));
 	}
 
-	m_Expr = std::make_unique<MP_Expr>(std::move(MP_Expr(expression, *m_FetcherMap, parameters, constants)));
+	m_pExpr = std::make_unique<MP_Expr>(std::move(MP_Expr(expression, *m_pFetcherMap, parameters, constants)));
 
 	build_funcs_from_expr();
 
@@ -46,9 +46,9 @@ tc::optim::MP_Model::MP_Model(const std::string& expression, const std::vector<s
 
 tc::optim::MP_Model::MP_Model(const std::string& expression, const std::vector<std::string>& diffexpressions, const std::vector<std::string>& parameters, tc::OptRef<const std::vector<std::string>> constants)
 {
-	m_FetcherMap = std::make_unique<tc::expression::FetcherMap>();
+	m_pFetcherMap = std::make_unique<tc::expression::FetcherMap>();
 	int32_t size = constants.has_value() ? parameters.size() + constants.value().get().size() : parameters.size();
-	m_FetcherMap->reserve(size);
+	m_pFetcherMap->reserve(size);
 
 	// Constants
 	if (constants.has_value()) {
@@ -58,7 +58,7 @@ tc::optim::MP_Model::MP_Model(const std::string& expression, const std::vector<s
 				return m_Constants[i];
 			};
 
-			m_FetcherMap->emplace(consts[i], constant_fetcher);
+			m_pFetcherMap->emplace(consts[i], constant_fetcher);
 
 		}
 	}
@@ -69,19 +69,19 @@ tc::optim::MP_Model::MP_Model(const std::string& expression, const std::vector<s
 			return m_Parameters.select(1, i).unsqueeze(-1);
 		};
 
-		m_FetcherMap->emplace(parameters[i], std::move(par_fetcher));
+		m_pFetcherMap->emplace(parameters[i], std::move(par_fetcher));
 	}
 
-	m_Expr = std::make_unique<MP_Expr>(std::move(MP_Expr(expression, *m_FetcherMap, parameters, constants)));
+	m_pExpr = std::make_unique<MP_Expr>(std::move(MP_Expr(expression, *m_pFetcherMap, parameters, constants)));
 
 	build_funcs_from_expr();
 }
 
 tc::optim::MP_Model::MP_Model(const std::string& expression, const std::vector<std::string>& diffexpressions, const std::vector<std::string>& seconddiffexpressions, const std::vector<std::string>& parameters, tc::OptRef<const std::vector<std::string>> constants)
 {
-	m_FetcherMap = std::make_unique<tc::expression::FetcherMap>();
+	m_pFetcherMap = std::make_unique<tc::expression::FetcherMap>();
 	int32_t size = constants.has_value() ? parameters.size() + constants.value().get().size() : parameters.size();
-	m_FetcherMap->reserve(size);
+	m_pFetcherMap->reserve(size);
 
 	// Constants
 	if (constants.has_value()) {
@@ -91,7 +91,7 @@ tc::optim::MP_Model::MP_Model(const std::string& expression, const std::vector<s
 				return m_Constants[i];
 			};
 
-			m_FetcherMap->emplace(consts[i], constant_fetcher);
+			m_pFetcherMap->emplace(consts[i], constant_fetcher);
 
 		}
 	}
@@ -102,10 +102,10 @@ tc::optim::MP_Model::MP_Model(const std::string& expression, const std::vector<s
 			return m_Parameters.select(1, i).unsqueeze(-1);
 		};
 
-		m_FetcherMap->emplace(parameters[i], std::move(par_fetcher));
+		m_pFetcherMap->emplace(parameters[i], std::move(par_fetcher));
 	}
 
-	m_Expr = std::make_unique<MP_Expr>(std::move(MP_Expr(expression, *m_FetcherMap, parameters, constants)));
+	m_pExpr = std::make_unique<MP_Expr>(std::move(MP_Expr(expression, *m_pFetcherMap, parameters, constants)));
 
 	build_funcs_from_expr();
 }
@@ -190,7 +190,7 @@ void tc::optim::MP_Model::build_funcs_from_expr()
 	{
 
 		if (values.has_value()) {
-			values.value().get() = tc::expression::tensor_from_tentok(m_Expr->eval->eval(), m_Parameters.device());
+			values.value().get() = tc::expression::tensor_from_tentok(m_pExpr->eval->eval(), m_Parameters.device());
 		}
 
 		if (data.has_value()) {
@@ -212,7 +212,7 @@ void tc::optim::MP_Model::build_funcs_from_expr()
 
 			// r @ del2 r
 			{
-				auto it = m_Expr->seconddiff.begin();
+				auto it = m_pExpr->seconddiff.begin();
 				for (int i = 0; i < npar; ++i) {
 					for (int j = 0; j < i + 1; ++j) {
 						hessian.value().get().select(1, i).select(1, j) = torch::sum(torch::mul(values.value().get(), tc::expression::tensor_from_tentok((*it)->eval(), m_Parameters.device())), 1);
@@ -230,8 +230,8 @@ void tc::optim::MP_Model::build_funcs_from_expr()
 
 
 			// Jacobian
-			for (int i = 0; i < m_Expr->diff.size(); ++i) {
-				jacobian.value().get().select(2, i) = tc::expression::tensor_from_tentok(m_Expr->diff[i]->eval(), m_Parameters.device());
+			for (int i = 0; i < m_pExpr->diff.size(); ++i) {
+				jacobian.value().get().select(2, i) = tc::expression::tensor_from_tentok(m_pExpr->diff[i]->eval(), m_Parameters.device());
 			}
 
 
@@ -241,8 +241,8 @@ void tc::optim::MP_Model::build_funcs_from_expr()
 		if (jacobian.has_value()) {
 			// If we wanted hessian the jacobian is already calculated
 			if (!hessian.has_value()) {
-				for (int i = 0; i < m_Expr->diff.size(); ++i) {
-					jacobian.value().get().select(2, i) = tc::expression::tensor_from_tentok(m_Expr->diff[i]->eval(), m_Parameters.device());
+				for (int i = 0; i < m_pExpr->diff.size(); ++i) {
+					jacobian.value().get().select(2, i) = tc::expression::tensor_from_tentok(m_pExpr->diff[i]->eval(), m_Parameters.device());
 				}
 			}
 		}
@@ -255,7 +255,7 @@ void tc::optim::MP_Model::build_funcs_from_expr()
 		// Derivative
 		torch::Tensor& derivative)
 	{
-		derivative = tc::expression::tensor_from_tentok(m_Expr->diff[index]->eval(), m_Parameters.device());
+		derivative = tc::expression::tensor_from_tentok(m_pExpr->diff[index]->eval(), m_Parameters.device());
 	};
 
 	m_SecondDiff = [this](
@@ -272,7 +272,7 @@ void tc::optim::MP_Model::build_funcs_from_expr()
 			index = (indices.first * (indices.first + 1) / 2) + indices.second;
 		}
 
-		secondderivative = tc::expression::tensor_from_tentok(m_Expr->seconddiff[index]->eval(), m_Parameters.device());
+		secondderivative = tc::expression::tensor_from_tentok(m_pExpr->seconddiff[index]->eval(), m_Parameters.device());
 	};
 
 }

@@ -32,6 +32,7 @@ add_library(ComputeLib
     "Optim/MP/mp_expr.cpp"
     "Optim/MP/mp_optim.cpp"
     "Optim/MP/mp_strp.cpp"
+    #"Optim/MP/mp_slm.cpp"
     
     "Expression/TokenAlgebra/Unary/neg.cpp"
     "Expression/TokenAlgebra/Unary/trig.cpp"
@@ -53,6 +54,8 @@ add_library(ComputeLib
     "Expression/expression.cpp"
     
     "Models/mp_models.cpp"
+
+    "FFI/mp_optim_interface.cpp"
 
     "tc.cpp"
 )
@@ -99,8 +102,8 @@ set_target_properties(ComputeLib PROPERTIES PUBLIC_HEADER "compute.hpp")
 #add_executable(ComputeTestDiffExpression "Tests/test_diff_expression.cpp")
 #target_link_libraries(ComputeTestDiffExpression ComputeLib)
 
-add_executable(ComputeTestEnv "Tests/test_env.cpp")
-target_link_libraries(ComputeTestEnv ComputeLib)
+#add_executable(ComputeTestEnv "Tests/test_env.cpp")
+#target_link_libraries(ComputeTestEnv ComputeLib)
 
 add_executable(ComputeTestExp "Tests/test_expression.cpp")
 target_link_libraries(ComputeTestExp ComputeLib)
@@ -108,8 +111,8 @@ target_link_libraries(ComputeTestExp ComputeLib)
 #add_executable(ComputeTestExpMod "Tests/test_expression_model.cpp")
 #target_link_libraries(ComputeTestExpMod ComputeLib)
 
-add_executable(ComputeTestLexer "Tests/test_lexer.cpp")
-target_link_libraries(ComputeTestLexer ComputeLib)
+#add_executable(ComputeTestLexer "Tests/test_lexer.cpp")
+#target_link_libraries(ComputeTestLexer ComputeLib)
 
 #add_executable(ComputeTestLinearFit "Tests/test_linear_fit.cpp")
 #target_link_libraries(ComputeTestLinearFit ComputeLib)
@@ -120,14 +123,14 @@ target_link_libraries(ComputeTestLexer ComputeLib)
 add_executable(ComputeTestModel "Tests/test_model.cpp")
 target_link_libraries(ComputeTestModel ComputeLib)
 
-add_executable(ComputeTestShunter "Tests/test_shunter.cpp")
-target_link_libraries(ComputeTestShunter ComputeLib)
+#add_executable(ComputeTestShunter "Tests/test_shunter.cpp")
+#target_link_libraries(ComputeTestShunter ComputeLib)
 
-#add_executable(ComputeTestSTRP "Tests/test_strp.cpp")
-#target_link_libraries(ComputeTestSTRP ComputeLib)
+add_executable(ComputeTestSTRP "Tests/test_strp.cpp")
+target_link_libraries(ComputeTestSTRP ComputeLib)
 
-add_executable(ComputeTestTokenAlgebra "Tests/test_token_algebra.cpp")
-target_link_libraries(ComputeTestTokenAlgebra ComputeLib)
+#add_executable(ComputeTestTokenAlgebra "Tests/test_token_algebra.cpp")
+#target_link_libraries(ComputeTestTokenAlgebra ComputeLib)
 
 # Prototyping Environments
 add_executable(ComputeProtP1 "Prototyping/CPP/p1.cpp")

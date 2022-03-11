@@ -155,7 +155,7 @@ void test_psir_values() {
 	std::vector<std::string> parameters{ "S0","T1" };
 	std::vector<std::string> constants{ "TR", "TI", "FA"};
 
-	std::string expression = "S0*(1-FA*exp(-TI/T1)+exp(-TR/T1))";
+	std::string expression = "S0*(1+FA*exp(-TI/T1)+exp(-TR/T1))";
 
 	tc::optim::MP_Model mp_model(expression, parameters, constants);
 	tc::optim::MP_Model mp_model2(tc::models::mp_psir_eval_jac_hess, tc::models::mp_psir_diff, tc::models::mp_psir_diff2);
@@ -217,13 +217,15 @@ void test_psir_values() {
 void test_psir_times(int32_t nprob, int32_t ndata) {
 	int32_t npar = 2;
 
+	torch::InferenceMode im_guard;
+
 	std::vector<std::string> parameters{ "S0","T1" };
 	std::vector<std::string> constants{ "TR", "TI", "FA" };
 
-	std::string expression = "S0*(1-FA*exp(-TI/T1)+exp(-TR/T1))";
+	std::string expression = "S0*(1+FA*exp(-TI/T1)+exp(-TR/T1))";
 
 	tc::optim::MP_Model mp_model(expression, parameters, constants);
-	tc::optim::MP_Model mp_model2(tc::models::mp_adc_eval_jac_hess, tc::models::mp_adc_diff, tc::models::mp_adc_diff2);
+	tc::optim::MP_Model mp_model2(tc::models::mp_psir_eval_jac_hess, tc::models::mp_psir_diff, tc::models::mp_psir_diff2);
 
 	torch::Tensor params = torch::rand({ nprob, npar });
 	torch::Tensor guess = torch::rand({ nprob, npar });
@@ -305,7 +307,7 @@ int main() {
 
 	test_psir_values();
 
-	test_psir_times(1000000, 5);
-	test_psir_times(1000000, 5);
+	test_psir_times(1000000, 10);
+	test_psir_times(1000000, 10);
 
 }
