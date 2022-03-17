@@ -71,20 +71,20 @@ namespace tc {
 
 
 
-		torch::Tensor get_plane_converging_problems_combined(torch::Tensor& lastJ, 
-			torch::Tensor& lastP, torch::Tensor& lastR, float tolerance = 1e-6);
+		torch::Tensor get_plane_converging_problems_combined(const torch::Tensor& lastJ, 
+			const torch::Tensor& lastP, const torch::Tensor& lastR, float tolerance = 1e-6);
 
-		torch::Tensor get_plane_converging_problems(torch::Tensor& lastJ,
-			torch::Tensor& lastP, torch::Tensor& lastR, float tolerance = 1e-6);
+		torch::Tensor get_plane_converging_problems(const torch::Tensor& lastJ,
+			const torch::Tensor& lastP, const torch::Tensor& lastR, float tolerance = 1e-6);
 
-		torch::Tensor get_gradient_converging_problems_absolute(torch::Tensor& J,
-			torch::Tensor& R, float tolerance = 1e-6);
+		torch::Tensor get_gradient_converging_problems_absolute(const torch::Tensor& J,
+			const torch::Tensor& R, float tolerance = 1e-6);
 
-		torch::Tensor get_gradient_converging_problems_relative(torch::Tensor& J,
-			torch::Tensor& R, float tolerance = 1e-6);
+		torch::Tensor get_gradient_converging_problems_relative(const torch::Tensor& J,
+			const torch::Tensor& R, float tolerance = 1e-6);
 
-		torch::Tensor get_gradient_converging_problems_combined(torch::Tensor& J,
-			torch::Tensor& R, float tolerance = 1e-6);
+		torch::Tensor get_gradient_converging_problems_combined(const torch::Tensor& J,
+			const torch::Tensor& R, float tolerance = 1e-6);
 
 		
 

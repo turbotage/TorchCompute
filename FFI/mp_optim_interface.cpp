@@ -171,31 +171,31 @@ void ffi::optim_get_info(ffi::OptimHandle* optim_handle, ffi::OptimRunHandle* op
 
 // Convergence
 
-void ffi::get_plane_converging_problems_combined(torch::Tensor** cp, torch::Tensor* lastJ, torch::Tensor* lastP, torch::Tensor* lastR, float tolerance)
+void ffi::get_plane_converging_problems_combined(torch::Tensor** cp, const torch::Tensor* lastJ, const torch::Tensor* lastP, const torch::Tensor* lastR, float tolerance)
 {
 	auto& c = *cp;
 	c = new torch::Tensor(tc::optim::get_plane_converging_problems_combined(*lastJ, *lastP, *lastR, tolerance));
 }
 
-void ffi::get_plane_converging_problems(torch::Tensor** cp, torch::Tensor* lastJ, torch::Tensor* lastP, torch::Tensor* lastR, float tolerance)
+void ffi::get_plane_converging_problems(torch::Tensor** cp, const torch::Tensor* lastJ, const torch::Tensor* lastP, const torch::Tensor* lastR, float tolerance)
 {
 	auto& c = *cp;
 	c = new torch::Tensor(tc::optim::get_plane_converging_problems(*lastJ, *lastP, *lastR, tolerance));
 }
 
-void ffi::get_gradient_converging_problems_absolute(torch::Tensor** cp, torch::Tensor* J, torch::Tensor* R, float tolerance)
+void ffi::get_gradient_converging_problems_absolute(torch::Tensor** cp, const torch::Tensor* J, const torch::Tensor* R, float tolerance)
 {
 	auto& c = *cp;
 	c = new torch::Tensor(tc::optim::get_gradient_converging_problems_absolute(*J, *R, tolerance));
 }
 
-void ffi::get_gradient_converging_problems_relative(torch::Tensor** cp, torch::Tensor* J, torch::Tensor* R, float tolerance)
+void ffi::get_gradient_converging_problems_relative(torch::Tensor** cp, const torch::Tensor* J, const torch::Tensor* R, float tolerance)
 {
 	auto& c = *cp;
 	c = new torch::Tensor(tc::optim::get_gradient_converging_problems_relative(*J, *R, tolerance));
 }
 
-void ffi::get_gradient_converging_problems_combined(torch::Tensor** cp, torch::Tensor* J, torch::Tensor* R, float tolerance)
+void ffi::get_gradient_converging_problems_combined(torch::Tensor** cp, const torch::Tensor* J, const torch::Tensor* R, float tolerance)
 {
 	auto& c = *cp;
 	c = new torch::Tensor(tc::optim::get_gradient_converging_problems_combined(*J, *R, tolerance));
@@ -235,44 +235,122 @@ void ffi::strp_create(ffi::OptimHandle** optim_handle, ffi::ModelHandle* model_h
 
 }
 
-void ffi::strp_last_parameters(ffi::OptimHandle* optim_handle, torch::Tensor** last_parameters)
+void ffi::strp_last_parameters(const ffi::OptimHandle* optim_handle, torch::Tensor** last_parameters)
 {
 	tc::optim::MP_Optimizer& opt = *optim_handle->p_optim_handle;
 	tc::optim::MP_STRP& strp = dynamic_cast<tc::optim::MP_STRP&>(opt);
 	*last_parameters = new torch::Tensor(strp.last_parameters());
 }
 
-void ffi::strp_last_step(ffi::OptimHandle* optim_handle, torch::Tensor** last_step)
+void ffi::strp_last_step(const ffi::OptimHandle* optim_handle, torch::Tensor** last_step)
 {
 	tc::optim::MP_Optimizer& opt = *optim_handle->p_optim_handle;
 	tc::optim::MP_STRP& strp = dynamic_cast<tc::optim::MP_STRP&>(opt);
 	*last_step = new torch::Tensor(strp.last_step());
 }
 
-void ffi::strp_last_jacobian(ffi::OptimHandle* optim_handle, torch::Tensor** last_jacobian)
+void ffi::strp_last_jacobian(const ffi::OptimHandle* optim_handle, torch::Tensor** last_jacobian)
 {
 	tc::optim::MP_Optimizer& opt = *optim_handle->p_optim_handle;
 	tc::optim::MP_STRP& strp = dynamic_cast<tc::optim::MP_STRP&>(opt);
 	*last_jacobian = new torch::Tensor(strp.last_jacobian());
 }
 
-void ffi::strp_last_residuals(ffi::OptimHandle* optim_handle, torch::Tensor** last_residuals)
+void ffi::strp_last_residuals(const ffi::OptimHandle* optim_handle, torch::Tensor** last_residuals)
 {
 	tc::optim::MP_Optimizer& opt = *optim_handle->p_optim_handle;
 	tc::optim::MP_STRP& strp = dynamic_cast<tc::optim::MP_STRP&>(opt);
 	*last_residuals = new torch::Tensor(strp.last_residuals());
 }
 
-void ffi::strp_last_deltas(ffi::OptimHandle* optim_handle, torch::Tensor** last_deltas)
+void ffi::strp_last_deltas(const ffi::OptimHandle* optim_handle, torch::Tensor** last_deltas)
 {
 	tc::optim::MP_Optimizer& opt = *optim_handle->p_optim_handle;
 	tc::optim::MP_STRP& strp = dynamic_cast<tc::optim::MP_STRP&>(opt);
 	*last_deltas = new torch::Tensor(strp.last_deltas());
 }
 
-void ffi::strp_last_multiplier(ffi::OptimHandle* optim_handle, torch::Tensor** last_multiplier)
+void ffi::strp_last_multiplier(const ffi::OptimHandle* optim_handle, torch::Tensor** last_multiplier)
 {
 	tc::optim::MP_Optimizer& opt = *optim_handle->p_optim_handle;
 	tc::optim::MP_STRP& strp = dynamic_cast<tc::optim::MP_STRP&>(opt);
+	*last_multiplier = new torch::Tensor(strp.last_multiplier());
+}
+
+
+
+
+
+void ffi::slm_default_lambda(torch::Tensor** lambda, torch::Tensor* parameters, float multiplier)
+{
+	*lambda = new torch::Tensor(tc::optim::MP_SLM::default_lambda_setup(*parameters, multiplier));
+}
+
+void ffi::slm_default_scaling(torch::Tensor** scaling, torch::Tensor* J, float minimum_scale)
+{
+	*scaling = new torch::Tensor(tc::optim::MP_SLM::default_scaling_setup(*J, minimum_scale));
+}
+
+void ffi::slm_default_res_J(torch::Tensor** res, torch::Tensor** J, const ModelHandle* model_handle, const torch::Tensor* data)
+{
+	auto p = tc::optim::MP_SLM::default_res_J_setup(*model_handle->p_model, *data);
+	*res = new torch::Tensor(p.first);
+	*J = new torch::Tensor(p.second);
+}
+
+void ffi::slm_create(OptimHandle** optim_handle, ModelHandle* model_handle, const torch::Tensor* data, torch::Tensor* residuals, torch::Tensor* jacobian, 
+	torch::Tensor* lambda, torch::Tensor* scaling, float eta, float mu, float upmul, float downmul)
+{
+	auto& mod = model_handle->p_model;
+
+	tc::optim::MP_OptimizerSettings optsettings(std::move(mod), *data);
+	tc::optim::MP_SLMSettings strpsettings(std::move(optsettings),*residuals, *jacobian, *lambda, *scaling, mu, eta, upmul, downmul);
+
+	auto& oh = *optim_handle;
+	oh = new ffi::OptimHandle;
+
+	auto mpp = tc::optim::MP_SLM::make(std::move(strpsettings));
+	oh->p_optim_handle = std::move(mpp);
+}
+
+void ffi::slm_last_parameters(const OptimHandle* optim_handle, torch::Tensor** last_parameters)
+{
+	tc::optim::MP_Optimizer& opt = *optim_handle->p_optim_handle;
+	tc::optim::MP_SLM& strp = dynamic_cast<tc::optim::MP_SLM&>(opt);
+	*last_parameters = new torch::Tensor(strp.last_parameters());
+}
+
+void ffi::slm_last_step(const OptimHandle* optim_handle, torch::Tensor** last_step)
+{
+	tc::optim::MP_Optimizer& opt = *optim_handle->p_optim_handle;
+	tc::optim::MP_SLM& strp = dynamic_cast<tc::optim::MP_SLM&>(opt);
+	*last_step = new torch::Tensor(strp.last_step());
+}
+
+void ffi::slm_last_jacobian(const OptimHandle* optim_handle, torch::Tensor** last_jacobian)
+{
+	tc::optim::MP_Optimizer& opt = *optim_handle->p_optim_handle;
+	tc::optim::MP_SLM& strp = dynamic_cast<tc::optim::MP_SLM&>(opt);
+	*last_jacobian = new torch::Tensor(strp.last_jacobian());
+}
+
+void ffi::slm_last_residuals(const OptimHandle* optim_handle, torch::Tensor** last_residuals)
+{
+	tc::optim::MP_Optimizer& opt = *optim_handle->p_optim_handle;
+	tc::optim::MP_SLM& strp = dynamic_cast<tc::optim::MP_SLM&>(opt);
+	*last_residuals = new torch::Tensor(strp.last_residuals());
+}
+
+void ffi::slm_last_lambdas(const OptimHandle* optim_handle, torch::Tensor** last_deltas)
+{
+	tc::optim::MP_Optimizer& opt = *optim_handle->p_optim_handle;
+	tc::optim::MP_SLM& strp = dynamic_cast<tc::optim::MP_SLM&>(opt);
+	*last_deltas = new torch::Tensor(strp.last_lambdas());
+}
+
+void ffi::slm_last_multiplier(const OptimHandle* optim_handle, torch::Tensor** last_multiplier)
+{
+	tc::optim::MP_Optimizer& opt = *optim_handle->p_optim_handle;
+	tc::optim::MP_SLM& strp = dynamic_cast<tc::optim::MP_SLM&>(opt);
 	*last_multiplier = new torch::Tensor(strp.last_multiplier());
 }

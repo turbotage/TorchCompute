@@ -383,13 +383,13 @@ std::unique_ptr<tc::optim::MP_STRPVars> tc::optim::MP_STRP::acquire_vars()
 
 
 
-torch::Tensor tc::optim::MP_STRP::default_delta_setup(torch::Tensor& parameters, float multiplier)
+torch::Tensor tc::optim::MP_STRP::default_delta_setup(const torch::Tensor& parameters, float multiplier)
 {
 	torch::InferenceMode im_guard;
 	return multiplier * torch::sqrt(torch::square(parameters).sum(1));
 }
 
-torch::Tensor tc::optim::MP_STRP::default_scaling_setup(torch::Tensor& J)
+torch::Tensor tc::optim::MP_STRP::default_scaling_setup(const torch::Tensor& J)
 {
 	torch::InferenceMode im_guard;
 	//return torch::sqrt(torch::square(J).sum(1));

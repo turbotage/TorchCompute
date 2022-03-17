@@ -89,7 +89,7 @@ bool tc::optim::MP_Optimizer::should_stop() const
 
 
 torch::Tensor tc::optim::get_plane_converging_problems_combined(
-	torch::Tensor& lastJ, torch::Tensor& lastP, torch::Tensor& lastR, float tolerance)
+	const torch::Tensor& lastJ, const torch::Tensor& lastP, const torch::Tensor& lastR, float tolerance)
 {
 	torch::InferenceMode im_guard;
 
@@ -98,7 +98,7 @@ torch::Tensor tc::optim::get_plane_converging_problems_combined(
 }
 
 torch::Tensor tc::optim::get_plane_converging_problems( 
-	torch::Tensor& lastJ, torch::Tensor& lastP, torch::Tensor& lastR, float tolerance)
+	const torch::Tensor& lastJ, const torch::Tensor& lastP, const torch::Tensor& lastR, float tolerance)
 {
 	torch::InferenceMode im_guard;
 
@@ -106,14 +106,14 @@ torch::Tensor tc::optim::get_plane_converging_problems(
 		tolerance * torch::sqrt(torch::square(lastR).sum(1)).squeeze();
 }
 
-torch::Tensor tc::optim::get_gradient_converging_problems_absolute(torch::Tensor& J, torch::Tensor& R, float tolerance)
+torch::Tensor tc::optim::get_gradient_converging_problems_absolute(const torch::Tensor& J, const torch::Tensor& R, float tolerance)
 {
 	torch::InferenceMode im_guard;
 
 	return torch::sqrt(torch::square(torch::bmm(J, R)).sum(1)).squeeze() < tolerance;
 }
 
-torch::Tensor tc::optim::get_gradient_converging_problems_relative(torch::Tensor& J, torch::Tensor& R, float tolerance)
+torch::Tensor tc::optim::get_gradient_converging_problems_relative(const torch::Tensor& J, const torch::Tensor& R, float tolerance)
 {
 	torch::InferenceMode im_guard;
 
@@ -121,7 +121,7 @@ torch::Tensor tc::optim::get_gradient_converging_problems_relative(torch::Tensor
 		tolerance * torch::sqrt(torch::square(R).sum(1)).squeeze();
 }
 
-torch::Tensor tc::optim::get_gradient_converging_problems_combined(torch::Tensor& J, torch::Tensor& R, float tolerance)
+torch::Tensor tc::optim::get_gradient_converging_problems_combined(const torch::Tensor& J, const torch::Tensor& R, float tolerance)
 {
 	torch::InferenceMode im_guard;
 

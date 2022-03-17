@@ -144,12 +144,12 @@ namespace tc {
 
 			std::unique_ptr<MP_STRPVars> acquire_vars();
 
-			static torch::Tensor default_delta_setup(torch::Tensor& parameters, float multiplier = 1.0f);
+			static torch::Tensor default_delta_setup(const torch::Tensor& parameters, float multiplier = 1.0f);
 
-			static torch::Tensor default_scaling_setup(torch::Tensor& J);
+			static torch::Tensor default_scaling_setup(const torch::Tensor& J);
 
 			//					res,			  J
-			static std::pair<torch::Tensor, torch::Tensor> default_res_J_setup(optim::MP_Model& model, torch::Tensor data);
+			static std::pair<torch::Tensor, torch::Tensor> default_res_J_setup(optim::MP_Model& model, const torch::Tensor data);
 
 		private:
 

@@ -36,8 +36,8 @@ void strp_cpu_ir_anal_specific(int32_t n, int32_t iter, bool print) {
 	}
 
 	auto guess = torch::empty({ n, 2 }, dops);
-	guess.select(1, 0).fill_(100.0f);
-	guess.select(1, 1).fill_(10.0f);
+	guess.select(1, 0).fill_(1000.0f);
+	guess.select(1, 1).fill_(100.0f);
 
 	mp_model->parameters() = guess;
 
@@ -151,6 +151,10 @@ void strp_cuda_ir_anal_specific(int32_t n, int32_t iter, bool print) {
 
 int main() {
 
+	strp_cpu_ir_anal_specific(5000000, 20, false);
+	strp_cuda_ir_anal_specific(5000000, 20, false);
+
+	/*
 	try {
 		//strp_cpu_ir_anal_specific(2, 0, true);
 		//strp_cpu_ir_anal_specific(2, 1, true);
@@ -166,6 +170,7 @@ int main() {
 	catch (std::runtime_error e2) {
 		std::cout << e2.what() << std::endl;
 	}
+	*/
 	//strp_cpu_ir_anal_specific(5000, 2, false);
 	//strp_cpu_ir_anal_specific(1000, 2, false);
 	/*

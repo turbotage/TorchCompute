@@ -1,6 +1,7 @@
 
 #include "../Optim/MP/mp_model.hpp"
 #include "../Optim/MP/mp_strp.hpp"
+#include "../Optim/MP/mp_slm.hpp"
 
 #include "ffi.h"
 
@@ -74,32 +75,49 @@ namespace ffi {
 
 
 	void get_plane_converging_problems_combined(torch::Tensor** cp,
-		torch::Tensor* lastJ, torch::Tensor* lastP, torch::Tensor* lastR, float tolerance);
+		const torch::Tensor* lastJ, const torch::Tensor* lastP, const torch::Tensor* lastR, float tolerance);
 
-	void get_plane_converging_problems(torch::Tensor** cp, torch::Tensor* lastJ,
-		torch::Tensor* lastP, torch::Tensor* lastR, float tolerance);
+	void get_plane_converging_problems(torch::Tensor** cp, const torch::Tensor* lastJ,
+		const torch::Tensor* lastP, const torch::Tensor* lastR, float tolerance);
 
-	void get_gradient_converging_problems_absolute(torch::Tensor** cp, torch::Tensor* J,
-		torch::Tensor* R, float tolerance);
+	void get_gradient_converging_problems_absolute(torch::Tensor** cp, const torch::Tensor* J,
+		const torch::Tensor* R, float tolerance);
 
-	void get_gradient_converging_problems_relative(torch::Tensor** cp, torch::Tensor* J,
-		torch::Tensor* R, float tolerance);
+	void get_gradient_converging_problems_relative(torch::Tensor** cp, const torch::Tensor* J,
+		const torch::Tensor* R, float tolerance);
 
-	void get_gradient_converging_problems_combined(torch::Tensor** cp, torch::Tensor* J,
-		torch::Tensor* R, float tolerance);
-
-
+	void get_gradient_converging_problems_combined(torch::Tensor** cp, const torch::Tensor* J,
+		const torch::Tensor* R, float tolerance);
 
 
+
+	// STRP
 	void strp_create(OptimHandle** optim_handle, ModelHandle* model_handle, const torch::Tensor* data,
 		float eta, float mu);
 
-	void strp_last_parameters(OptimHandle* optim_handle, torch::Tensor** last_parameters);
-	void strp_last_step(OptimHandle* optim_handle, torch::Tensor** last_step);
-	void strp_last_jacobian(OptimHandle* optim_handle, torch::Tensor** last_jacobian);
-	void strp_last_residuals(OptimHandle* optim_handle, torch::Tensor** last_residuals);
-	void strp_last_deltas(OptimHandle* optim_handle, torch::Tensor** last_deltas);
-	void strp_last_multiplier(OptimHandle* optim_handle, torch::Tensor** last_multiplier);
+	void strp_last_parameters(const OptimHandle* optim_handle, torch::Tensor** last_parameters);
+	void strp_last_step(const OptimHandle* optim_handle, torch::Tensor** last_step);
+	void strp_last_jacobian(const OptimHandle* optim_handle, torch::Tensor** last_jacobian);
+	void strp_last_residuals(const OptimHandle* optim_handle, torch::Tensor** last_residuals);
+	void strp_last_deltas(const OptimHandle* optim_handle, torch::Tensor** last_deltas);
+	void strp_last_multiplier(const OptimHandle* optim_handle, torch::Tensor** last_multiplier);
 
+	// SLM
+	void slm_default_lambda(torch::Tensor** lambda, torch::Tensor* parameters, float multiplier);
+
+	void slm_default_scaling(torch::Tensor** scaling, torch::Tensor* J, float minimum_scale);
+
+	void slm_default_res_J(torch::Tensor** res, torch::Tensor** J, const ModelHandle* model_handle, const torch::Tensor* data);
+
+	void slm_create(OptimHandle** optim_handle, ModelHandle* model_handle, const torch::Tensor* data,
+		torch::Tensor* residuals, torch::Tensor* jacobian, torch::Tensor* lambda, torch::Tensor* scaling,
+		float eta, float mu, float upmul, float downmul);
+
+	void slm_last_parameters(const OptimHandle* optim_handle, torch::Tensor** last_parameters);
+	void slm_last_step(const OptimHandle* optim_handle, torch::Tensor** last_step);
+	void slm_last_jacobian(const OptimHandle* optim_handle, torch::Tensor** last_jacobian);
+	void slm_last_residuals(const OptimHandle* optim_handle, torch::Tensor** last_residuals);
+	void slm_last_lambdas(const OptimHandle* optim_handle, torch::Tensor** last_deltas);
+	void slm_last_multiplier(const OptimHandle* optim_handle, torch::Tensor** last_multiplier);
 
 }

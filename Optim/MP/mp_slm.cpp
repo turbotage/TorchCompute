@@ -55,7 +55,8 @@ void tc::optim::MP_SLMVars::to_device(const torch::Device& device)
 	square2.to(device);
 	square3.to(device);
 
-	chol_info.to(device);
+	info.to(device);
+	pivots.to(device);
 
 	scaling.to(device);
 
@@ -136,7 +137,8 @@ void tc::optim::MP_SLMVars::debug_print(bool sizes, bool types, bool values)
 		std::cout << "square2: " << square2.sizes() << std::endl;
 		std::cout << "square3: " << square3.sizes() << std::endl;
 
-		std::cout << "chol_info: " << chol_info.sizes() << std::endl;
+		std::cout << "info: " << info.sizes() << std::endl;
+		std::cout << "pivots: " << pivots.sizes() << std::endl;
 
 		std::cout << "scaling: " << scaling.sizes() << std::endl;
 
@@ -163,7 +165,8 @@ void tc::optim::MP_SLMVars::debug_print(bool sizes, bool types, bool values)
 		std::cout << "square2: " << square2.dtype() << std::endl;
 		std::cout << "square3: " << square3.dtype() << std::endl;
 
-		std::cout << "chol_info: " << chol_info.dtype() << std::endl;
+		std::cout << "info: " << info.dtype() << std::endl;
+		std::cout << "pivots: " << pivots.dtype() << std::endl;
 
 		std::cout << "scaling: " << scaling.dtype() << std::endl;
 
@@ -190,7 +193,8 @@ void tc::optim::MP_SLMVars::debug_print(bool sizes, bool types, bool values)
 		std::cout << "square2: " << square2 << std::endl;
 		std::cout << "square3: " << square3 << std::endl;
 
-		std::cout << "chol_info: " << chol_info << std::endl;
+		std::cout << "info: " << info << std::endl;
+		std::cout << "info: " << info.dtype() << std::endl;
 
 		std::cout << "scaling: " << scaling << std::endl;
 
@@ -235,7 +239,8 @@ tc::optim::MP_SLMVars::MP_SLMVars(const std::unique_ptr<optim::MP_Model>& pModel
 	square2 = torch::empty_like(square1);
 	square3 = torch::empty_like(square1);
 
-	chol_info = torch::empty({ numProbs }, dops.dtype(torch::ScalarType::Int));
+	info = torch::empty({ numProbs }, dops.dtype(torch::ScalarType::Int));
+	pivots = torch::empty({ numProbs, numParam }, dops.dtype(torch::ScalarType::Int));
 
 	this->scaling = scaling;
 
@@ -314,19 +319,19 @@ std::unique_ptr<tc::optim::MP_SLMVars> tc::optim::MP_SLM::acquire_vars()
 	return std::move(m_pVars);
 }
 
-torch::Tensor tc::optim::MP_SLM::default_lambda_setup(torch::Tensor& parameters, float multiplier)
+torch::Tensor tc::optim::MP_SLM::default_lambda_setup(const torch::Tensor& parameters, float multiplier)
 {
 	return multiplier * torch::ones({ parameters.size(0) }, parameters.options());
 }
 
-torch::Tensor tc::optim::MP_SLM::default_scaling_setup(torch::Tensor& J, float minimum_scale)
+torch::Tensor tc::optim::MP_SLM::default_scaling_setup(const torch::Tensor& J, float minimum_scale)
 {
 	torch::InferenceMode im_guard;
 	auto diag = torch::diagonal(torch::bmm(J.transpose(1, 2), J), 0, -2, -1);
 	return torch::clamp(diag, minimum_scale);
 }
 
-std::pair<torch::Tensor, torch::Tensor> tc::optim::MP_SLM::default_res_J_setup(optim::MP_Model& model, torch::Tensor data)
+std::pair<torch::Tensor, torch::Tensor> tc::optim::MP_SLM::default_res_J_setup(optim::MP_Model& model, const torch::Tensor& data)
 {
 	torch::InferenceMode im_guard;
 
@@ -380,9 +385,14 @@ void tc::optim::MP_SLM::step()
 	torch::Tensor& g = m_pVars->plike1;
 	torch::bmm_out(g, m_pVars->J.transpose(1, 2), m_pVars->res.unsqueeze(-1));
 
-	torch::linalg_cholesky_ex_out(m_pVars->square2, m_pVars->chol_info, m_pVars->square3);
-
-	torch::cholesky_solve_out(m_pVars->plike2, g.neg(), m_pVars->square2);
+	if (m_pVars->numParam < 5) {
+		std::tie(m_pVars->square2, m_pVars->pivots, m_pVars->info) = at::_lu_with_info(H, true, false);
+		torch::lu_solve_out(m_pVars->plike2, g.neg(), m_pVars->square2, m_pVars->pivots);
+	}
+	else {
+		torch::linalg_cholesky_ex_out(m_pVars->square2, m_pVars->info, m_pVars->square3);
+		torch::cholesky_solve_out(m_pVars->plike2, g.neg(), m_pVars->square2);
+	}
 
 	torch::Tensor& ep = m_pVars->lambdalike1;
 	torch::square_out(m_pVars->reslike1, m_pVars->res);
@@ -439,15 +449,14 @@ void tc::optim::MP_SLM::step()
 
 	//m_pVars->debug_print(true, false, false);
 
-	std::cout << "rho: " << rho << std::endl;
-	std::cout << "should_step: " << should_step << std::endl;
+	//std::cout << "rho: " << rho << std::endl;
+	//std::cout << "should_step: " << should_step << std::endl;
 
 	m_pVars->plike2.mul_(should_step.unsqueeze(-1).unsqueeze(-1));
 	torch::add_out(pModel->parameters(), m_pVars->plike1.squeeze(-1), m_pVars->plike2.squeeze(-1));
 
-	std::cout << "param: " << pModel->parameters() << std::endl;
-
-	std::cout << "lambda: " << m_pVars->lambda << std::endl;
+	//std::cout << "param: " << pModel->parameters() << std::endl;
+	//std::cout << "lambda: " << m_pVars->lambda << std::endl;
 
 	m_pVars->lambda.mul_(multiplier);
 

@@ -86,7 +86,9 @@ namespace tc {
 			torch::Tensor square3;
 
 			// (nProblems) - int32 type
-			torch::Tensor chol_info;
+			torch::Tensor info; // used either for cholesky or LU
+			// (nProblems, nParams) - int32 type
+			torch::Tensor pivots;
 
 			// (nProblems, nParams) - floating type
 			torch::Tensor scaling;
@@ -125,12 +127,12 @@ namespace tc {
 
 			std::unique_ptr<MP_SLMVars> acquire_vars();
 
-			static torch::Tensor default_lambda_setup(torch::Tensor& parameters, float multiplier = 1.0f);
+			static torch::Tensor default_lambda_setup(const torch::Tensor& parameters, float multiplier = 1.0f);
 
-			static torch::Tensor default_scaling_setup(torch::Tensor& J, float minimum_scale = 1e-6f);
+			static torch::Tensor default_scaling_setup(const torch::Tensor& J, float minimum_scale = 1e-6f);
 
 			//					res,			  J
-			static std::pair<torch::Tensor, torch::Tensor> default_res_J_setup(optim::MP_Model& model, torch::Tensor data);
+			static std::pair<torch::Tensor, torch::Tensor> default_res_J_setup(optim::MP_Model& model, const torch::Tensor& data);
 
 		private:
 
