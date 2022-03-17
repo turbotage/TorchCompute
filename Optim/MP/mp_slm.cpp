@@ -385,14 +385,22 @@ void tc::optim::MP_SLM::step()
 	torch::Tensor& g = m_pVars->plike1;
 	torch::bmm_out(g, m_pVars->J.transpose(1, 2), m_pVars->res.unsqueeze(-1));
 
+	/*
 	if (m_pVars->numParam < 5) {
-		std::tie(m_pVars->square2, m_pVars->pivots, m_pVars->info) = at::_lu_with_info(H, true, false);
+		std::tie(m_pVars->square2, m_pVars->pivots, m_pVars->info) = at::_lu_with_info(H, data.device().is_cpu() ? true : false, false);
 		torch::lu_solve_out(m_pVars->plike2, g.neg(), m_pVars->square2, m_pVars->pivots);
 	}
 	else {
 		torch::linalg_cholesky_ex_out(m_pVars->square2, m_pVars->info, m_pVars->square3);
 		torch::cholesky_solve_out(m_pVars->plike2, g.neg(), m_pVars->square2);
 	}
+	*/
+	
+	std::tie(m_pVars->square2, m_pVars->pivots, m_pVars->info) = at::_lu_with_info(H, data.device().is_cpu() ? true : false, false);
+	torch::lu_solve_out(m_pVars->plike2, g.neg(), m_pVars->square2, m_pVars->pivots);
+
+	torch::linalg_cholesky_ex_out(m_pVars->square2, m_pVars->info, m_pVars->square3);
+	torch::cholesky_solve_out(m_pVars->plike2, g.neg(), m_pVars->square2);
 
 	torch::Tensor& ep = m_pVars->lambdalike1;
 	torch::square_out(m_pVars->reslike1, m_pVars->res);

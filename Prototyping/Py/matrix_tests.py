@@ -5,8 +5,8 @@ import time
 print(torch.get_num_threads())
 
 gpu = True
-n = 1000000
-m = 2
+n = 100000
+m = 10
 epochs = 3
 
 dev_str = "cpu"
@@ -24,9 +24,9 @@ b = torch.rand(2*n,m,1, device=dev_str)
 # Test LU
 t1 = time.perf_counter()
 
-#LU, pivots, LU_info = torch.lu(A, get_infos=True)
-#x = torch.lu_solve(b, LU, pivots)
-B = torch.bmm(A,A)
+LU, pivots, LU_info = torch.lu(A, get_infos=True)
+x = torch.lu_solve(b, LU, pivots)
+#B = torch.bmm(A,A)
 
 t2 = time.perf_counter()
 print(t2-t1)
@@ -57,9 +57,9 @@ for i in range(0,epochs):
     # Test LU
     t1 = time.perf_counter()
 
-    #LU, pivots, LU_info = torch.lu(A, get_infos=True)
-    #x = torch.lu_solve(b, LU, pivots)
-    B = torch.bmm(A,A)
+    LU, pivots, LU_info = torch.lu(A, get_infos=True)
+    x = torch.lu_solve(b, LU, pivots)
+    #B = torch.bmm(A,A)
     #x = torch.solve(b,A)
 
     if gpu:
