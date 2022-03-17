@@ -157,8 +157,8 @@ int main() {
 	strp_cpu_ir_anal_specific(2, 20, true);
 	strp_cuda_ir_anal_specific(2, 20, true);
 
-	strp_cpu_ir_anal_specific(5000000, 20, false);
-	strp_cuda_ir_anal_specific(5000000, 20, false);
+	strp_cpu_ir_anal_specific(5000000, 10, false);
+	strp_cuda_ir_anal_specific(5000000, 10, false);
 
 	/*
 	try {
