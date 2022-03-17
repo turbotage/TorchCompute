@@ -32,7 +32,7 @@ add_library(ComputeLib
     "Optim/MP/mp_expr.cpp"
     "Optim/MP/mp_optim.cpp"
     "Optim/MP/mp_strp.cpp"
-    #"Optim/MP/mp_slm.cpp"
+    "Optim/MP/mp_slm.cpp"
     
     "Expression/TokenAlgebra/Unary/neg.cpp"
     "Expression/TokenAlgebra/Unary/trig.cpp"
@@ -98,6 +98,13 @@ target_precompile_headers(ComputeLib PUBLIC "pch.hpp")
 
 set_target_properties(ComputeLib PROPERTIES PUBLIC_HEADER "compute.hpp")
 
+if(MSVC)
+    if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+        target_compile_options(ComputeLib PUBLIC "/ZI")
+        target_link_options(ComputeLib PUBLIC "/INCREMENTAL")
+    endif()
+endif()
+
 # Tests
 #add_executable(ComputeTestDiffExpression "Tests/test_diff_expression.cpp")
 #target_link_libraries(ComputeTestDiffExpression ComputeLib)
@@ -128,6 +135,9 @@ target_link_libraries(ComputeTestModel ComputeLib)
 
 add_executable(ComputeTestSTRP "Tests/test_strp.cpp")
 target_link_libraries(ComputeTestSTRP ComputeLib)
+
+add_executable(ComputeTestSLM "Tests/test_slm.cpp")
+target_link_libraries(ComputeTestSLM ComputeLib)
 
 #add_executable(ComputeTestTokenAlgebra "Tests/test_token_algebra.cpp")
 #target_link_libraries(ComputeTestTokenAlgebra ComputeLib)

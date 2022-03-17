@@ -20,6 +20,7 @@
 #include "Optim/MP/mp_expr.hpp"
 #include "Optim/MP/mp_optim.hpp"
 #include "Optim/MP/mp_strp.hpp"
+#include "Optim/MP/mp_slm.hpp"
 
 // Models
 #include "Models/mp_models.hpp"

@@ -220,7 +220,6 @@ void ffi::strp_create(ffi::OptimHandle** optim_handle, ffi::ModelHandle* model_h
 	auto npar = mod->parameters().size(1);
 	auto dops = mod->parameters().options();
 
-	
 	auto rJ = tc::optim::MP_STRP::default_res_J_setup(*mod, *data);
 	torch::Tensor delta = tc::optim::MP_STRP::default_delta_setup(mod->parameters());
 	torch::Tensor scaling = tc::optim::MP_STRP::default_scaling_setup(rJ.second);

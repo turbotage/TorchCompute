@@ -14,7 +14,7 @@ namespace tc {
 			MP_SLMSettings(MP_SLMSettings&& settings);
 
 			MP_SLMSettings(MP_OptimizerSettings&& optimsettings, const torch::Tensor& start_residuals, const torch::Tensor& start_jacobian,
-				const torch::Tensor& start_deltas, const torch::Tensor& scaling, float mu = 0.25, float eta = 0.75);
+				const torch::Tensor& start_lambdas, const torch::Tensor& scaling, float mu = 0.0f, float eta = 0.5f, float upmul = 2.0f, float downmul = 1.0f / 3.0f);
 
 			torch::Tensor start_residuals;
 			torch::Tensor start_jacobian;
@@ -24,6 +24,9 @@ namespace tc {
 
 			float mu = 0.25f;
 			float eta = 0.75f;
+
+			float upmul = 2.0f;
+			float downmul = 1.0f / 3.0f;
 
 		};
 
@@ -35,8 +38,8 @@ namespace tc {
 			MP_SLMVars& operator=(const MP_SLMVars&) = delete;
 
 			static std::unique_ptr<MP_SLMVars> make(std::unique_ptr<optim::MP_Model>& pModel, torch::Tensor& data,
-				torch::Tensor& residuals, torch::Tensor& jacobian, torch::Tensor& delta, torch::Tensor& scaling,
-				float mu = 0.25, float eta = 0.75);
+				torch::Tensor& residuals, torch::Tensor& jacobian, torch::Tensor& lambda, torch::Tensor& scaling,
+				float mu = 0.0f, float eta = 0.5f, float upmul = 2.0f, float downmul = 1.0f / 3.0f);
 
 			void to_device(const torch::Device& device);
 
@@ -51,6 +54,9 @@ namespace tc {
 			float mu;
 			float eta;
 
+			float upmul;
+			float downmul;
+
 			int64_t numProbs;
 			int64_t numData;
 			int64_t numParam;
@@ -62,43 +68,39 @@ namespace tc {
 			torch::Tensor reslike1;
 
 			// (nProblems)
-			torch::Tensor delta;
-			torch::Tensor deltalike1;
-			torch::Tensor deltalike2;
-			torch::Tensor deltalike3;
-			torch::Tensor deltalike4;
-			torch::Tensor deltalike5;
+			torch::Tensor lambda;
+			torch::Tensor lambdalike1;
+			torch::Tensor lambdalike2;
+			torch::Tensor lambdalike3;
 
 			// (nProblems, nData, nParams)
 			torch::Tensor J;
-			torch::Tensor Jlike1;
 
 			// (nProblems, nParams)
 			torch::Tensor plike1;
 			torch::Tensor plike2;
-			torch::Tensor plike3;
-			torch::Tensor plike4;
 
 			// (nProblems, nParams, nParams)
 			torch::Tensor square1;
 			torch::Tensor square2;
 			torch::Tensor square3;
-			torch::Tensor square4;
 
-			// (nProblems, nParams) - int32 type
-			torch::Tensor pivots;
 			// (nProblems) - int32 type
-			torch::Tensor luinfo;
+			torch::Tensor chol_info;
 
-			// (nProblems, nParams, nParams) - floating type
-			torch::Tensor scale_matrix;
-			torch::Tensor inv_scale_matrix;
+			// (nProblems, nParams) - floating type
+			torch::Tensor scaling;
 
 			// (nProblems) - booltype
 			torch::Tensor stepmask1;
 			torch::Tensor stepmask2;
 			torch::Tensor stepmask3;
-			torch::Tensor stepmask4;
+
+		private:
+
+			MP_SLMVars(const std::unique_ptr<optim::MP_Model>& pModel, const torch::Tensor& data,
+				torch::Tensor& residuals, torch::Tensor& jacobian, torch::Tensor& lambda, torch::Tensor& scaling,
+				float mu = 0.0f, float eta = 0.5f, float upmul = 2.0f, float downmul = 1.0f / 3.0f);
 
 		};
 
@@ -111,7 +113,7 @@ namespace tc {
 
 			MP_SLM(MP_SLM&&) = default;
 
-			static MP_SLM make(MP_SLMSettings&& settings);
+			static std::unique_ptr<MP_SLM> make(MP_SLMSettings&& settings);
 			MP_SLM(MP_OptimizerSettings&& optsettings, std::unique_ptr<MP_SLMVars> strpvars);
 
 			torch::Tensor last_parameters();
@@ -121,34 +123,32 @@ namespace tc {
 			torch::Tensor last_lambdas();
 			torch::Tensor last_multiplier();
 
-			std::unique_ptr<MP_STRPVars> acquire_vars();
+			std::unique_ptr<MP_SLMVars> acquire_vars();
 
 			static torch::Tensor default_lambda_setup(torch::Tensor& parameters, float multiplier = 1.0f);
 
-			static torch::Tensor default_scaling_setup(torch::Tensor& J);
+			static torch::Tensor default_scaling_setup(torch::Tensor& J, float minimum_scale = 1e-6f);
 
 			//					res,			  J
 			static std::pair<torch::Tensor, torch::Tensor> default_res_J_setup(optim::MP_Model& model, torch::Tensor data);
 
 		private:
 
-			void on_run() override;
+			void on_run(tc::ui32 iter) override;
 
-			MP_OptimResult on_acquire_result() override;
+			void on_acquire_model() override;
 
 			void on_abort() override;
 
 		private:
 
-			void dogleg();
-
 			void step();
 
-			void solve();
+			void solve(tc::ui32 iter);
 
 		private:
 
-			std::unique_ptr<MP_STRPVars> m_pVars;
+			std::unique_ptr<MP_SLMVars> m_pVars;
 
 		};
 
