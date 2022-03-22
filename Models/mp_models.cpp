@@ -151,10 +151,10 @@ void tc::models::mp_vfa_eval_jac_hess(
 	torch::Tensor costerm2 = costerm - 1.0f;
 	torch::Tensor expterm2 = torch::exp(TR / T1);
 	torch::Tensor T1_2 = torch::square(T1);
-	torch::sub_out(denom, expterm2, costerm);
-	torch::Tensor denom2 = torch::square(denom2);
+	torch::sub_out(denom, costerm, expterm2);
+	torch::Tensor denom2 = torch::square(denom);
 
-	J.select(2, 1) = TR * S0 * sinterm * costerm2 * expterm2 / (T1_2 * denom2);
+	J.select(2, 1) = TR * S0 * costerm2 * sinterm * expterm2 / (T1_2 * denom2);
 
 	// Jacobian set and eval
 
