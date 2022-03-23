@@ -152,13 +152,13 @@ void strp_cuda_ir_anal_specific(int32_t n, int32_t iter, bool print) {
 int main() {
 
 	strp_cpu_ir_anal_specific(1, 10, true);
-	strp_cuda_ir_anal_specific(1, 10, true);
+	//strp_cuda_ir_anal_specific(1, 10, true);
 
 	strp_cpu_ir_anal_specific(2, 20, true);
-	strp_cuda_ir_anal_specific(2, 20, true);
+	//strp_cuda_ir_anal_specific(2, 20, true);
 
-	strp_cpu_ir_anal_specific(5000000, 10, false);
-	strp_cuda_ir_anal_specific(5000000, 10, false);
+	//strp_cpu_ir_anal_specific(5000000, 10, false);
+	//strp_cuda_ir_anal_specific(5000000, 10, false);
 
 	/*
 	try {

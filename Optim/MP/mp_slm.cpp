@@ -372,6 +372,8 @@ void tc::optim::MP_SLM::step()
 
 	pModel->res_jac(m_pVars->res, m_pVars->J, data);
 
+	m_pVars->J.nan_to_num_(0.0f, 0.0f, 0.0f);
+
 	torch::Tensor& H = m_pVars->square1;
 	torch::bmm_out(H, m_pVars->J.transpose(1, 2), m_pVars->J);
 
@@ -461,6 +463,7 @@ void tc::optim::MP_SLM::step()
 	//std::cout << "should_step: " << should_step << std::endl;
 
 	m_pVars->plike2.mul_(should_step.unsqueeze(-1).unsqueeze(-1));
+	m_pVars->plike2.nan_to_num_(0.0f, 0.0f, 0.0f);
 	torch::add_out(pModel->parameters(), m_pVars->plike1.squeeze(-1), m_pVars->plike2.squeeze(-1));
 
 	//std::cout << "param: " << pModel->parameters() << std::endl;
