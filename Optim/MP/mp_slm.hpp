@@ -124,6 +124,7 @@ namespace tc {
 			torch::Tensor last_residuals();
 			torch::Tensor last_lambdas();
 			torch::Tensor last_multiplier();
+			torch::Tensor last_scaling();
 
 			std::unique_ptr<MP_SLMVars> acquire_vars();
 

@@ -314,6 +314,14 @@ torch::Tensor tc::optim::MP_SLM::last_multiplier()
 	return m_pVars->lambdalike2;
 }
 
+torch::Tensor tc::optim::MP_SLM::last_scaling()
+{
+	if (!m_pVars)
+		throw std::runtime_error("Tried to get last_scaling on optimizer where vars had been aquired");
+
+	return m_pVars->scaling;
+}
+
 std::unique_ptr<tc::optim::MP_SLMVars> tc::optim::MP_SLM::acquire_vars()
 {
 	return std::move(m_pVars);

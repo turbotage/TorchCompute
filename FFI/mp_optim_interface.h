@@ -119,5 +119,5 @@ namespace ffi {
 	void slm_last_residuals(const OptimHandle* optim_handle, torch::Tensor** last_residuals);
 	void slm_last_lambdas(const OptimHandle* optim_handle, torch::Tensor** last_deltas);
 	void slm_last_multiplier(const OptimHandle* optim_handle, torch::Tensor** last_multiplier);
-
+	void slm_last_scaling(const OptimHandle* optim_handle, torch::Tensor** last_scaling);
 }

@@ -354,3 +354,10 @@ void ffi::slm_last_multiplier(const OptimHandle* optim_handle, torch::Tensor** l
 	tc::optim::MP_SLM& strp = dynamic_cast<tc::optim::MP_SLM&>(opt);
 	*last_multiplier = new torch::Tensor(strp.last_multiplier());
 }
+
+void ffi::slm_last_scaling(const OptimHandle* optim_handle, torch::Tensor** last_scaling)
+{
+	tc::optim::MP_Optimizer& opt = *optim_handle->p_optim_handle;
+	tc::optim::MP_SLM& strp = dynamic_cast<tc::optim::MP_SLM&>(opt);
+	*last_scaling = new torch::Tensor(strp.last_scaling());
+}
