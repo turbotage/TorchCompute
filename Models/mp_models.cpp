@@ -52,8 +52,9 @@ void tc::models::mp_adc_eval_jac_hess(
 
 		H.select(1, 0).select(1, 0).zero_(); // S0,S0
 		torch::sum_out(H.select(1, 1).select(1, 0), values * torch::div(J.select(2, 1), S0), 1); // ADC,S0
-		torch::sum_out(H.select(1, 1).select(1, 1), values * torch::mul(J.select(2, 1), b.neg()), 1); // ADC,ADC
 		H.select(1, 0).select(1, 1) = H.select(1, 1).select(1, 0); // S0,ADC
+		
+		torch::sum_out(H.select(1, 1).select(1, 1), values * torch::mul(J.select(2, 1), b.neg()), 1); // ADC,ADC
 
 		H += torch::bmm(J.transpose(1, 2), J);
 	}
@@ -151,7 +152,7 @@ void tc::models::mp_vfa_eval_jac_hess(
 	torch::Tensor costerm2 = costerm - 1.0f;
 	torch::Tensor expterm2 = torch::exp(TR / T1);
 	torch::Tensor T1_2 = torch::square(T1);
-	torch::sub_out(denom, costerm, expterm2);
+	torch::sub_out(denom, expterm2, costerm);
 	torch::Tensor denom2 = torch::square(denom);
 
 	J.select(2, 1) = TR * S0 * costerm2 * sinterm * expterm2 / (T1_2 * denom2);
@@ -338,6 +339,7 @@ void tc::models::mp_irmag_eval_jac_hess(
 	// Sets jacobian
 	torch::Tensor& J = jacobian.value().get();
 	J.select(2, 0) = sig * values;
+	values.mul_(S0);
 	torch::Tensor T1_2 = torch::square(T1);
 	torch::Tensor TI_FAexp1 = TI * FAexp1;
 	torch::Tensor TR_exp2 = TR * expterm2;
@@ -362,10 +364,10 @@ void tc::models::mp_irmag_eval_jac_hess(
 		torch::Tensor& H = hessian.value().get();
 
 		H.select(1, 0).select(1, 0).zero_(); // S0,S0
-		torch::sum_out(H.select(1, 1).select(1, 0), sig * values * torch::div(J.select(2, 1), S0), 1);
+		torch::sum_out(H.select(1, 1).select(1, 0), values * torch::div(J.select(2, 1), S0), 1);
 		H.select(1, 0).select(1, 1) = H.select(1, 1).select(1, 0);
 
-		torch::Tensor t1t1 = sig.neg() * S0 * (TI_FAexp1 * (TI - 2.0f * T1) - TR_exp2 * (TR - 2.0f * T1)) / torch::square(T1_2);
+		torch::Tensor t1t1 = sig * S0 * (TI_FAexp1 * (TI - 2.0f * T1) + TR_exp2 * (TR - 2.0f * T1)) / torch::square(T1_2);
 		torch::sum_out(H.select(1, 1).select(1, 1), values * t1t1, 1);
 
 		H += torch::bmm(J.transpose(1, 2), J);
@@ -421,10 +423,11 @@ void tc::models::mp_t2_eval_jac_hess(
 	// Sets jacobian
 	torch::Tensor& J = jacobian.value().get();
 	J.select(2, 0) = values;
+	values.mul_(S0);
 	torch::Tensor T2_2 = torch::square(T2);
 	torch::Tensor frac = TE / T2_2;
 
-	J.select(2, 1) = S0 * values * frac;
+	J.select(2, 1) = values * frac;
 	// Jacobian set and eval
 
 	if (data.has_value())

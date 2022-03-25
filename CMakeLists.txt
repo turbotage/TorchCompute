@@ -118,6 +118,9 @@ target_link_libraries(ComputeTestExp ComputeLib)
 #add_executable(ComputeTestExpMod "Tests/test_expression_model.cpp")
 #target_link_libraries(ComputeTestExpMod ComputeLib)
 
+add_executable(ComputeHessJac "Tests/test_hess_jac.cpp")
+target_link_libraries(ComputeHessJac ComputeLib)
+
 #add_executable(ComputeTestLexer "Tests/test_lexer.cpp")
 #target_link_libraries(ComputeTestLexer ComputeLib)
 
