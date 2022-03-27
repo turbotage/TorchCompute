@@ -222,6 +222,23 @@ namespace tc {
 
 		// Unary
 
+		tentok sgn(const tentok& a);
+
+		class SgnNode : public Node {
+		public:
+
+			SgnNode(std::unique_ptr<Node> child);
+
+			tentok eval() override;
+
+			std::unique_ptr<Node> evalnode() override;
+
+			tentok diff(const VariableToken& var) override;
+
+			std::unique_ptr<Node> diffnode(const VariableToken& var) override;
+
+		};
+
 		tentok abs(const tentok& a);
 
 		class AbsNode : public Node {

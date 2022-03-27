@@ -657,6 +657,47 @@ std::unique_ptr<tc::expression::Node> tc::expression::PowNode::diffnode(const Va
 	return std::make_unique<MulNode>(std::move(pow), std::move(add));
 }
 
+
+// <================================== SIGN ===================================>
+
+tc::expression::tentok tc::expression::sgn(const tentok& a)
+{
+	if (a.first.has_value()) {
+		return std::make_pair(torch::sgn(a.first.value()), std::nullopt);
+	}
+	else if (a.second.has_value()) {
+		return std::make_pair(std::nullopt, abs(*a.second.value()));
+	}
+	else {
+		throw std::runtime_error("more than two eval() optionals was nullopt");
+	}
+}
+
+tc::expression::SgnNode::SgnNode(std::unique_ptr<Node> child)
+{
+	m_Children.push_back(std::move(child));
+}
+
+tc::expression::tentok tc::expression::SgnNode::eval()
+{
+	return sgn(m_Children[0]->eval());
+}
+
+std::unique_ptr<tc::expression::Node> tc::expression::SgnNode::evalnode()
+{
+	return std::make_unique<SgnNode>(m_Children[0]->evalnode());
+}
+
+tc::expression::tentok tc::expression::SgnNode::diff(const VariableToken& var)
+{
+	return tentok_from_zero() / m_Children[0]->eval();
+}
+
+std::unique_ptr<tc::expression::Node> tc::expression::SgnNode::diffnode(const VariableToken& var)
+{
+	return std::make_unique<tc::expression::DivNode>(std::make_unique<TokenNode>(ZeroToken()), evalnode());
+}
+
 // <================================== ABS ===================================>
 
 tc::expression::tentok tc::expression::abs(const tentok& a)
@@ -692,13 +733,13 @@ tc::expression::tentok tc::expression::AbsNode::diff(const VariableToken& var)
 	auto in = m_Children[0]->eval();
 	auto din = m_Children[0]->diff(var);
 
-	return din * in / abs(in);
+	return din * sgn(in);
 }
 
 std::unique_ptr<tc::expression::Node> tc::expression::AbsNode::diffnode(const VariableToken& var)
 {
-	auto mul = std::make_unique<MulNode>(m_Children[0]->diffnode(var), m_Children[0]->evalnode());
-	return std::make_unique<DivNode>(std::move(mul), evalnode());
+	return std::make_unique<MulNode>(m_Children[0]->diffnode(var),
+		std::make_unique<SgnNode>(m_Children[0]->evalnode()));
 }
 
 // <================================== SQRT ===================================>

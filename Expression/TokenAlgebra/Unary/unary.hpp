@@ -5,6 +5,15 @@
 namespace tc {
 	namespace expression {
 
+		// Sign
+
+		std::unique_ptr<NumberBaseToken> sgn(const Token& in);
+		ZeroToken sgn(const ZeroToken& in);
+		NegUnityToken sgn(const NegUnityToken& in);
+		UnityToken sgn(const UnityToken& in);
+		NanToken sgn(const NanToken& in);
+		NumberToken sgn(const NumberToken& in);
+
 		// Abs
 
 		std::unique_ptr<NumberBaseToken> abs(const Token& in);

@@ -6,6 +6,81 @@
 namespace tc {
 namespace expression {
 
+// <====================================== SIGN ============================================>
+
+std::unique_ptr<NumberBaseToken> sgn(const Token& in)
+{
+	switch (in.get_token_type()) {
+	case TokenType::ZERO_TYPE:
+	{
+		const ZeroToken& atok = static_cast<const ZeroToken&>(in);
+		return std::make_unique<ZeroToken>(sgn(atok));
+	}
+	case TokenType::UNITY_TYPE:
+	{
+		const UnityToken& atok = static_cast<const UnityToken&>(in);
+		return std::make_unique<UnityToken>(sgn(atok));
+	}
+	case TokenType::NEG_UNITY_TYPE:
+	{
+		const NegUnityToken& atok = static_cast<const NegUnityToken&>(in);
+		return std::make_unique<NegUnityToken>(sgn(atok));
+	}
+	case TokenType::NAN_TYPE:
+	{
+		const NanToken& atok = static_cast<const NanToken&>(in);
+		return std::make_unique<NanToken>(sgn(atok));
+	}
+	case TokenType::NUMBER_TYPE:
+	{
+		const NumberToken& atok = static_cast<const NumberToken&>(in);
+		if (atok.num.real() == 0.0f && atok.num.imag() == 0.0f) {
+			return std::make_unique<ZeroToken>(atok.sizes);
+		}
+		else if (!atok.is_imaginary) {
+			if (atok.num.real() > 0.0f) {
+				return std::make_unique<UnityToken>(atok.sizes);
+			}
+			return std::make_unique<NegUnityToken>(atok.sizes);
+		}
+		return std::make_unique<NumberToken>(sgn(atok));
+	}
+	default:
+		throw std::runtime_error("Token was not Zero, Unity, NegUnity, Nan and Number");
+	}
+}
+
+ZeroToken sgn(const ZeroToken& in)
+{
+	return in;
+}
+
+NegUnityToken sgn(const NegUnityToken& in)
+{
+	return in;
+}
+
+UnityToken sgn(const UnityToken& in)
+{
+	return in;
+}
+
+NanToken sgn(const NanToken& in)
+{
+	return in;
+}
+
+NumberToken sgn(const NumberToken& in)
+{
+	if (in.num.real() == 0.0f && in.num.imag() == 0.0f) {
+		return NumberToken(0.0f, false, in.sizes);
+	}
+
+	return NumberToken(in.num / std::abs(in.num), in.is_imaginary, in.sizes);
+}
+
+
+
 // <====================================== ABS ============================================>
 
 std::unique_ptr<NumberBaseToken> abs(const Token& in)

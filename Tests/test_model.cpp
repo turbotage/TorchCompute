@@ -443,7 +443,6 @@ void test_irmag_times(int32_t nprob, int32_t ndata) {
 
 }
 
-
 void test_t2_values() {
 	int32_t nprob = 3;
 	int32_t npar = 2;
@@ -609,15 +608,18 @@ int main() {
 	test_psir_times(1000000, 10);
 	*/
 
+	
 	test_irmag_values();
 
 	test_irmag_times(1000000, 10);
 	test_irmag_times(1000000, 10);
+	
 
 	/*
 	test_t2_values();
 	test_t2_times(1000000, 10);
 	test_t2_times(1000000, 10);
-	*/
+	 */
+	
 	
 }
