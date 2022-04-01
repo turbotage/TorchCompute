@@ -32,10 +32,7 @@ tc::optim::MPOptimizerSettings::MPOptimizerSettings(MPOptimizerSettings&& other)
 }
 */
 
-tc::optim::MP_OptimizerSettings::~MP_OptimizerSettings()
-{
-}
-
+tc::optim::MP_Optimizer::~MP_Optimizer() = default;
 
 
 tc::optim::MP_Optimizer::MP_Optimizer(MP_OptimizerSettings&& settings) 

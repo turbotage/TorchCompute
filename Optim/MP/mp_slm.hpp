@@ -118,6 +118,8 @@ namespace tc {
 			static std::unique_ptr<MP_SLM> make(MP_SLMSettings&& settings);
 			MP_SLM(MP_OptimizerSettings&& optsettings, std::unique_ptr<MP_SLMVars> strpvars);
 
+			~MP_SLM() = default;
+
 			torch::Tensor last_parameters();
 			torch::Tensor last_step();
 			torch::Tensor last_jacobian();

@@ -133,6 +133,8 @@ namespace tc {
 			static std::unique_ptr<MP_STRP> make(MP_STRPSettings&& settings);
 			MP_STRP(MP_OptimizerSettings&& optsettings, std::unique_ptr<MP_STRPVars> strpvars);
 
+			~MP_STRP() = default;
+
 			torch::Tensor last_parameters();
 			torch::Tensor last_step();
 			torch::Tensor last_jacobian();
