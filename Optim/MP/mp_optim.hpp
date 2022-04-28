@@ -16,8 +16,6 @@ namespace tc {
 
 			MP_OptimizerSettings(MP_OptimizerSettings&&) = default;
 
-			virtual ~MP_OptimizerSettings();
-
 			std::unique_ptr<optim::MP_Model>		pModel;
 			torch::Tensor							data;
 		};
@@ -32,6 +30,8 @@ namespace tc {
 			MP_Optimizer(MP_Optimizer&&) = default;
 
 			MP_Optimizer(MP_OptimizerSettings&& settings);
+
+			virtual ~MP_Optimizer() = 0;
 
 			void run(tc::ui32 iter);
 
@@ -64,9 +64,6 @@ namespace tc {
 			std::atomic<tc::ui32> m_Iter = 0;
 			std::atomic<bool> m_ShouldStop = false;
 		};
-
-
-
 
 
 
