@@ -119,6 +119,11 @@ void ffi::model_res_jac_hess(ffi::ModelHandle* model_handle, torch::Tensor* valu
 	model_handle->p_model->res_jac_hess(*value, *jac, *hes, *data);
 }
 
+void ffi::model_diff(ModelHandle* model_handle, torch::Tensor* value, std::uint32_t index)
+{
+	model_handle->p_model->diff(*value, index);
+}
+
 
 
 

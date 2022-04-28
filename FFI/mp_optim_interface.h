@@ -53,6 +53,7 @@ namespace ffi {
 
 	void model_res_jac_hess(ModelHandle* model_handle, torch::Tensor* value, torch::Tensor* jac, torch::Tensor* hes, const torch::Tensor* data);
 
+	void model_diff(ModelHandle* model_handle, torch::Tensor* value, std::uint32_t index);
 
 
 	void optim_free(OptimHandle* optim_handle);

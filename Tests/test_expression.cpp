@@ -11,6 +11,7 @@ void test_values() {
 	int64_t ndata = 10;
 	torch::Tensor x = torch::rand({ nprob,nparam });
 	torch::Tensor b = torch::rand({ 1, ndata });
+	torch::Tensor g = torch::rand({ 1, ndata });
 
 	std::function<torch::Tensor()> xfetcher = [&x]() {
 		//std::cout << "xsize: " << x.select(1, 0).unsqueeze(-1).sizes() << std::endl;
@@ -42,7 +43,12 @@ void test_values() {
 		return b;
 	};
 
-	FetcherMap map{ {"x", xfetcher}, {"y", yfetcher}, {"z", zfetcher}, {"w", wfetcher}, {"u", ufetcher}, {"b", bfetcher} };
+	std::function<torch::Tensor()> gfetcher = [&g]() {
+		//std::cout << "bsize: " << b.sizes() << std::endl;
+		return g;
+	};
+
+	FetcherMap map{ {"x", xfetcher}, {"y", yfetcher}, {"z", zfetcher}, {"w", wfetcher}, {"u", ufetcher}, {"b", bfetcher}, {"g", gfetcher} };
 
 	VariableToken varx("x");
 	VariableToken vary("y");
@@ -50,6 +56,7 @@ void test_values() {
 	VariableToken varw("w");
 	VariableToken varu("u");
 	VariableToken varb("b");
+	VariableToken varg("g");
 
 	LexContext context;
 	context.variables.push_back(varx);
@@ -58,10 +65,11 @@ void test_values() {
 	context.variables.push_back(varw);
 	context.variables.push_back(varu);
 	context.variables.push_back(varb);
+	context.variables.push_back(varg);
 	LexContext context_copy = context;
 
 	Lexer lexer(std::move(context));
-	std::string expr = "x*exp(-b*y)+z+sin(w)+abs(u)";
+	std::string expr = "x*sin(b)*(1-exp(-g/y))/(1-cos(b)*exp(-g/y))";
 
 	std::vector<std::unique_ptr<Token>> toks = lexer.lex(expr);
 
@@ -128,6 +136,7 @@ void test_times(int64_t nprob) {
 	int64_t ndata = 10;
 	torch::Tensor x = torch::rand({ nprob,nparam });
 	torch::Tensor b = torch::rand({ 1, ndata });
+	torch::Tensor g = torch::rand({ 1, ndata });
 
 	std::function<torch::Tensor()> xfetcher = [&x]() {
 		//std::cout << "xsize: " << x.select(1, 0).unsqueeze(-1).sizes() << std::endl;
@@ -159,7 +168,12 @@ void test_times(int64_t nprob) {
 		return b;
 	};
 
-	FetcherMap map{ {"x", xfetcher}, {"y", yfetcher}, {"z", zfetcher}, {"w", wfetcher}, {"u", ufetcher}, {"b", bfetcher} };
+	std::function<torch::Tensor()> gfetcher = [&g]() {
+		//std::cout << "bsize: " << b.sizes() << std::endl;
+		return g;
+	};
+
+	FetcherMap map{ {"x", xfetcher}, {"y", yfetcher}, {"z", zfetcher}, {"w", wfetcher}, {"u", ufetcher}, {"b", bfetcher}, {"g", gfetcher} };
 
 	VariableToken varx("x");
 	VariableToken vary("y");
@@ -167,6 +181,7 @@ void test_times(int64_t nprob) {
 	VariableToken varw("w");
 	VariableToken varu("u");
 	VariableToken varb("b");
+	VariableToken varg("g");
 
 	LexContext context;
 	context.variables.push_back(varx);
@@ -175,10 +190,11 @@ void test_times(int64_t nprob) {
 	context.variables.push_back(varw);
 	context.variables.push_back(varu);
 	context.variables.push_back(varb);
+	context.variables.push_back(varg);
 	LexContext context_copy = context;
 
 	Lexer lexer(std::move(context));
-	std::string expr = "x*exp(-b*y)+z+sin(w)+abs(u)";
+	std::string expr = "x*sin(b)*(1-exp(-g/y))/(1-cos(b)*exp(-g/y))";
 
 	std::vector<std::unique_ptr<Token>> toks = lexer.lex(expr);
 
