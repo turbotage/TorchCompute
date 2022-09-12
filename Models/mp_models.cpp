@@ -1,3 +1,6 @@
+#include "mp_models.hpp"
+#include "mp_models.hpp"
+#include "mp_models.hpp"
 #include "../pch.hpp"
 
 #include "mp_models.hpp"
@@ -265,7 +268,6 @@ void tc::models::mp_psir_eval_jac_hess(
 		if (!data.has_value()) {
 			throw std::runtime_error("data OptRef must be filled if hessian shall be evaluated");
 		}
-		torch::Tensor& J = jacobian.value().get();
 
 		// If we have come here jacobian is set and values = residuals
 		torch::Tensor& H = hessian.value().get();
@@ -360,7 +362,6 @@ void tc::models::mp_irmag_eval_jac_hess(
 		if (!data.has_value()) {
 			throw std::runtime_error("data OptRef must be filled if hessian shall be evaluated");
 		}
-		torch::Tensor& J = jacobian.value().get();
 
 		// If we have come here jacobian is set and values = residuals
 		torch::Tensor& H = hessian.value().get();
@@ -473,6 +474,96 @@ void tc::models::mp_t2_diff2(
 	const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters, const std::pair<int32_t, int32_t>& indices,
 	// Derivative
 	torch::Tensor& diff2)
+{
+	throw std::runtime_error("Not implemented");
+}
+
+
+void tc::models::mp_ivim_eval_jac_hess(
+	const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters, 
+	torch::Tensor& values, tc::OptOutRef<torch::Tensor> jacobian, 
+	tc::OptOutRef<torch::Tensor> hessian, tc::OptRef<const torch::Tensor> data)
+{
+	torch::Tensor S0 = parameters.select(1, 0).unsqueeze(-1);
+	torch::Tensor f = parameters.select(1, 1).unsqueeze(-1);
+	torch::Tensor D1 = parameters.select(1, 2).unsqueeze(-1);
+	torch::Tensor D2 = parameters.select(1, 3).unsqueeze(-1);
+
+	torch::Tensor b = constants[0];
+
+	torch::Tensor expterm1 = torch::exp(b.neg() * D1);
+	torch::Tensor expterm2 = torch::exp(b.neg() * D2);
+
+	torch::Tensor term1 = f * expterm1;
+	torch::Tensor term2 = (1 - f) * expterm2;
+
+	values = S0 * (term1 + term2);
+
+	if (!jacobian.has_value() && !hessian.has_value()) {
+		if (data.has_value())
+			values.sub_(data.value());
+		return;
+	}
+
+	torch::Tensor& J = jacobian.value().get();
+	J.select(2, 0) = values / S0;
+	J.select(2, 1) = S0 * (expterm1 - expterm2);
+	J.select(2, 2) = b.neg() * S0 * term1;
+	J.select(2, 3) = b.neg() * S0 * term2;
+
+	if (data.has_value())
+		values.sub_(data.value());
+
+	if (hessian.has_value()) {
+		if (!jacobian.has_value()) {
+			throw std::runtime_error("jacobian OptOutRef must be filled if hessian shall be evaluated");
+		}
+		if (!data.has_value()) {
+			throw std::runtime_error("data OptRef must be filled if hessian shall be evaluated");
+		}
+
+		// If we have come here jacobian is set and values = residuals
+		torch::Tensor& H = hessian.value().get();
+
+		// S0, S0
+		H.select(1, 0).select(1, 0).zero_();
+		// S0, f
+		torch::sum_out(H.select(1, 0).select(1, 1), values * torch::div(J.select(2, 1), S0), 1);
+		H.select(1, 1).select(1, 0) = H.select(1, 0).select(1, 1);
+		// S0, D1
+		torch::sum_out(H.select(1, 0).select(1, 2), values * term1 * b.neg(), 1);
+		H.select(1, 2).select(1, 0) = H.select(1, 0).select(1, 2);
+		// S0, D2
+		torch::sum_out(H.select(1, 0).select(1, 3), values * term2 * b.neg(), 1);
+		H.select(1, 3).select(1, 0) = H.select(1, 0).select(1, 3);
+		// f, f
+		H.select(1, 1).select(1, 1).zero_();
+		// f, D1
+		torch::sum_out(H.select(1, 1).select(1, 2), values * J.select(2, 2) / f, 1);
+		H.select(1, 2).select(1, 1) = H.select(1, 1).select(1, 2);
+		// f, D2
+		torch::sum_out(H.select(1, 1).select(1, 3), values * b * S0 * expterm2, 1);
+		H.select(1, 3).select(1, 1) = H.select(1, 1).select(1, 3);
+		// D1, D1
+		torch::sum_out(H.select(1, 2).select(1, 2), values * b.neg() * J.select(2, 2), 1);
+		// D1, D2
+		H.select(1, 2).select(1, 3).zero_();
+		H.select(1, 3).select(1, 2).zero_();
+		// D2, D2
+		torch::sum_out(H.select(1, 3).select(1, 3), values * b.neg() * J.select(2, 3), 1);
+
+		H += torch::bmm(J.transpose(1, 2), J);
+
+	}
+
+}
+
+void tc::models::mp_ivim_diff(const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters, int32_t index, torch::Tensor& diff)
+{
+	throw std::runtime_error("Not implemented");
+}
+
+void tc::models::mp_ivim_diff2(const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters, const std::pair<int32_t, int32_t>& indices, torch::Tensor& diff2)
 {
 	throw std::runtime_error("Not implemented");
 }
