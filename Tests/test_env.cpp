@@ -48,12 +48,45 @@ void test_bmm() {
 	std::cout << "T2: " << tdiff2 << std::endl;
 }
 
-int main() {
+void test_adc_values() {
+
+
+	//auto params = torch::rand({ 10, 2 });
+	//auto b = torch::rand({ 1,4 });
 
 	int n = 1;
 
-	torch::Tensor x1 = torch::ones({ n,2,1 });
-	torch::Tensor x2 = 3.0f * torch::ones({ n,2,1 });
-	torch::Tensor x3 = torch::rand({ n,2,1 });
+	torch::Tensor params = torch::empty({ n,2 });
+	params.select(1, 0).fill_(1000.0f);
+	params.select(1, 1).fill_(0.0080f);
+
+	torch::Tensor b = torch::empty({ 1,4 });
+	b.select(1, 0).fill_(0.0f);
+	b.select(1, 1).fill_(200.0f);
+	b.select(1, 2).fill_(400.0f);
+	b.select(1, 3).fill_(800.0f);
+
+	std::vector<torch::Tensor> constants({ b });
+
+	torch::Tensor values = torch::empty({ n,4 });
+	torch::Tensor jacobian = torch::empty({ n,4,2 });
+	torch::Tensor hessian = torch::empty({ n,2,2 });
+
+	tc::models::mp_adc_eval_jac_hess(constants, params, values, std::nullopt, std::nullopt, std::nullopt);
+
+	torch::Tensor data = values + 0.01*torch::randn({ n,4 });
+
+	tc::models::mp_adc_eval_jac_hess(constants, params, values, jacobian, hessian, data);
+
+	std::cout << "data: " << data << std::endl;
+	std::cout << "values: " << values << std::endl;
+	std::cout << "jacobian: " << jacobian << std::endl;
+	std::cout << "hessian: " << hessian << std::endl;
+
+}
+
+int main() {
+
+	test_adc_values();
 
 }

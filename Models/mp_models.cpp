@@ -8,7 +8,7 @@ void tc::models::mp_adc_eval_jac_hess(
 	// Values										// Jacobian
 	torch::Tensor& values,							tc::OptOutRef<torch::Tensor> jacobian,
 	// Hessian										// Data
-	tc::OptOutRef<torch::Tensor> hessian,			tc::OptRef<const torch::Tensor>data)
+	tc::OptOutRef<torch::Tensor> hessian,			tc::OptRef<const torch::Tensor> data)
 {
 
 	torch::Tensor S0 = parameters.select(1, 0).unsqueeze(-1);
@@ -326,7 +326,7 @@ void tc::models::mp_irmag_eval_jac_hess(
 	values = 1.0f + FAexp1 + expterm2;
 
 	if (!jacobian.has_value() && !hessian.has_value()) {
-		values.mul_(S0);
+		values.mul_(S0).abs_();
 
 		if (data.has_value())
 			values.sub_(data.value());
@@ -339,7 +339,7 @@ void tc::models::mp_irmag_eval_jac_hess(
 	// Sets jacobian
 	torch::Tensor& J = jacobian.value().get();
 	J.select(2, 0) = sig * values;
-	values.mul_(S0);
+	values.mul_(S0).abs_();
 	torch::Tensor T1_2 = torch::square(T1);
 	torch::Tensor TI_FAexp1 = TI * FAexp1;
 	torch::Tensor TR_exp2 = TR * expterm2;
@@ -348,7 +348,9 @@ void tc::models::mp_irmag_eval_jac_hess(
 	// Jacobian set and eval
 
 	if (data.has_value())
+	{
 		values.sub_(data.value());
+	}
 
 	// Sets hessian
 	if (hessian.has_value()) {

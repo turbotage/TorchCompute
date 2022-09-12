@@ -252,11 +252,13 @@ tc::expression::OperatorToken::OperatorToken(std::int32_t id, std::int32_t prece
 {
 }
 
-std::int32_t tc::expression::OperatorToken::get_id() const {
+std::int32_t tc::expression::OperatorToken::get_id() const 
+{
 	return id;
 }
 
-std::int32_t tc::expression::OperatorToken::get_token_type() const {
+std::int32_t tc::expression::OperatorToken::get_token_type() const 
+{
 	return TokenType::OPERATOR_TYPE;
 }
 

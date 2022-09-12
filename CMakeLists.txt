@@ -109,8 +109,8 @@ endif()
 #add_executable(ComputeTestDiffExpression "Tests/test_diff_expression.cpp")
 #target_link_libraries(ComputeTestDiffExpression ComputeLib)
 
-#add_executable(ComputeTestEnv "Tests/test_env.cpp")
-#target_link_libraries(ComputeTestEnv ComputeLib)
+add_executable(ComputeTestEnv "Tests/test_env.cpp")
+target_link_libraries(ComputeTestEnv ComputeLib)
 
 add_executable(ComputeTestExp "Tests/test_expression.cpp")
 target_link_libraries(ComputeTestExp ComputeLib)
