@@ -38,7 +38,7 @@ void tc::models::mp_adc_eval_jac_hess(
 
 	// Jacobian set and eval
 
-	if (data.has_value());
+	if (data.has_value())
 		values.sub_(data.value());
 
 	// Sets hessian
