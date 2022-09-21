@@ -57,6 +57,8 @@ add_library(ComputeLib
 
     "FFI/mp_optim_interface.cpp"
 
+    "MRI/IVIM/ivim.cpp"
+
     "tc.cpp"
 )
 set_target_properties(ComputeLib PROPERTIES COMPILE_PDB_NAME "ComputeLib")

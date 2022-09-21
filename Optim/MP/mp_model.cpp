@@ -176,9 +176,6 @@ void tc::optim::MP_Model::second_diff(torch::Tensor& value, const std::pair<int3
 
 
 
-
-
-
 void tc::optim::MP_Model::build_funcs_from_expr()
 {
 	
