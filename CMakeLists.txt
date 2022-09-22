@@ -57,8 +57,6 @@ add_library(ComputeLib
 
     "FFI/mp_optim_interface.cpp"
 
-    "MRI/IVIM/ivim.cpp"
-
     "tc.cpp"
 )
 set_target_properties(ComputeLib PROPERTIES COMPILE_PDB_NAME "ComputeLib")
@@ -143,6 +141,9 @@ target_link_libraries(ComputeTestSTRP ComputeLib)
 
 add_executable(ComputeTestSLM "Tests/test_slm.cpp")
 target_link_libraries(ComputeTestSLM ComputeLib)
+
+add_executable(ComputeTestIVIM "Tests/test_ivim.cpp")
+target_link_libraries(ComputeTestIVIM ComputeLib)
 
 #add_executable(ComputeTestTokenAlgebra "Tests/test_token_algebra.cpp")
 #target_link_libraries(ComputeTestTokenAlgebra ComputeLib)

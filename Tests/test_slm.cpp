@@ -1,6 +1,6 @@
 #include "../compute.hpp"
 
-void strp_cpu_psir_anal_specific(int32_t n, int32_t iter, bool print) {
+void slm_cpu_psir_anal_specific(int32_t n, int32_t iter, bool print) {
 
 	using namespace tc;
 
@@ -74,7 +74,7 @@ void strp_cpu_psir_anal_specific(int32_t n, int32_t iter, bool print) {
 
 }
 
-void strp_cuda_psir_anal_specific(int32_t n, int32_t iter, bool print) {
+void slm_cuda_psir_anal_specific(int32_t n, int32_t iter, bool print) {
 
 	using namespace tc;
 
@@ -149,7 +149,7 @@ void strp_cuda_psir_anal_specific(int32_t n, int32_t iter, bool print) {
 }
 
 
-void strp_cpu_irmag_anal_specific(int32_t n, int32_t iter, bool print) {
+void slm_cpu_irmag_anal_specific(int32_t n, int32_t iter, bool print) {
 
 	using namespace tc;
 
@@ -161,21 +161,17 @@ void strp_cpu_irmag_anal_specific(int32_t n, int32_t iter, bool print) {
 	dops = dops.dtype(torch::kFloat64);
 
 	auto params = torch::rand({ n, 2 }, dops);
-	params.select(1, 0).fill_(10000.0f);
-	params.select(1, 1).fill_(800.0f);
+	params.select(1, 0).fill_(653.4f);
+	params.select(1, 1).fill_(495.3f);
 
-	torch::Tensor TR = torch::full({ 1 }, 5000.0f, dops);
-	torch::Tensor TI = torch::empty({ 1, 10 }, dops);
-	TI.select(1, 0).fill_(200.0f);
-	TI.select(1, 1).fill_(300.0f);
-	TI.select(1, 2).fill_(500.0f);
-	TI.select(1, 3).fill_(550.0f);
-	TI.select(1, 4).fill_(600.0f);
-	TI.select(1, 5).fill_(650.0f);
-	TI.select(1, 6).fill_(700.0f);
-	TI.select(1, 7).fill_(800.0f);
-	TI.select(1, 8).fill_(1200.0f);
-	TI.select(1, 9).fill_(2000.0f);
+	torch::Tensor TR = torch::full({ 1 }, 9820.0f, dops);
+	torch::Tensor TI = torch::empty({ 1, 6 }, dops);
+	TI.select(1, 0).fill_(100.0f);
+	TI.select(1, 1).fill_(208.0f);
+	TI.select(1, 2).fill_(400.0f);
+	TI.select(1, 3).fill_(750.0f);
+	TI.select(1, 4).fill_(1000.0f);
+	TI.select(1, 5).fill_(2000.0f);
 
 	torch::Tensor FA = torch::full({ 1 }, 180.0f * 3.141592 / 180.0f, dops);
 	FA = torch::cos(FA) - 1;
@@ -184,28 +180,37 @@ void strp_cpu_irmag_anal_specific(int32_t n, int32_t iter, bool print) {
 	mp_model->parameters() = params;
 	mp_model->constants() = consts;
 
-	torch::Tensor data = torch::empty({ n, 10 }, dops);
-	mp_model->eval(data);
+	torch::Tensor data = torch::empty({ n, 6 }, dops);
+	//mp_model->eval(data);
+	data.select(1, 0).fill_(418.0f);
+	data.select(1, 1).fill_(156.0f);
+	data.select(1, 2).fill_(54.0f);
+	data.select(1, 3).fill_(338.0f);
+	data.select(1, 4).fill_(480.0f);
+	data.select(1, 5).fill_(662.0f);
+
 	if (print) {
 		std::cout << "data:\n" << data << std::endl;
 	}
 
 	auto guess = torch::empty({ n, 2 }, dops);
-	guess.select(1, 0).fill_(15000.0f);
-	guess.select(1, 1).fill_(2000.0f);
+	guess.select(1, 0).fill_(706.1);
+	guess.select(1, 1).fill_(577.1);
 
 	mp_model->parameters() = guess;
 
 	auto resJ = tc::optim::MP_SLM::default_res_J_setup(*mp_model, data);
-	auto lambda = tc::optim::MP_SLM::default_lambda_setup(mp_model->parameters(), 4.0f);
-	auto scaling = tc::optim::MP_SLM::default_scaling_setup(resJ.second);
+	auto lambda = tc::optim::MP_SLM::default_lambda_setup(mp_model->parameters(), 1.0f);
+	auto scaling = tc::optim::MP_SLM::default_scaling_setup(resJ.second, 1.0e-4);
 
 	if (print) {
 		std::cout << "true params: " << params << std::endl;
+		/*
 		std::cout << "start residuals: " << resJ.first << std::endl;
 		std::cout << "start jacobian: " << resJ.second << std::endl;
 		std::cout << "start deltas: " << lambda << std::endl;
 		std::cout << "scaling: " << scaling << std::endl;
+		*/
 	}
 
 	tc::optim::MP_OptimizerSettings optsettings(std::move(mp_model), data);
@@ -229,7 +234,7 @@ void strp_cpu_irmag_anal_specific(int32_t n, int32_t iter, bool print) {
 
 }
 
-void strp_cuda_irmag_anal_specific(int32_t n, int32_t iter, bool print) {
+void slm_cuda_irmag_anal_specific(int32_t n, int32_t iter, bool print) {
 
 	using namespace tc;
 
@@ -394,16 +399,16 @@ void test_irmag_hessian() {
 
 int main() {
 
-	test_ivim_hessian();
+	//test_ivim_hessian();
 	//strp_cpu_irmag_anal_specific(1, 50, true);
-	/*
-	strp_cpu_irmag_anal_specific(1, 1, true);
-	strp_cpu_irmag_anal_specific(1, 2, true);
-	strp_cpu_irmag_anal_specific(1, 5, true);
-	strp_cpu_irmag_anal_specific(1, 10, true);
-	strp_cpu_irmag_anal_specific(1, 50, true);
-	strp_cpu_irmag_anal_specific(1, 100, true);
-	*/
+	
+	slm_cpu_irmag_anal_specific(1, 1, true);
+	slm_cpu_irmag_anal_specific(1, 2, true);
+	slm_cpu_irmag_anal_specific(1, 5, true);
+	slm_cpu_irmag_anal_specific(1, 10, true);
+	slm_cpu_irmag_anal_specific(1, 50, true);
+	slm_cpu_irmag_anal_specific(1, 100, true);
+	
 	
 	
 	
