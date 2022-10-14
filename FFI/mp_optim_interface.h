@@ -16,6 +16,8 @@ namespace ffi {
 		PSIR = 4,
 		IR = 5,
 		IVIM_FULL = 6,
+		PSIRFA = 7,
+		IRFA = 8
 	};
 
 	struct ModelHandle {

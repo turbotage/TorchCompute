@@ -309,19 +309,31 @@ void slm_cuda_irmag_anal_specific(int32_t n, int32_t iter, bool print) {
 }
 
 void test_ivim_hessian() {
-	auto param = torch::rand({ 2,4 });
-	std::vector<torch::Tensor> constants = { torch::rand({3}).unsqueeze(0) };
+	torch::TensorOptions dops{ torch::ScalarType::Float };
+	auto param = torch::tensor({ 700.0f, 0.2f, 0.1f, 0.001f }, dops);
+	std::vector<torch::Tensor> constants = { 
+		torch::tensor({
+			0.0f, 10.0f, 20.0f, 30.0f, 40.0f, 60.0f, 80.0f, 100.0f, 120.0f, 140.0f, 160.0f, 180.0f, 200.0f,
+			300.0f, 400.0f, 500.0f, 600.0f, 700.0f, 800.0f, 900.0f, 1000.0f
+		}, dops).unsqueeze(0)
+	};
+	param.unsqueeze_(0);
 
 	std::cout << "param: " << param << std::endl;
 	std::cout << "constants: " << constants[0] << std::endl;
 
-	auto values = torch::empty({ 2, 3 });
-	auto jacobian = torch::empty({ 2, 3, 4 });
-	auto hessian = torch::empty({ 2, 4, 4 });
+	auto values = torch::empty({ 1, 21 });
+	auto jacobian = torch::empty({ 1, 21, 4 });
+	auto hessian = torch::empty({ 1, 4, 4 });
 
-	auto data = torch::empty({ 2,3 });
+	auto data = torch::tensor({
+		908.02686f, 905.39154f, 906.08997f, 700.7829f, 753.0848f, 859.9136f,
+	   870.48846f, 755.96893f, 617.3499f, 566.2044f , 746.62067f, 662.47424f,
+	   628.8806f, 459.7746f , 643.30554f, 318.58453f, 416.5493f, 348.34335f,
+	   411.74026f, 284.17468f, 290.30487f }, dops);
+	data.unsqueeze_(0);
 
-	tc::models::mp_ivim_eval_jac_hess(constants, param, data, std::nullopt, std::nullopt, std::nullopt);
+	//tc::models::mp_ivim_eval_jac_hess(constants, param, data, std::nullopt, std::nullopt, std::nullopt);
 
 	std::cout << "data: " << data << std::endl;
 
@@ -336,9 +348,9 @@ void test_ivim_hessian() {
 	model->constants() = constants;
 	model->parameters() = param;
 
-	auto values2 = torch::empty({ 2, 3 });
-	auto jacobian2 = torch::empty({ 2, 3, 4 });
-	auto hessian2 = torch::empty({ 2, 4, 4 });
+	auto values2 = torch::empty({ 1, 21 });
+	auto jacobian2 = torch::empty({ 1, 21, 4 });
+	auto hessian2 = torch::empty({ 1, 4, 4 });
 
 	model->res_jac_hess(values2, jacobian2, hessian2, data);
 
@@ -398,68 +410,8 @@ void test_irmag_hessian() {
 }
 
 int main() {
-
 	//test_ivim_hessian();
-	//strp_cpu_irmag_anal_specific(1, 50, true);
-	
-	slm_cpu_irmag_anal_specific(1, 1, true);
-	slm_cpu_irmag_anal_specific(1, 2, true);
-	slm_cpu_irmag_anal_specific(1, 5, true);
-	slm_cpu_irmag_anal_specific(1, 10, true);
-	slm_cpu_irmag_anal_specific(1, 50, true);
-	slm_cpu_irmag_anal_specific(1, 100, true);
-	
-	
-	
-	
 
-	//strp_cuda_ir_anal_specific(1, 10, true);
-
-	//strp_cuda_ir_anal_specific(2, 20, true);
-
-	//strp_cpu_ir_anal_specific(5000000, 10, false);
-	//strp_cuda_ir_anal_specific(5000000, 10, false);
-
-	/*
-	try {
-		//strp_cpu_ir_anal_specific(2, 0, true);
-		//strp_cpu_ir_anal_specific(2, 1, true);
-		//strp_cpu_ir_anal_specific(2, 2, true);
-		//strp_cpu_ir_anal_specific(2, 3, true);
-		//strp_cpu_ir_anal_specific(2, 4, true);
-		//strp_cpu_ir_anal_specific(2, 5, true);
-		strp_cpu_ir_anal_specific(2, 18, true);
-	}
-	catch (c10::Error e1) {
-		std::cout << e1.what() << std::endl;
-	}
-	catch (std::runtime_error e2) {
-		std::cout << e2.what() << std::endl;
-	}
-	*/
-	//strp_cpu_ir_anal_specific(5000, 2, false);
-	//strp_cpu_ir_anal_specific(1000, 2, false);
-	/*
-	try {
-		strp_cuda_ir_anal_specific(10000, 2, false);
-		strp_cuda_ir_anal_specific(500, 2, false);
-	}
-	catch (c10::Error e1) {
-		std::cout << e1.what() << std::endl;
-	}
-	catch (std::runtime_error e2) {
-		std::cout << e2.what() << std::endl;
-	}
-	*/
-
-	/*
-	strp_cpu_ir_anal_specific(1, 25, true);
-	strp_cpu_ir_anal_specific(1, 30, true);
-	strp_cpu_ir_anal_specific(1, 35, true);
-	strp_cpu_ir_anal_specific(1, 50, true);
-	strp_cpu_ir_anal_specific(1, 51, true);
-	strp_cpu_ir_anal_specific(1, 52, true);
-	strp_cpu_ir_anal_specific(1, 53, true);
-	*/
+	slm_cuda_irmag_anal_specific(500000, 30, false);
 
 }

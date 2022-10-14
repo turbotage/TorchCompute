@@ -304,6 +304,99 @@ void tc::models::mp_psir_diff2(
 
 
 
+void tc::models::mp_psirfa_eval_jac_hess(
+	// Constants									// Parameters
+	const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters,
+	// Values										// Jacobian
+	torch::Tensor& values, tc::OptOutRef<torch::Tensor> jacobian,
+	// Hessian										// Data
+	tc::OptOutRef<torch::Tensor> hessian, tc::OptRef<const torch::Tensor>data)
+{
+	torch::Tensor S0 = parameters.select(1, 0).unsqueeze(-1);
+	torch::Tensor T1 = parameters.select(1, 1).unsqueeze(-1);
+	torch::Tensor FA = parameters.select(1, 2).unsqueeze(-1);
+	torch::Tensor TR = constants[0];
+	torch::Tensor TI = constants[1];
+	torch::Tensor FAterm = torch::cos(FA) - 1.0f;
+
+	torch::Tensor expterm1 = torch::exp(-TI / T1);
+	torch::Tensor expterm2 = torch::exp(-TR / T1);
+
+	torch::Tensor FAexp1 = FAterm * expterm1;
+
+	values = 1.0f + FAexp1 + expterm2;
+
+	if (!jacobian.has_value() && !hessian.has_value()) {
+		values.mul_(S0);
+
+		if (data.has_value())
+			values.sub_(data.value());
+
+		return;
+	}
+
+	// Sets jacobian
+	torch::Tensor& J = jacobian.value().get();
+	J.select(2, 0) = values;
+	values.mul_(S0);
+	torch::Tensor T1_2 = torch::square(T1);
+	torch::Tensor TI_FAexp1 = TI * FAexp1;
+	torch::Tensor TR_exp2 = TR * expterm2;
+
+	J.select(2, 1) = S0 * (TR_exp2 + TI_FAexp1) / T1_2;
+	J.select(2, 2) = S0.neg() * torch::sin(FA) * expterm1;
+	// Jacobian set and eval
+
+	if (data.has_value())
+		values.sub_(data.value());
+
+	// Sets hessian
+	if (hessian.has_value()) {
+		throw std::runtime_error("Hessian is not properly implemented for psirfa");
+
+		if (!jacobian.has_value()) {
+			throw std::runtime_error("jacobian OptOutRef must be filled if hessian shall be evaluated");
+		}
+		if (!data.has_value()) {
+			throw std::runtime_error("data OptRef must be filled if hessian shall be evaluated");
+		}
+
+		// If we have come here jacobian is set and values = residuals
+		torch::Tensor& H = hessian.value().get();
+
+		H.select(1, 0).select(1, 0).zero_(); // S0,S0
+		torch::sum_out(H.select(1, 1).select(1, 0), values * torch::div(J.select(2, 1), S0), 1);
+		H.select(1, 0).select(1, 1) = H.select(1, 1).select(1, 0);
+
+		torch::Tensor t1t1 = S0 * (TI_FAexp1 * (TI - 2.0f * T1) + TR_exp2 * (TR - 2.0f * T1)) / torch::square(T1_2);
+		torch::sum_out(H.select(1, 1).select(1, 1), values * t1t1, 1);
+
+		H += torch::bmm(J.transpose(1, 2), J);
+	}
+
+}
+
+void tc::models::mp_psirfa_diff(
+	// Constants									// Parameters						// Variable index
+	const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters, int32_t index,
+	// Derivative
+	torch::Tensor& diff)
+{
+	throw std::runtime_error("Not implemented");
+}
+
+void tc::models::mp_psirfa_diff2(
+	// Constants									// Parameters						// Variable indices
+	const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters, const std::pair<int32_t, int32_t>& indices,
+	// Derivative
+	torch::Tensor& diff2)
+{
+	throw std::runtime_error("Not implemented");
+}
+
+
+
+
 
 
 void tc::models::mp_irmag_eval_jac_hess(
@@ -394,6 +487,99 @@ void tc::models::mp_irmag_diff2(
 	torch::Tensor& diff2)
 {
 	throw std::runtime_error("Not implemented");
+}
+
+
+void tc::models::mp_irmagfa_eval_jac_hess(
+	// Constants									// Parameters
+	const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters,
+	// Values										// Jacobian
+	torch::Tensor& values, tc::OptOutRef<torch::Tensor> jacobian,
+	// Hessian										// Data
+	tc::OptOutRef<torch::Tensor> hessian, tc::OptRef<const torch::Tensor> data)
+{
+	torch::Tensor S0 = parameters.select(1, 0).unsqueeze(-1);
+	torch::Tensor T1 = parameters.select(1, 1).unsqueeze(-1);
+	torch::Tensor FA = parameters.select(1, 2).unsqueeze(-1);
+	torch::Tensor TR = constants[0];
+	torch::Tensor TI = constants[1];
+
+	torch::Tensor expterm1 = torch::exp(-TI / T1);
+	torch::Tensor expterm2 = torch::exp(-TR / T1);
+
+	torch::Tensor FAexp1 = (torch::cos(FA) - 1.0f) * expterm1;
+
+	values = S0 * (1.0f + FAexp1 + expterm2);
+
+	if (!jacobian.has_value() && !hessian.has_value()) {
+		values.abs_();
+
+		if (data.has_value())
+			values.sub_(data.value());
+
+		return;
+	}
+
+	torch::Tensor sig = torch::sign(values);
+
+	// Sets jacobian
+	torch::Tensor& J = jacobian.value().get();
+	J.select(2, 0) = sig * values / S0;
+	values.abs_();
+	torch::Tensor T1_2 = torch::square(T1);
+	torch::Tensor TI_FAexp1 = TI * FAexp1;
+	torch::Tensor TR_exp2 = TR * expterm2;
+
+	J.select(2, 1) = sig * S0 * (TR_exp2 + TI_FAexp1) / T1_2;
+	// Jacobian set and eval
+	J.select(2, 2) = sig.neg() * S0 * torch::sin(FA) * expterm1;
+
+	if (data.has_value())
+	{
+		values.sub_(data.value());
+	}
+
+	// Sets hessian
+	if (hessian.has_value()) {
+		throw std::runtime_error("Hessian is not properly implemented for irmagfa");
+
+		if (!jacobian.has_value()) {
+			throw std::runtime_error("jacobian OptOutRef must be filled if hessian shall be evaluated");
+		}
+		if (!data.has_value()) {
+			throw std::runtime_error("data OptRef must be filled if hessian shall be evaluated");
+		}
+
+		// If we have come here jacobian is set and values = residuals
+		torch::Tensor& H = hessian.value().get();
+
+		H.select(1, 0).select(1, 0).zero_(); // S0,S0
+		torch::sum_out(H.select(1, 1).select(1, 0), values * torch::div(J.select(2, 1), S0), 1);
+		H.select(1, 0).select(1, 1) = H.select(1, 1).select(1, 0);
+
+		torch::Tensor t1t1 = sig * S0 * (TI_FAexp1 * (TI - 2.0f * T1) + TR_exp2 * (TR - 2.0f * T1)) / torch::square(T1_2);
+		torch::sum_out(H.select(1, 1).select(1, 1), values * t1t1, 1);
+
+		H += torch::bmm(J.transpose(1, 2), J);
+	}
+}
+
+void tc::models::mp_irmagfa_diff(
+	// Constants									// Parameters						// Variable index
+	const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters, int32_t index,
+	// Derivative
+	torch::Tensor& diff)
+{
+
+}
+
+void tc::models::mp_irmagfa_diff2(
+	// Constants									// Parameters						// Variable indices
+	const std::vector<torch::Tensor>& constants, const torch::Tensor& parameters, const std::pair<int32_t, int32_t>& indices,
+	// Derivative
+	torch::Tensor& diff2)
+{
+
 }
 
 
