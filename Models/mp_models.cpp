@@ -352,7 +352,6 @@ void tc::models::mp_psirfa_eval_jac_hess(
 
 	// Sets hessian
 	if (hessian.has_value()) {
-		throw std::runtime_error("Hessian is not properly implemented for psirfa");
 
 		if (!jacobian.has_value()) {
 			throw std::runtime_error("jacobian OptOutRef must be filled if hessian shall be evaluated");
@@ -364,12 +363,23 @@ void tc::models::mp_psirfa_eval_jac_hess(
 		// If we have come here jacobian is set and values = residuals
 		torch::Tensor& H = hessian.value().get();
 
-		H.select(1, 0).select(1, 0).zero_(); // S0,S0
-		torch::sum_out(H.select(1, 1).select(1, 0), values * torch::div(J.select(2, 1), S0), 1);
-		H.select(1, 0).select(1, 1) = H.select(1, 1).select(1, 0);
-
+		// S0,S0
+		H.select(1, 0).select(1, 0).zero_();
+		// S0, T1
+		torch::sum_out(H.select(1, 0).select(1, 1), values * torch::div(J.select(2, 1), S0), 1);
+		H.select(1, 1).select(1, 0) = H.select(1, 0).select(1, 1);
+		// S0, FA
+		torch::sum_out(H.select(1, 0).select(1, 2), values * torch::sin(FA) * expterm1, 1);
+		H.select(1, 2).select(1, 0) = H.select(1, 0).select(1, 2);
+		// T1, T1
 		torch::Tensor t1t1 = S0 * (TI_FAexp1 * (TI - 2.0f * T1) + TR_exp2 * (TR - 2.0f * T1)) / torch::square(T1_2);
 		torch::sum_out(H.select(1, 1).select(1, 1), values * t1t1, 1);
+		// T1, FA
+		torch::sum_out(H.select(1, 1).select(1, 2), values * S0.neg() * TI * torch::sin(FA) * expterm1 / T1_2, 1);
+		H.select(1, 2).select(1, 1) = H.select(1, 1).select(1, 2);
+		// FA, FA
+		torch::sum_out(H.select(1, 2).select(1, 2), values * S0.neg() * torch::cos(FA) * expterm1, 1);
+
 
 		H += torch::bmm(J.transpose(1, 2), J);
 	}
@@ -541,7 +551,6 @@ void tc::models::mp_irmagfa_eval_jac_hess(
 
 	// Sets hessian
 	if (hessian.has_value()) {
-		throw std::runtime_error("Hessian is not properly implemented for irmagfa");
 
 		if (!jacobian.has_value()) {
 			throw std::runtime_error("jacobian OptOutRef must be filled if hessian shall be evaluated");
@@ -553,12 +562,22 @@ void tc::models::mp_irmagfa_eval_jac_hess(
 		// If we have come here jacobian is set and values = residuals
 		torch::Tensor& H = hessian.value().get();
 
-		H.select(1, 0).select(1, 0).zero_(); // S0,S0
-		torch::sum_out(H.select(1, 1).select(1, 0), values * torch::div(J.select(2, 1), S0), 1);
-		H.select(1, 0).select(1, 1) = H.select(1, 1).select(1, 0);
-
+		// S0,S0
+		H.select(1, 0).select(1, 0).zero_();
+		// S0, T1
+		torch::sum_out(H.select(1, 0).select(1, 1), values * torch::div(J.select(2, 1), S0), 1);
+		H.select(1, 1).select(1, 0) = H.select(1, 0).select(1, 1);
+		// S0, FA
+		torch::sum_out(H.select(1, 0).select(1, 2), values * sig * torch::sin(FA) * expterm1, 1);
+		H.select(1, 2).select(1, 0) = H.select(1, 0).select(1, 2);
+		// T1, T1
 		torch::Tensor t1t1 = sig * S0 * (TI_FAexp1 * (TI - 2.0f * T1) + TR_exp2 * (TR - 2.0f * T1)) / torch::square(T1_2);
 		torch::sum_out(H.select(1, 1).select(1, 1), values * t1t1, 1);
+		// T1, FA
+		torch::sum_out(H.select(1, 1).select(1, 2), values * sig * S0.neg() * TI * torch::sin(FA) * expterm1 / T1_2, 1);
+		H.select(1, 2).select(1, 1) = H.select(1, 1).select(1, 2);
+		// FA, FA
+		torch::sum_out(H.select(1, 2).select(1, 2), values * sig * S0.neg() * torch::cos(FA) * expterm1, 1);
 
 		H += torch::bmm(J.transpose(1, 2), J);
 	}
@@ -570,7 +589,7 @@ void tc::models::mp_irmagfa_diff(
 	// Derivative
 	torch::Tensor& diff)
 {
-
+	throw std::runtime_error("Not implemented");
 }
 
 void tc::models::mp_irmagfa_diff2(
@@ -579,7 +598,7 @@ void tc::models::mp_irmagfa_diff2(
 	// Derivative
 	torch::Tensor& diff2)
 {
-
+	throw std::runtime_error("Not implemented");
 }
 
 
