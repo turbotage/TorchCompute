@@ -58,6 +58,14 @@ void ffi::model_create_from_type(ffi::ModelHandle** model_handle, int32_t modelt
 				tc::models::mp_ivim_diff, tc::models::mp_ivim_diff2);
 		}
 		break;
+	case eMP_ModelType::IVIM_PARTIAL:
+	{
+		auto& mh = *model_handle;
+		mh = new ffi::ModelHandle;
+		mh->p_model = std::make_unique<tc::optim::MP_Model>(tc::models::mp_ivim_partial_eval_jac_hess,
+			tc::models::mp_ivim_partial_diff, tc::models::mp_ivim_partial_diff2);
+	}
+		break;
 	case eMP_ModelType::PSIRFA:
 	{
 		auto& mh = *model_handle;

@@ -761,13 +761,13 @@ void tc::models::mp_ivim_partial_eval_jac_hess(
 	torch::Tensor& values, tc::OptOutRef<torch::Tensor> jacobian,
 	tc::OptOutRef<torch::Tensor> hessian, tc::OptRef<const torch::Tensor> data)
 {
-	torch::Tensor S0 = parameters.select(1, 0).unsqueeze(-1);
-	torch::Tensor f = parameters.select(1, 1).unsqueeze(-1);
+	torch::Tensor f = parameters.select(1, 0).unsqueeze(-1);
+	torch::Tensor D1 = parameters.select(1, 1).unsqueeze(-1);
 	//torch::Tensor D1 = parameters.select(1, 2).unsqueeze(-1);
 	//torch::Tensor D2 = parameters.select(1, 3).unsqueeze(-1);
 
 	torch::Tensor b = constants[0];
-	torch::Tensor D1 = constants[1];
+	torch::Tensor S0 = constants[1];
 	torch::Tensor D2 = constants[2];
 
 	torch::Tensor expterm1 = torch::exp(b.neg() * D1);
