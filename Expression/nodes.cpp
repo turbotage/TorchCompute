@@ -652,7 +652,7 @@ std::unique_ptr<tc::expression::Node> tc::expression::PowNode::diffnode(const Va
 
 	auto pow = std::make_unique<PowNode>(std::move(l1), std::move(r1));
 	auto left = std::make_unique<MulNode>(std::move(dr), std::make_unique<LogNode>(std::move(l2)));
-	auto right = std::make_unique<MulNode>(std::move(r2), std::make_unique<DivNode>(std::move(dl), std::move(l2)));
+	auto right = std::make_unique<MulNode>(std::move(r2), std::make_unique<DivNode>(std::move(dl), std::move(l3)));
 	auto add = std::make_unique<AddNode>(std::move(left), std::move(right));
 	return std::make_unique<MulNode>(std::move(pow), std::move(add));
 }
