@@ -48,10 +48,10 @@ void test_values() {
 		return g;
 	};
 
-	FetcherMap map{ {"x", xfetcher}, {"y", yfetcher}, {"z", zfetcher}, {"w", wfetcher}, {"u", ufetcher}, {"b", bfetcher}, {"g", gfetcher} };
+	FetcherMap map{ {"x1", xfetcher}, {"y0", yfetcher}, {"z", zfetcher}, {"w", wfetcher}, {"u", ufetcher}, {"b", bfetcher}, {"g", gfetcher} };
 
-	VariableToken varx("x");
-	VariableToken vary("y");
+	VariableToken varx("x1");
+	VariableToken vary("y0");
 	VariableToken varz("z");
 	VariableToken varw("w");
 	VariableToken varu("u");
@@ -69,7 +69,8 @@ void test_values() {
 	LexContext context_copy = context;
 
 	Lexer lexer(std::move(context));
-	std::string expr = "x*sin(b)*(1-exp(-g/y))/(1-cos(b)*exp(-g/y))";
+	//std::string expr = "x*sin(b)*(1-exp(-g/y))/(1-cos(b)*exp(-g/y))+pow(x,2.0)";
+	std::string expr = "pow(x1,2.0)+y0";
 
 	std::vector<std::unique_ptr<Token>> toks = lexer.lex(expr);
 
@@ -173,10 +174,10 @@ void test_times(int64_t nprob) {
 		return g;
 	};
 
-	FetcherMap map{ {"x", xfetcher}, {"y", yfetcher}, {"z", zfetcher}, {"w", wfetcher}, {"u", ufetcher}, {"b", bfetcher}, {"g", gfetcher} };
+	FetcherMap map{ {"x", xfetcher}, {"y0", yfetcher}, {"z", zfetcher}, {"w", wfetcher}, {"u", ufetcher}, {"b", bfetcher}, {"g", gfetcher} };
 
 	VariableToken varx("x");
-	VariableToken vary("y");
+	VariableToken vary("y0");
 	VariableToken varz("z");
 	VariableToken varw("w");
 	VariableToken varu("u");
@@ -194,7 +195,8 @@ void test_times(int64_t nprob) {
 	LexContext context_copy = context;
 
 	Lexer lexer(std::move(context));
-	std::string expr = "x*sin(b)*(1-exp(-g/y))/(1-cos(b)*exp(-g/y))";
+	//std::string expr = "x*sin(b)*(1-exp(-g/y))/(1-cos(b)*exp(-g/y))";
+	std::string expr = "pow(x,2.0)+y0";
 
 	std::vector<std::unique_ptr<Token>> toks = lexer.lex(expr);
 
@@ -253,9 +255,9 @@ int main() {
 	
 	test_values();
 
-	test_times(1000000);
-	test_times(1000000);
-	test_times(1000000);
-	test_times(1000000);
+	test_times(10);
+	test_times(10);
+	test_times(10);
+	test_times(10);
 
 }
