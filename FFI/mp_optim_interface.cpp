@@ -92,11 +92,15 @@ void ffi::model_create_from_expr(ffi::ModelHandle** model_handle, const char* ex
 	auto& mh = *model_handle;
 
 	std::vector<std::string> params;
+	params.reserve(num_parameters);
 	std::vector<std::string> consts;
+	consts.reserve(num_constants);
 
 	std::string expr(expression);
 	if (parameters != nullptr && num_parameters > 0) {
-		params = std::vector<std::string>(&parameters[0], &parameters[num_parameters-1]);
+		for (int i = 0; i < num_parameters; ++i) {
+			params.emplace_back(parameters[i]);
+		}
 	}
 	else {
 		throw std::runtime_error("Cannot create a model without parameters");
@@ -105,7 +109,9 @@ void ffi::model_create_from_expr(ffi::ModelHandle** model_handle, const char* ex
 	mh = new ffi::ModelHandle;
 	
 	if (constants != nullptr && num_constants > 0) {
-		consts = std::vector<std::string>(&constants[0], &constants[num_constants-1]);
+		for (int i = 0; i < num_constants; ++i) {
+			consts.emplace_back(constants[i]);
+		}
 		mh->p_model = std::make_unique<tc::optim::MP_Model>(expr, params, consts);
 	}
 	else {
